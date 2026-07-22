@@ -12,8 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $somvio_quote_anchor = '#somvio-instant-quote';
-$somvio_book_url     = function_exists( 'get_permalink' ) && get_permalink()
-	? esc_url( get_permalink() . $somvio_quote_anchor )
+$somvio_book_url     = get_permalink()
+	? esc_url( get_permalink() ) . $somvio_quote_anchor
 	: $somvio_quote_anchor;
 
 $somvio_rooms = array(

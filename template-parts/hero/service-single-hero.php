@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $somvio_home_url     = esc_url( home_url( '/' ) );
 $somvio_services_url = esc_url( home_url( '/services/' ) );
-$somvio_book_url     = somvio_get_book_now_url();
+$somvio_quote_url    = '#somvio-instant-quote';
 $somvio_title        = get_the_title();
 
 if ( ! is_string( $somvio_title ) || '' === $somvio_title ) {
@@ -68,7 +68,7 @@ if ( ! is_string( $somvio_title ) || '' === $somvio_title ) {
 				</p>
 
 				<div class="service-single-hero__actions reveal-on-scroll" style="--reveal-delay: 0.15s;">
-					<a class="btn btn--primary btn--md" href="<?php echo $somvio_book_url; ?>">
+					<a class="btn btn--primary btn--md" href="<?php echo esc_url( $somvio_quote_url ); ?>">
 						<span class="btn__label"><?php esc_html_e( 'Get Instant Quote', 'somvio' ); ?></span>
 					</a>
 					<a class="btn btn--outline btn--md" href="<?php echo $somvio_services_url; ?>">

@@ -150,7 +150,7 @@ function somvio_enqueue_service_gallery_assets() {
 add_action( 'wp_enqueue_scripts', 'somvio_enqueue_service_gallery_assets' );
 
 /**
- * Render the Why Choose Our Service benefits grid (Figma 366:5552).
+ * Render the Why Choose Our Service benefits grid (Figma 366:5552 / 300:3014).
  *
  * @return void
  */

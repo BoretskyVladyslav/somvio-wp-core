@@ -86,7 +86,6 @@
 			}
 
 			root.classList.toggle('why-choose--carousel', isMobile);
-			root.classList.toggle('service-why--carousel', isMobile);
 
 			if (!isMobile) {
 				track.scrollLeft = 0;
