@@ -12,12 +12,29 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Render the Testimonials section on the homepage (below Before/After).
+ * Whether Testimonials / Social Proof should render.
+ *
+ * @return bool
+ */
+function somvio_should_render_testimonials() {
+	if ( function_exists( 'somvio_is_hero_page' ) && somvio_is_hero_page() ) {
+		return true;
+	}
+
+	if ( function_exists( 'somvio_is_service_single_page' ) && somvio_is_service_single_page() ) {
+		return true;
+	}
+
+	return (bool) apply_filters( 'somvio_should_render_testimonials', false );
+}
+
+/**
+ * Render the Testimonials section (homepage below Before/After; Single Service below hero).
  *
  * @return void
  */
 function somvio_render_testimonials() {
-	if ( ! function_exists( 'somvio_is_hero_page' ) || ! somvio_is_hero_page() ) {
+	if ( ! somvio_should_render_testimonials() ) {
 		return;
 	}
 

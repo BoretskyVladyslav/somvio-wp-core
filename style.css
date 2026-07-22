@@ -3820,6 +3820,224 @@ a.site-footer__contact-text:focus-visible {
 }
 
 /* -------------------------------------------------------------------------
+   Block: service-single-hero — Figma 362:4968
+   Full-bleed dark hero + glass quote card; transparent header merge.
+   ------------------------------------------------------------------------- */
+.service-single-hero {
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	margin: 0;
+	margin-top: 0 !important;
+	padding: 0;
+	padding-top: 0 !important;
+	min-height: 680px;
+	color: var(--somvio-color-text);
+	background-color: var(--somvio-color-header-bg-alt);
+	background-image: url('assets/images/service-single-hero-bg.jpg');
+	background-repeat: no-repeat;
+	background-position: center top;
+	background-size: cover;
+}
+
+.somvio-header + .service-single-hero,
+#masthead + .service-single-hero,
+.site-header + .service-single-hero {
+	margin-top: 0 !important;
+}
+
+.service-single-hero__bg {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+	/* Figma: image at ~30% opacity + top gradient for header readability */
+	background-color: rgba(0, 5, 14, 0.7);
+	background-image: linear-gradient(
+		180deg,
+		rgba(0, 5, 14, 0.7) 0%,
+		rgba(0, 5, 14, 0) 32.601%
+	);
+}
+
+.service-single-hero__inner {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	max-width: 1170px;
+	margin-inline: auto;
+	/* Clear fixed header — Figma content top ~185px on 125px header */
+	padding: calc(var(--somvio-header-height) + 60px) var(--somvio-container-pad) 60px;
+	min-height: 680px;
+	box-sizing: border-box;
+}
+
+.service-single-hero__grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(280px, 470px);
+	gap: 40px 72px;
+	align-items: start;
+	flex: 1 1 auto;
+	width: 100%;
+}
+
+.service-single-hero__content {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 40px;
+	max-width: 571px;
+}
+
+.service-single-hero__breadcrumbs {
+	width: 100%;
+}
+
+.service-single-hero__breadcrumb-list {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.service-single-hero__breadcrumb-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: var(--somvio-font-size-base);
+	font-weight: 400;
+	line-height: 1.4;
+}
+
+.service-single-hero__breadcrumb-link {
+	color: var(--somvio-color-text);
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+	transition: color var(--somvio-transition);
+}
+
+.service-single-hero__breadcrumb-link:hover,
+.service-single-hero__breadcrumb-link:focus-visible {
+	color: var(--somvio-color-accent);
+}
+
+.service-single-hero__breadcrumb-sep {
+	display: inline-flex;
+	flex-shrink: 0;
+	width: 18px;
+	height: 18px;
+	color: var(--somvio-color-text);
+}
+
+.service-single-hero__breadcrumb-sep svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.service-single-hero__breadcrumb-current {
+	color: var(--somvio-color-text);
+}
+
+.service-single-hero__title {
+	margin: 0;
+	max-width: 571px;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2.25rem, 1.2rem + 3vw, 4.5rem); /* → 72px */
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.service-single-hero__text {
+	margin: 0;
+	max-width: 518px;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem); /* → 20px */
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+}
+
+.service-single-hero__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+	align-items: flex-start;
+}
+
+.service-single-hero__quote {
+	justify-self: end;
+}
+
+@media (max-width: 1199px) {
+	.service-single-hero__grid {
+		gap: 40px;
+	}
+
+	.service-single-hero__quote {
+		justify-self: stretch;
+		max-width: none;
+	}
+}
+
+@media (max-width: 767px) {
+	.service-single-hero {
+		min-height: 0;
+		background-position: center top;
+	}
+
+	.service-single-hero__inner {
+		padding: calc(var(--somvio-header-height) + 40px) 20px 40px;
+		min-height: 0;
+	}
+
+	.service-single-hero__grid {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 40px;
+	}
+
+	.service-single-hero__content {
+		gap: 24px;
+		max-width: none;
+		width: 100%;
+	}
+
+	.service-single-hero__title {
+		max-width: none;
+		font-size: 2.5rem; /* 40px */
+	}
+
+	.service-single-hero__text {
+		max-width: none;
+	}
+
+	.service-single-hero__actions {
+		width: 100%;
+	}
+
+	.service-single-hero__actions .btn {
+		flex: 1 1 auto;
+		justify-content: center;
+		text-align: center;
+	}
+
+	.service-single-hero__quote {
+		width: 100%;
+		max-width: none;
+		min-height: 0;
+	}
+}
+
+/* -------------------------------------------------------------------------
    Block: faq — Figma 300:2375 (Services page slot 300:2177)
    Reusable accordion used on Home + Services (above CTA).
    ------------------------------------------------------------------------- */
