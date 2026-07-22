@@ -4981,10 +4981,15 @@ a.site-footer__contact-text:focus-visible {
 }
 
 /* -------------------------------------------------------------------------
-   Block: service-gallery — Figma 366:5439
+   Block: service-gallery — Figma 366:5439 / 300:3006 (mobile)
    See the Difference infinite peek carousel on Single Service pages.
    ------------------------------------------------------------------------- */
 .service-gallery {
+	--service-gallery-align: center;
+	--service-gallery-pad: 0px;
+	--service-gallery-slide-w: min(1170px, calc(100vw - 48px));
+	--service-gallery-gap: 30px;
+
 	position: relative;
 	padding: 100px 0 80px;
 	overflow: hidden;
@@ -5058,6 +5063,7 @@ a.site-footer__contact-text:focus-visible {
 	touch-action: pan-y;
 	cursor: grab;
 	user-select: none;
+	-webkit-user-select: none;
 }
 
 .service-gallery__viewport:active {
@@ -5069,17 +5075,18 @@ a.site-footer__contact-text:focus-visible {
 	flex-direction: row;
 	flex-wrap: nowrap;
 	align-items: stretch;
-	gap: 30px;
+	gap: var(--service-gallery-gap);
 	margin: 0;
 	padding: 0;
 	list-style: none;
 	will-change: transform;
+	backface-visibility: hidden;
 }
 
 .service-gallery__slide {
-	flex: 0 0 min(1170px, calc(100vw - 48px));
-	width: min(1170px, calc(100vw - 48px));
-	max-width: min(1170px, calc(100vw - 48px));
+	flex: 0 0 var(--service-gallery-slide-w);
+	width: var(--service-gallery-slide-w);
+	max-width: var(--service-gallery-slide-w);
 	opacity: 0.72;
 	transition: opacity 0.35s ease;
 }
@@ -5127,10 +5134,14 @@ a.site-footer__contact-text:focus-visible {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	width: min(1170px, calc(100vw - 48px));
+	width: var(--service-gallery-slide-w);
 	height: 100%;
 	transform: translateX(-50%);
 	pointer-events: none;
+}
+
+.service-gallery__stage[hidden] {
+	display: none;
 }
 
 .service-gallery__nav {
@@ -5190,27 +5201,16 @@ a.site-footer__contact-text:focus-visible {
 	height: 100%;
 }
 
+/* Tablet — tighter centered peek, smaller nav */
 @media (max-width: 1023px) {
 	.service-gallery {
+		--service-gallery-slide-w: min(720px, calc(100vw - 56px));
+		--service-gallery-gap: 20px;
 		padding: 72px 0 64px;
 	}
 
 	.service-gallery__inner {
 		gap: 48px;
-	}
-
-	.service-gallery__track {
-		gap: 20px;
-	}
-
-	.service-gallery__slide {
-		flex-basis: min(720px, calc(100vw - 56px));
-		width: min(720px, calc(100vw - 56px));
-		max-width: min(720px, calc(100vw - 56px));
-	}
-
-	.service-gallery__stage {
-		width: min(720px, calc(100vw - 56px));
 	}
 
 	.service-gallery__nav {
@@ -5219,51 +5219,65 @@ a.site-footer__contact-text:focus-visible {
 	}
 }
 
+/* Mobile — Figma 300:3006: 315×185 cards, gap 15, start-aligned right peek, swipe-only */
 @media (max-width: 767px) {
 	.service-gallery {
-		padding: 56px 0 48px;
+		--service-gallery-align: start;
+		--service-gallery-pad: 20px;
+		--service-gallery-slide-w: min(315px, calc(100vw - 60px)); /* 20 pad + ~40 peek */
+		--service-gallery-gap: 15px;
+		padding: 60px 0 60px;
 	}
 
 	.service-gallery__inner {
-		gap: 40px;
+		align-items: stretch;
+		gap: 15px;
 	}
 
 	.service-gallery__header {
-		gap: 12px;
+		gap: 15px;
 		max-width: none;
 		padding-inline: 20px;
 	}
 
 	.service-gallery__title {
 		font-size: 36px;
+		width: 100%;
 	}
 
 	.service-gallery__subtitle {
 		max-width: none;
-	}
-
-	.service-gallery__track {
-		gap: 12px;
+		width: 100%;
 	}
 
 	.service-gallery__slide {
-		flex-basis: min(305px, calc(100vw - 64px));
-		width: min(305px, calc(100vw - 64px));
-		max-width: min(305px, calc(100vw - 64px));
+		opacity: 1;
+	}
+
+	.service-gallery__media {
+		aspect-ratio: 315 / 185;
+		height: auto;
+	}
+
+	.service-gallery__media-missing {
+		min-height: 185px;
 	}
 
 	.service-gallery__stage {
-		width: min(305px, calc(100vw - 64px));
+		display: none;
+	}
+}
+
+/* Narrow phones — keep ~40px right peek when 315px won't fit */
+@media (max-width: 479px) {
+	.service-gallery {
+		--service-gallery-pad: 20px;
+		--service-gallery-slide-w: calc(100vw - 60px); /* 20 left + 15 gap + ~25–40 peek */
+		--service-gallery-gap: 15px;
 	}
 
-	.service-gallery__nav {
-		width: 48px;
-		height: 48px;
-	}
-
-	.service-gallery__nav-icon {
-		width: 20px;
-		height: 20px;
+	.service-gallery__media {
+		aspect-ratio: 315 / 185;
 	}
 }
 

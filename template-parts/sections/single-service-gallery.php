@@ -2,7 +2,7 @@
 /**
  * Single Service — Gallery / See the Difference slider.
  *
- * Figma node: 366:5439
+ * Figma: 366:5439 (desktop) / 300:3006 (mobile peek carousel).
  *
  * @package Somvio_Child
  */

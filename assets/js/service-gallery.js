@@ -4,8 +4,11 @@
 (function () {
 	'use strict';
 
-	var TRANSITION = 'transform 0.45s cubic-bezier(0.25, 0.1, 0.25, 1)';
-	var SWIPE_THRESHOLD = 48;
+	var TRANSITION_DESKTOP = 'transform 0.45s cubic-bezier(0.25, 0.1, 0.25, 1)';
+	var TRANSITION_MOBILE = 'transform 0.38s cubic-bezier(0.22, 0.61, 0.36, 1)';
+	var SWIPE_DESKTOP = 48;
+	var SWIPE_MOBILE = 28;
+	var MOBILE_MQ = '(max-width: 767px)';
 
 	/**
 	 * @param {HTMLElement} root
@@ -17,28 +20,58 @@
 		var slides = root.querySelectorAll('[data-service-gallery-slide]');
 		var prevBtn = root.querySelector('[data-service-gallery-prev]');
 		var nextBtn = root.querySelector('[data-service-gallery-next]');
+		var stage = root.querySelector('.service-gallery__stage');
 		var uniqueCount = parseInt(root.getAttribute('data-service-gallery-count') || '0', 10);
 		var index = uniqueCount;
 		var animating = false;
 		var drag = null;
+		var mq = window.matchMedia(MOBILE_MQ);
+		var resizeTimer = null;
 
 		if (!viewport || !track || !slides.length || uniqueCount < 1) {
 			return;
 		}
 
 		/**
-		 * @returns {{slideW: number, gap: number, step: number, viewportW: number}}
+		 * @returns {boolean}
+		 */
+		function isMobile() {
+			return mq.matches;
+		}
+
+		/**
+		 * @returns {string}
+		 */
+		function transitionCss() {
+			return isMobile() ? TRANSITION_MOBILE : TRANSITION_DESKTOP;
+		}
+
+		/**
+		 * @returns {number}
+		 */
+		function swipeThreshold() {
+			return isMobile() ? SWIPE_MOBILE : SWIPE_DESKTOP;
+		}
+
+		/**
+		 * @returns {{slideW: number, gap: number, step: number, viewportW: number, align: string, pad: number}}
 		 */
 		function metrics() {
 			var first = slides[0];
-			var style = window.getComputedStyle(track);
-			var gap = parseFloat(style.columnGap || style.gap) || 0;
+			var rootStyle = window.getComputedStyle(root);
+			var trackStyle = window.getComputedStyle(track);
+			var gap = parseFloat(trackStyle.columnGap || trackStyle.gap) || 0;
 			var slideW = first.getBoundingClientRect().width;
+			var align = (rootStyle.getPropertyValue('--service-gallery-align') || 'center').trim();
+			var pad = parseFloat(rootStyle.getPropertyValue('--service-gallery-pad')) || 0;
+
 			return {
 				slideW: slideW,
 				gap: gap,
 				step: slideW + gap,
 				viewportW: viewport.getBoundingClientRect().width,
+				align: align,
+				pad: pad,
 			};
 		}
 
@@ -51,9 +84,15 @@
 		function setPosition(i, animate, dragOffset) {
 			var m = metrics();
 			var offset = typeof dragOffset === 'number' ? dragOffset : 0;
-			var x = m.viewportW / 2 - m.slideW / 2 - i * m.step + offset;
+			var x;
 
-			track.style.transition = animate ? TRANSITION : 'none';
+			if (m.align === 'start') {
+				x = m.pad - i * m.step + offset;
+			} else {
+				x = m.viewportW / 2 - m.slideW / 2 - i * m.step + offset;
+			}
+
+			track.style.transition = animate ? transitionCss() : 'none';
 			track.style.transform = 'translate3d(' + x + 'px, 0, 0)';
 			index = i;
 			updateActive();
@@ -73,14 +112,27 @@
 		}
 
 		/**
+		 * Instant rewind without a visible jump (double rAF).
+		 *
 		 * @returns {void}
 		 */
 		function normalizeLoop() {
+			var target = index;
+
 			if (index >= uniqueCount * 2) {
-				setPosition(index - uniqueCount, false);
+				target = index - uniqueCount;
 			} else if (index < uniqueCount) {
-				setPosition(index + uniqueCount, false);
+				target = index + uniqueCount;
+			} else {
+				animating = false;
+				return;
 			}
+
+			track.style.transition = 'none';
+			setPosition(target, false);
+			/* Force layout so the next animated slide starts clean. */
+			void track.offsetWidth;
+			animating = false;
 		}
 
 		/**
@@ -95,12 +147,22 @@
 			setPosition(index + delta, true);
 		}
 
+		/**
+		 * @returns {void}
+		 */
+		function syncChrome() {
+			if (stage) {
+				stage.hidden = isMobile();
+			}
+			root.classList.toggle('service-gallery--mobile', isMobile());
+			setPosition(index, false);
+		}
+
 		track.addEventListener('transitionend', function (event) {
 			if (event.target !== track || event.propertyName !== 'transform') {
 				return;
 			}
 			normalizeLoop();
-			animating = false;
 		});
 
 		if (prevBtn) {
@@ -173,7 +235,7 @@
 			}
 
 			var dx = clientX - drag.startX;
-			var shouldSlide = drag.locked && drag.moved && Math.abs(dx) >= SWIPE_THRESHOLD;
+			var shouldSlide = drag.locked && drag.moved && Math.abs(dx) >= swipeThreshold();
 
 			if (shouldSlide) {
 				animating = true;
@@ -212,7 +274,6 @@
 		viewport.addEventListener('pointerup', finishPointer);
 		viewport.addEventListener('pointercancel', finishPointer);
 
-		/* Keep vertical page scroll; block it only once a horizontal swipe locks. */
 		viewport.addEventListener(
 			'touchmove',
 			function (event) {
@@ -236,10 +297,19 @@
 		});
 
 		window.addEventListener('resize', function () {
-			setPosition(index, false);
+			window.clearTimeout(resizeTimer);
+			resizeTimer = window.setTimeout(function () {
+				setPosition(index, false);
+			}, 80);
 		});
 
-		setPosition(index, false);
+		if (typeof mq.addEventListener === 'function') {
+			mq.addEventListener('change', syncChrome);
+		} else if (typeof mq.addListener === 'function') {
+			mq.addListener(syncChrome);
+		}
+
+		syncChrome();
 	}
 
 	function ready(fn) {
