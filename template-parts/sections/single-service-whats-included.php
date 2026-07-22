@@ -2,7 +2,7 @@
 /**
  * Single Service — What's Included room checklist.
  *
- * Figma node: 366:5375
+ * Figma: 366:5375 (desktop) / 300:2943 (mobile carousel).
  *
  * @package Somvio_Child
  */

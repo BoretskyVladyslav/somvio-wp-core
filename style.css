@@ -4620,6 +4620,7 @@ a.site-footer__contact-text:focus-visible {
 	width: 100%;
 }
 
+/* Tablet — Figma-adjacent: 2-col cards, tightened section rhythm */
 @media (max-width: 1023px) {
 	.whats-included {
 		padding: 64px var(--somvio-container-pad);
@@ -4629,36 +4630,132 @@ a.site-footer__contact-text:focus-visible {
 		gap: 48px;
 	}
 
+	.whats-included__header {
+		max-width: none;
+	}
+
+	.whats-included__subtitle {
+		max-width: 430px;
+	}
+
 	.whats-included__grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 24px;
-	}
-}
-
-@media (max-width: 767px) {
-	.whats-included {
-		padding: 56px 20px;
-	}
-
-	.whats-included__inner {
-		gap: 40px;
-	}
-
-	.whats-included__title {
-		font-size: 36px;
-	}
-
-	.whats-included__grid {
-		grid-template-columns: 1fr;
 		gap: 20px;
 	}
 
 	.whats-included__card {
-		padding: 24px;
+		padding: 30px;
+	}
+}
+
+/* Mobile — Figma 300:2943: horizontal scroll-snap carousel + full-width CTA */
+@media (max-width: 767px) {
+	.whats-included {
+		padding: 60px 0;
+		overflow-x: clip;
+	}
+
+	.whats-included__inner {
+		align-items: stretch;
+		gap: 40px;
+		max-width: none;
+	}
+
+	.whats-included__header {
+		gap: 15px;
+		max-width: none;
+		padding: 0 20px;
+		box-sizing: border-box;
+	}
+
+	.whats-included__title {
+		font-size: 36px;
+		width: 100%;
+	}
+
+	.whats-included__subtitle {
+		max-width: none;
+		width: 100%;
+		font-size: 16px;
+		line-height: 1.4;
+		color: var(--somvio-color-text-subtle);
+	}
+
+	.whats-included__grid {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: stretch;
+		gap: 10px;
+		width: 100%;
+		margin: 0;
+		padding: 0 20px;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scroll-snap-type: x mandatory;
+		scroll-padding-inline: 20px;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+		touch-action: pan-x;
+	}
+
+	.whats-included__grid::-webkit-scrollbar {
+		display: none;
+	}
+
+	.whats-included__card {
+		flex: 0 0 min(305px, calc(100vw - 70px));
+		width: min(305px, calc(100vw - 70px));
+		max-width: min(305px, calc(100vw - 70px));
+		min-height: 0;
+		padding: 30px;
+		gap: 20px;
+		scroll-snap-align: start;
+		scroll-snap-stop: always;
+		box-sizing: border-box;
+	}
+
+	.whats-included__icon-wrap {
+		padding: 10px;
+	}
+
+	.whats-included__icon {
+		width: 36px;
+		height: 36px;
 	}
 
 	.whats-included__card-title {
-		font-size: 20px;
+		font-size: 24px;
+		line-height: 1.1;
+	}
+
+	.whats-included__list {
+		gap: 15px;
+	}
+
+	.whats-included__list-item {
+		padding-left: 24px;
+		font-size: 16px;
+		line-height: 1.1;
+	}
+
+	.whats-included__list-item::before {
+		width: 6px;
+		height: 6px;
+		top: 0.35em;
+		background-color: var(--somvio-color-text);
+	}
+
+	.whats-included__actions {
+		padding: 0 20px;
+		box-sizing: border-box;
+	}
+
+	.whats-included__actions .btn {
+		width: 100%;
+		justify-content: center;
+		padding: 20px 40px;
+		font-size: 18px;
 	}
 }
 
