@@ -94,3 +94,17 @@ function somvio_render_service_whats_included() {
 	get_template_part( 'template-parts/sections/single-service', 'whats-included' );
 }
 add_action( 'generate_after_header', 'somvio_render_service_whats_included', 12 );
+
+/**
+ * Render the Transparent Pricing section (Figma 366:5409).
+ *
+ * @return void
+ */
+function somvio_render_service_pricing() {
+	if ( ! somvio_is_service_single_page() ) {
+		return;
+	}
+
+	get_template_part( 'template-parts/sections/single-service', 'pricing' );
+}
+add_action( 'generate_after_header', 'somvio_render_service_pricing', 14 );

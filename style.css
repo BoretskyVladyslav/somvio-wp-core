@@ -4760,6 +4760,227 @@ a.site-footer__contact-text:focus-visible {
 }
 
 /* -------------------------------------------------------------------------
+   Block: service-pricing — Figma 366:5409
+   Transparent Pricing breakdown on Single Service pages.
+   ------------------------------------------------------------------------- */
+.service-pricing {
+	position: relative;
+	padding: 40px var(--somvio-container-pad) 80px;
+	background-color: var(--somvio-color-surface-dark);
+	color: var(--somvio-color-text);
+}
+
+.service-pricing__inner {
+	display: flex;
+	flex-direction: column;
+	gap: 60px;
+	width: 100%;
+	max-width: 1170px;
+	margin-inline: auto;
+}
+
+.service-pricing__header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 15px;
+	max-width: 720px;
+	margin-inline: auto;
+	text-align: center;
+}
+
+.service-pricing__badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: 10px 30px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50px;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+	white-space: nowrap;
+}
+
+.service-pricing__title {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2rem, 1.5rem + 1.5vw, 3rem); /* → 48px */
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.service-pricing__subtitle {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text-subtle);
+}
+
+.service-pricing__grid {
+	display: grid;
+	grid-template-columns: minmax(0, 795fr) minmax(0, 570fr);
+	gap: 30px;
+	align-items: center;
+	width: 100%;
+}
+
+.service-pricing__media {
+	margin: 0;
+	width: 100%;
+	min-width: 0;
+	overflow: hidden;
+	border-radius: var(--somvio-radius);
+	background-color: var(--somvio-color-bg);
+	aspect-ratio: 795 / 516;
+}
+
+.service-pricing__image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+	border-radius: var(--somvio-radius);
+}
+
+.service-pricing__media-missing {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 280px;
+	padding: 24px;
+	font-size: 14px;
+	line-height: 1.4;
+	color: var(--somvio-color-text-subtle);
+	text-align: center;
+}
+
+.service-pricing__panel {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 20px;
+	min-width: 0;
+	width: 100%;
+}
+
+.service-pricing__list {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.service-pricing__row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	width: 100%;
+	padding: 20px;
+	border-radius: var(--somvio-radius);
+	background-color: var(--somvio-color-bg);
+	box-sizing: border-box;
+	transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.service-pricing__row:hover {
+	background-color: #0a1220;
+	transform: translateY(-1px);
+}
+
+.service-pricing__label {
+	font-family: var(--somvio-font-sans);
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.service-pricing__price {
+	flex-shrink: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-accent);
+	white-space: nowrap;
+}
+
+.service-pricing__cta {
+	align-self: flex-start;
+}
+
+@media (max-width: 1023px) {
+	.service-pricing {
+		padding: 40px var(--somvio-container-pad) 64px;
+	}
+
+	.service-pricing__inner {
+		gap: 48px;
+	}
+
+	.service-pricing__grid {
+		grid-template-columns: 1fr;
+		gap: 28px;
+	}
+
+	.service-pricing__media {
+		aspect-ratio: 16 / 10;
+	}
+}
+
+@media (max-width: 767px) {
+	.service-pricing {
+		padding: 40px 20px 56px;
+	}
+
+	.service-pricing__inner {
+		gap: 40px;
+	}
+
+	.service-pricing__header {
+		gap: 12px;
+		max-width: none;
+	}
+
+	.service-pricing__title {
+		font-size: 36px;
+	}
+
+	.service-pricing__grid {
+		gap: 24px;
+	}
+
+	.service-pricing__row {
+		padding: 16px 18px;
+	}
+
+	.service-pricing__label {
+		font-size: 16px;
+	}
+
+	.service-pricing__price {
+		font-size: 16px;
+	}
+
+	.service-pricing__cta {
+		width: 100%;
+		justify-content: center;
+	}
+}
+
+/* -------------------------------------------------------------------------
    Block: faq — Figma 300:2375 (Services page slot 300:2177)
    Reusable accordion used on Home + Services (above CTA).
    ------------------------------------------------------------------------- */
