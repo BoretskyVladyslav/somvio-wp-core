@@ -2839,6 +2839,7 @@ button.how-it-works__trigger:focus-visible .how-it-works__icon {
 	touch-action: none;
 	user-select: none;
 	-webkit-user-select: none;
+	-webkit-touch-callout: none;
 }
 
 .before-after__frame {
@@ -2849,6 +2850,7 @@ button.how-it-works__trigger:focus-visible .how-it-works__icon {
 	border-radius: var(--somvio-radius);
 	background-color: var(--somvio-color-surface-dark);
 	cursor: ew-resize;
+	touch-action: none;
 }
 
 .before-after__layer {
@@ -2887,6 +2889,7 @@ button.how-it-works__trigger:focus-visible .how-it-works__icon {
 	background-color: #ffffff;
 	transform: translateX(-50%);
 	pointer-events: none;
+	touch-action: none;
 }
 
 .before-after__handle {
@@ -2896,15 +2899,15 @@ button.how-it-works__trigger:focus-visible .how-it-works__icon {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 44px;
-	height: 44px;
+	width: 48px;
+	height: 48px;
 	padding: 10px;
 	border-radius: 50px;
 	background-color: #ffffff;
 	color: #1c1b1f;
 	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
 	transform: translate(-50%, -50%);
-	pointer-events: auto;
+	pointer-events: none;
 	cursor: ew-resize;
 	touch-action: none;
 }
@@ -2941,6 +2944,8 @@ button.how-it-works__trigger:focus-visible .how-it-works__icon {
 	cursor: ew-resize;
 	appearance: none;
 	-webkit-appearance: none;
+	/* Drag is owned by JS pointer/touch; range stays for keyboard / AT. */
+	pointer-events: none;
 	touch-action: none;
 }
 

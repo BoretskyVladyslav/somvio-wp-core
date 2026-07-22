@@ -1,6 +1,6 @@
 /**
  * Somvio before/after comparison slider.
- * Syncs CSS --ba-pos from a full-area range input (mouse, touch, keyboard).
+ * Pointer + touch drag with range sync for keyboard / a11y.
  */
 (function () {
 	'use strict';
@@ -47,31 +47,61 @@
 	function initSlider(root) {
 		var range = root.querySelector('[data-before-after-range]');
 		var frame = root.querySelector('.before-after__frame');
+		var handle = root.querySelector('.before-after__handle');
 		var dragging = false;
 		var activePointerId = null;
-
-		setPosition(root, range ? parseFloat(range.value) || 50 : 50);
-
-		if (range) {
-			range.addEventListener('input', function () {
-				setPosition(root, parseFloat(range.value) || 0);
-			});
-
-			range.addEventListener('pointerdown', function () {
-				root.classList.add('before-after__slider--dragging');
-			});
-
-			range.addEventListener('pointerup', function () {
-				root.classList.remove('before-after__slider--dragging');
-			});
-
-			range.addEventListener('pointercancel', function () {
-				root.classList.remove('before-after__slider--dragging');
-			});
-		}
+		var activeTouchId = null;
 
 		if (!frame) {
 			return;
+		}
+
+		setPosition(root, range ? parseFloat(range.value) || 50 : 50);
+
+		/**
+		 * @param {number} clientX
+		 * @returns {void}
+		 */
+		function moveToClientX(clientX) {
+			var rect = frame.getBoundingClientRect();
+			if (rect.width <= 0) {
+				return;
+			}
+			setPosition(root, ((clientX - rect.left) / rect.width) * 100);
+		}
+
+		/**
+		 * @returns {void}
+		 */
+		function startDragVisual() {
+			dragging = true;
+			root.classList.add('before-after__slider--dragging');
+		}
+
+		/**
+		 * @returns {void}
+		 */
+		function endDragVisual() {
+			dragging = false;
+			activePointerId = null;
+			activeTouchId = null;
+			root.classList.remove('before-after__slider--dragging');
+		}
+
+		if (range) {
+			range.addEventListener('input', function () {
+				if (dragging) {
+					return;
+				}
+				setPosition(root, parseFloat(range.value) || 0);
+			});
+
+			range.addEventListener('keydown', function () {
+				/* Arrow keys update value; sync on next input tick. */
+				window.requestAnimationFrame(function () {
+					setPosition(root, parseFloat(range.value) || 0);
+				});
+			});
 		}
 
 		/**
@@ -79,29 +109,25 @@
 		 * @returns {void}
 		 */
 		function onPointerDown(event) {
-			if (event.target === range) {
+			if (event.pointerType === 'mouse' && event.button !== 0) {
 				return;
 			}
 
-			if (event.button !== undefined && event.button !== 0) {
+			/* Keyboard focus stays on the range; ignore its native pointer path. */
+			if (range && event.target === range) {
 				return;
 			}
 
-			dragging = true;
+			startDragVisual();
 			activePointerId = event.pointerId;
-			root.classList.add('before-after__slider--dragging');
 
 			try {
-				frame.setPointerCapture(event.pointerId);
+				root.setPointerCapture(event.pointerId);
 			} catch (err) {
 				// Ignore.
 			}
 
-			var rect = frame.getBoundingClientRect();
-			if (rect.width > 0) {
-				setPosition(root, ((event.clientX - rect.left) / rect.width) * 100);
-			}
-
+			moveToClientX(event.clientX);
 			event.preventDefault();
 		}
 
@@ -110,14 +136,12 @@
 		 * @returns {void}
 		 */
 		function onPointerMove(event) {
-			if (!dragging || (activePointerId !== null && event.pointerId !== activePointerId)) {
+			if (!dragging || activePointerId === null || event.pointerId !== activePointerId) {
 				return;
 			}
 
-			var rect = frame.getBoundingClientRect();
-			if (rect.width > 0) {
-				setPosition(root, ((event.clientX - rect.left) / rect.width) * 100);
-			}
+			moveToClientX(event.clientX);
+			event.preventDefault();
 		}
 
 		/**
@@ -129,16 +153,87 @@
 				return;
 			}
 
-			dragging = false;
-			activePointerId = null;
-			root.classList.remove('before-after__slider--dragging');
+			endDragVisual();
 		}
 
-		// Range sits on top for a11y; pointer fallback if range is unavailable.
-		frame.addEventListener('pointerdown', onPointerDown);
-		frame.addEventListener('pointermove', onPointerMove);
-		frame.addEventListener('pointerup', onPointerUp);
-		frame.addEventListener('pointercancel', onPointerUp);
+		root.addEventListener('pointerdown', onPointerDown);
+		root.addEventListener('pointermove', onPointerMove);
+		root.addEventListener('pointerup', onPointerUp);
+		root.addEventListener('pointercancel', onPointerUp);
+
+		/*
+		 * Touch fallback for browsers where pointer events are incomplete
+		 * on overlayed controls, or range still intercepts gestures.
+		 */
+		root.addEventListener(
+			'touchstart',
+			function (event) {
+				if (!event.changedTouches.length || dragging) {
+					return;
+				}
+
+				var touch = event.changedTouches[0];
+				activeTouchId = touch.identifier;
+				startDragVisual();
+				moveToClientX(touch.clientX);
+
+				if (event.cancelable) {
+					event.preventDefault();
+				}
+			},
+			{ passive: false }
+		);
+
+		root.addEventListener(
+			'touchmove',
+			function (event) {
+				if (activeTouchId === null) {
+					return;
+				}
+
+				var touch = null;
+				var i;
+
+				for (i = 0; i < event.changedTouches.length; i++) {
+					if (event.changedTouches[i].identifier === activeTouchId) {
+						touch = event.changedTouches[i];
+						break;
+					}
+				}
+
+				if (!touch) {
+					return;
+				}
+
+				moveToClientX(touch.clientX);
+
+				if (event.cancelable) {
+					event.preventDefault();
+				}
+			},
+			{ passive: false }
+		);
+
+		function endTouch(event) {
+			if (activeTouchId === null) {
+				return;
+			}
+
+			var i;
+			for (i = 0; i < event.changedTouches.length; i++) {
+				if (event.changedTouches[i].identifier === activeTouchId) {
+					endDragVisual();
+					return;
+				}
+			}
+		}
+
+		root.addEventListener('touchend', endTouch, { passive: true });
+		root.addEventListener('touchcancel', endTouch, { passive: true });
+
+		if (handle) {
+			handle.setAttribute('aria-hidden', 'true');
+		}
 	}
 
 	function ready(fn) {

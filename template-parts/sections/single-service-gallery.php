@@ -75,6 +75,10 @@ $somvio_unique_count = count( $somvio_gallery_images );
 						<?php
 						$path = $somvio_gallery_base . $slide['file'];
 						$uri  = $somvio_gallery_uri . $slide['file'];
+
+						if ( file_exists( $path ) ) {
+							$uri .= '?v=' . rawurlencode( (string) filemtime( $path ) );
+						}
 						?>
 						<li
 							class="service-gallery__slide"
