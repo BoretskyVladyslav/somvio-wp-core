@@ -26,12 +26,15 @@ function somvio_render_why_choose() {
 add_action( 'generate_after_header', 'somvio_render_why_choose', 10 );
 
 /**
- * Enqueue Why Choose carousel script on homepage.
+ * Enqueue Why Choose carousel script on homepage + Single Service.
  *
  * @return void
  */
 function somvio_enqueue_why_choose_assets() {
-	if ( ! function_exists( 'somvio_is_hero_page' ) || ! somvio_is_hero_page() ) {
+	$on_home    = function_exists( 'somvio_is_hero_page' ) && somvio_is_hero_page();
+	$on_service = function_exists( 'somvio_is_service_single_page' ) && somvio_is_service_single_page();
+
+	if ( ! $on_home && ! $on_service ) {
 		return;
 	}
 

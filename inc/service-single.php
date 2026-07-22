@@ -148,3 +148,17 @@ function somvio_enqueue_service_gallery_assets() {
 	);
 }
 add_action( 'wp_enqueue_scripts', 'somvio_enqueue_service_gallery_assets' );
+
+/**
+ * Render the Why Choose Our Service benefits grid (Figma 366:5552).
+ *
+ * @return void
+ */
+function somvio_render_service_why_choose() {
+	if ( ! somvio_is_service_single_page() ) {
+		return;
+	}
+
+	get_template_part( 'template-parts/sections/single-service', 'why-choose' );
+}
+add_action( 'generate_after_header', 'somvio_render_service_why_choose', 18 );

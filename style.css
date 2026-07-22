@@ -5282,6 +5282,305 @@ a.site-footer__contact-text:focus-visible {
 }
 
 /* -------------------------------------------------------------------------
+   Block: service-why — Figma 366:5552
+   Why Choose Our [Service] 4-card benefits grid on Single Service pages.
+   ------------------------------------------------------------------------- */
+.service-why {
+	position: relative;
+	padding: 80px var(--somvio-container-pad);
+	background-color: var(--somvio-color-bg);
+	color: var(--somvio-color-text);
+	overflow: hidden;
+}
+
+.service-why__inner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 60px;
+	width: 100%;
+	max-width: 1170px;
+	margin-inline: auto;
+}
+
+.service-why__header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 15px;
+	width: 100%;
+	max-width: 535px;
+	text-align: center;
+}
+
+.service-why__badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: 10px 30px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50px;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+	white-space: nowrap;
+}
+
+.service-why__title {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2rem, 1.5rem + 1.5vw, 3rem); /* → 48px */
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+	text-align: center;
+}
+
+.service-why__carousel {
+	width: 100%;
+}
+
+.service-why__grid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 30px;
+	align-items: stretch;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.service-why__card {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 20px;
+	width: 100%;
+	min-width: 0;
+	padding: 20px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: var(--somvio-radius);
+	background-color: var(--somvio-color-surface-dark);
+	box-sizing: border-box;
+	transition:
+		border-color var(--somvio-transition),
+		transform var(--somvio-transition),
+		box-shadow var(--somvio-transition);
+}
+
+.service-why__card:hover,
+.service-why__card:focus-within {
+	border-color: var(--somvio-color-accent-mid);
+	box-shadow: 0 8px 28px rgba(64, 215, 208, 0.12);
+	transform: translateY(-2px);
+}
+
+.service-why__card-top {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	width: 100%;
+	min-width: 0;
+}
+
+.service-why__icon-wrap {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	padding: 10px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50px;
+	color: var(--somvio-color-accent);
+}
+
+.service-why__icon {
+	display: inline-flex;
+	width: 36px;
+	height: 36px;
+}
+
+.service-why__icon svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.service-why__icon svg path {
+	fill: currentColor;
+}
+
+.service-why__card-title {
+	margin: 0;
+	flex: 1 1 auto;
+	min-width: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.service-why__card-text {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.1;
+	color: var(--somvio-color-text-body);
+}
+
+.service-why__controls {
+	display: none;
+}
+
+.service-why__controls[hidden] {
+	display: none;
+}
+
+.service-why__nav {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	padding: 0;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50%;
+	background-color: var(--somvio-color-surface-dark);
+	color: var(--somvio-color-accent);
+	cursor: pointer;
+	transition:
+		border-color var(--somvio-transition),
+		opacity var(--somvio-transition),
+		background-color var(--somvio-transition);
+}
+
+.service-why__nav:hover,
+.service-why__nav:focus-visible {
+	border-color: var(--somvio-color-accent-mid);
+	outline: none;
+}
+
+.service-why__nav:disabled {
+	opacity: 0.35;
+	cursor: default;
+}
+
+.service-why__nav-icon {
+	display: inline-flex;
+	width: 24px;
+	height: 24px;
+}
+
+.service-why__nav-icon svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+/* Tablet — 2×2 */
+@media (max-width: 1023px) {
+	.service-why {
+		padding: 64px var(--somvio-container-pad);
+	}
+
+	.service-why__inner {
+		gap: 48px;
+	}
+
+	.service-why__header {
+		max-width: none;
+	}
+
+	.service-why__grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 20px;
+	}
+}
+
+/* Mobile — swipe carousel (reuses why-choose.js via data-why-choose) */
+@media (max-width: 767px) {
+	.service-why {
+		padding: 56px 0 64px;
+	}
+
+	.service-why__inner {
+		gap: 40px;
+		padding-inline: 0;
+	}
+
+	.service-why__header {
+		gap: 15px;
+		padding-inline: 20px;
+		box-sizing: border-box;
+	}
+
+	.service-why__title {
+		font-size: 36px;
+	}
+
+	.service-why__carousel {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 24px;
+		width: 100%;
+	}
+
+	.service-why--carousel .service-why__grid {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		align-items: stretch;
+		gap: 16px;
+		width: 100%;
+		margin: 0;
+		padding: 0 20px;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scroll-snap-type: x mandatory;
+		scroll-behavior: smooth;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+		touch-action: pan-x;
+	}
+
+	.service-why--carousel .service-why__grid::-webkit-scrollbar {
+		display: none;
+	}
+
+	.service-why--carousel .service-why__card {
+		flex: 0 0 min(315px, calc(100vw - 56px));
+		width: min(315px, calc(100vw - 56px));
+		max-width: min(315px, calc(100vw - 56px));
+		scroll-snap-align: center;
+		scroll-snap-stop: always;
+	}
+
+	.service-why--carousel .service-why__controls {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 20px;
+	}
+
+	.service-why--carousel .service-why__controls[hidden] {
+		display: none;
+	}
+}
+
+@media (min-width: 768px) {
+	.service-why__controls {
+		display: none;
+	}
+}
+
+/* -------------------------------------------------------------------------
    Block: faq — Figma 300:2375 (Services page slot 300:2177)
    Reusable accordion used on Home + Services (above CTA).
    ------------------------------------------------------------------------- */
