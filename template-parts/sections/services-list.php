@@ -14,11 +14,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $somvio_images_uri = get_stylesheet_directory_uri() . '/assets/images';
 $somvio_images_dir = get_stylesheet_directory() . '/assets/images';
-$somvio_book_url   = function_exists( 'somvio_get_book_now_url' ) ? somvio_get_book_now_url() : home_url( '/booking/' );
 
 /*
  * Figma 300:2170 — five service_item rows (no Office).
  * Even index = media start; odd = media end.
+ * CTAs link to published Single Service pages via somvio_get_service_page_url().
  */
 $somvio_list_services = array(
 	array(
@@ -66,6 +66,9 @@ $somvio_list_services = array(
 			$image_url   = esc_url( $somvio_images_uri . '/' . $service['image'] );
 			$media_start = ( 0 === ( $index % 2 ) );
 			$item_mod    = $media_start ? 'services-list__item--media-start' : 'services-list__item--media-end';
+			$service_url = function_exists( 'somvio_get_service_page_url' )
+				? esc_url( somvio_get_service_page_url( $service['id'] ) )
+				: esc_url( home_url( '/services/' . $service['id'] . '/' ) );
 			?>
 			<article
 				id="<?php echo esc_attr( $service['id'] ); ?>"
@@ -73,36 +76,42 @@ $somvio_list_services = array(
 				style="--reveal-delay: <?php echo esc_attr( (string) ( $index * 0.05 ) ); ?>s;"
 			>
 				<div class="services-list__media">
-					<?php if ( file_exists( $image_path ) ) : ?>
-						<img
-							class="services-list__image"
-							src="<?php echo $image_url; ?>"
-							alt="<?php echo esc_attr( $service['title'] ); ?>"
-							width="570"
-							height="400"
-							loading="lazy"
-							decoding="async"
-						>
-					<?php else : ?>
-						<span class="services-list__media-missing">
-							<?php
-							echo esc_html(
-								sprintf(
-									/* translators: %s: relative image path */
-									__( 'Missing image: assets/images/%s', 'somvio' ),
-									$service['image']
-								)
-							);
-							?>
-						</span>
-					<?php endif; ?>
+					<a class="services-list__media-link" href="<?php echo $service_url; ?>">
+						<?php if ( file_exists( $image_path ) ) : ?>
+							<img
+								class="services-list__image"
+								src="<?php echo $image_url; ?>"
+								alt="<?php echo esc_attr( $service['title'] ); ?>"
+								width="570"
+								height="400"
+								loading="lazy"
+								decoding="async"
+							>
+						<?php else : ?>
+							<span class="services-list__media-missing">
+								<?php
+								echo esc_html(
+									sprintf(
+										/* translators: %s: relative image path */
+										__( 'Missing image: assets/images/%s', 'somvio' ),
+										$service['image']
+									)
+								);
+								?>
+							</span>
+						<?php endif; ?>
+					</a>
 				</div>
 
 				<div class="services-list__body">
-					<h3 class="services-list__title"><?php echo esc_html( $service['title'] ); ?></h3>
+					<h3 class="services-list__title">
+						<a class="services-list__title-link" href="<?php echo $service_url; ?>">
+							<?php echo esc_html( $service['title'] ); ?>
+						</a>
+					</h3>
 					<p class="services-list__price"><?php echo esc_html( $service['price'] ); ?></p>
 					<p class="services-list__text"><?php echo esc_html( $service['text'] ); ?></p>
-					<a class="btn btn--primary btn--sm btn--has-icon services-list__cta" href="<?php echo esc_url( $somvio_book_url ); ?>">
+					<a class="btn btn--primary btn--sm btn--has-icon services-list__cta" href="<?php echo $service_url; ?>">
 						<span class="btn__label"><?php esc_html_e( 'Book Now', 'somvio' ); ?></span>
 						<span class="btn__icon" aria-hidden="true">
 							<?php
