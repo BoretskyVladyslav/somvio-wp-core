@@ -66,3 +66,17 @@ function somvio_render_service_benefits() {
 	get_template_part( 'template-parts/sections/service', 'benefits' );
 }
 add_action( 'generate_after_header', 'somvio_render_service_benefits', 8 );
+
+/**
+ * Render the Our Story / service overview section (Figma 362:5002).
+ *
+ * @return void
+ */
+function somvio_render_service_story() {
+	if ( ! somvio_is_service_single_page() ) {
+		return;
+	}
+
+	get_template_part( 'template-parts/sections/single-service', 'story' );
+}
+add_action( 'generate_after_header', 'somvio_render_service_story', 10 );
