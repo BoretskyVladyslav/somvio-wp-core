@@ -4981,6 +4981,293 @@ a.site-footer__contact-text:focus-visible {
 }
 
 /* -------------------------------------------------------------------------
+   Block: service-gallery — Figma 366:5439
+   See the Difference infinite peek carousel on Single Service pages.
+   ------------------------------------------------------------------------- */
+.service-gallery {
+	position: relative;
+	padding: 100px 0 80px;
+	overflow: hidden;
+	background-color: var(--somvio-color-bg);
+	color: var(--somvio-color-text);
+}
+
+.service-gallery__inner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 60px;
+	width: 100%;
+}
+
+.service-gallery__header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 15px;
+	max-width: 720px;
+	margin-inline: auto;
+	padding-inline: var(--somvio-container-pad);
+	text-align: center;
+	box-sizing: border-box;
+}
+
+.service-gallery__badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: 10px 30px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50px;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+	white-space: nowrap;
+}
+
+.service-gallery__title {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2rem, 1.5rem + 1.5vw, 3rem); /* → 48px */
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.service-gallery__subtitle {
+	margin: 0;
+	max-width: 560px;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text-subtle);
+}
+
+.service-gallery__carousel {
+	position: relative;
+	width: 100%;
+}
+
+.service-gallery__viewport {
+	width: 100%;
+	overflow: hidden;
+	touch-action: pan-y;
+	cursor: grab;
+	user-select: none;
+}
+
+.service-gallery__viewport:active {
+	cursor: grabbing;
+}
+
+.service-gallery__track {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	align-items: stretch;
+	gap: 30px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	will-change: transform;
+}
+
+.service-gallery__slide {
+	flex: 0 0 min(1170px, calc(100vw - 48px));
+	width: min(1170px, calc(100vw - 48px));
+	max-width: min(1170px, calc(100vw - 48px));
+	opacity: 0.72;
+	transition: opacity 0.35s ease;
+}
+
+.service-gallery__slide.is-active {
+	opacity: 1;
+}
+
+.service-gallery__media {
+	margin: 0;
+	width: 100%;
+	overflow: hidden;
+	border-radius: var(--somvio-radius);
+	background-color: var(--somvio-color-surface-dark);
+	aspect-ratio: 1170 / 658;
+}
+
+.service-gallery__image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+	border-radius: var(--somvio-radius);
+	pointer-events: none;
+}
+
+.service-gallery__media-missing {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 240px;
+	padding: 24px;
+	font-size: 14px;
+	line-height: 1.4;
+	color: var(--somvio-color-text-subtle);
+	text-align: center;
+}
+
+.service-gallery__stage {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: min(1170px, calc(100vw - 48px));
+	height: 100%;
+	transform: translateX(-50%);
+	pointer-events: none;
+}
+
+.service-gallery__nav {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 64px;
+	height: 64px;
+	padding: 0;
+	border: 0;
+	border-radius: 50px;
+	background-color: var(--somvio-color-surface);
+	color: var(--somvio-color-accent);
+	cursor: pointer;
+	pointer-events: auto;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+	transition:
+		transform var(--somvio-transition),
+		background-color var(--somvio-transition),
+		box-shadow var(--somvio-transition);
+}
+
+.service-gallery__nav--prev {
+	transform: translateX(-50%);
+}
+
+.service-gallery__nav--next {
+	transform: translateX(50%);
+}
+
+.service-gallery__nav:hover,
+.service-gallery__nav:focus-visible {
+	background-color: #f5f5f5;
+	outline: none;
+	box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+}
+
+.service-gallery__nav--prev:hover,
+.service-gallery__nav--prev:focus-visible {
+	transform: translateX(-50%) scale(1.04);
+}
+
+.service-gallery__nav--next:hover,
+.service-gallery__nav--next:focus-visible {
+	transform: translateX(50%) scale(1.04);
+}
+
+.service-gallery__nav-icon {
+	display: inline-flex;
+	width: 24px;
+	height: 24px;
+}
+
+.service-gallery__nav-icon svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+@media (max-width: 1023px) {
+	.service-gallery {
+		padding: 72px 0 64px;
+	}
+
+	.service-gallery__inner {
+		gap: 48px;
+	}
+
+	.service-gallery__track {
+		gap: 20px;
+	}
+
+	.service-gallery__slide {
+		flex-basis: min(720px, calc(100vw - 56px));
+		width: min(720px, calc(100vw - 56px));
+		max-width: min(720px, calc(100vw - 56px));
+	}
+
+	.service-gallery__stage {
+		width: min(720px, calc(100vw - 56px));
+	}
+
+	.service-gallery__nav {
+		width: 56px;
+		height: 56px;
+	}
+}
+
+@media (max-width: 767px) {
+	.service-gallery {
+		padding: 56px 0 48px;
+	}
+
+	.service-gallery__inner {
+		gap: 40px;
+	}
+
+	.service-gallery__header {
+		gap: 12px;
+		max-width: none;
+		padding-inline: 20px;
+	}
+
+	.service-gallery__title {
+		font-size: 36px;
+	}
+
+	.service-gallery__subtitle {
+		max-width: none;
+	}
+
+	.service-gallery__track {
+		gap: 12px;
+	}
+
+	.service-gallery__slide {
+		flex-basis: min(305px, calc(100vw - 64px));
+		width: min(305px, calc(100vw - 64px));
+		max-width: min(305px, calc(100vw - 64px));
+	}
+
+	.service-gallery__stage {
+		width: min(305px, calc(100vw - 64px));
+	}
+
+	.service-gallery__nav {
+		width: 48px;
+		height: 48px;
+	}
+
+	.service-gallery__nav-icon {
+		width: 20px;
+		height: 20px;
+	}
+}
+
+/* -------------------------------------------------------------------------
    Block: faq — Figma 300:2375 (Services page slot 300:2177)
    Reusable accordion used on Home + Services (above CTA).
    ------------------------------------------------------------------------- */

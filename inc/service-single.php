@@ -108,3 +108,43 @@ function somvio_render_service_pricing() {
 	get_template_part( 'template-parts/sections/single-service', 'pricing' );
 }
 add_action( 'generate_after_header', 'somvio_render_service_pricing', 14 );
+
+/**
+ * Render the Gallery / See the Difference slider (Figma 366:5439).
+ *
+ * @return void
+ */
+function somvio_render_service_gallery() {
+	if ( ! somvio_is_service_single_page() ) {
+		return;
+	}
+
+	get_template_part( 'template-parts/sections/single-service', 'gallery' );
+}
+add_action( 'generate_after_header', 'somvio_render_service_gallery', 16 );
+
+/**
+ * Enqueue gallery slider script on Single Service pages.
+ *
+ * @return void
+ */
+function somvio_enqueue_service_gallery_assets() {
+	if ( ! somvio_is_service_single_page() ) {
+		return;
+	}
+
+	$script_path = get_stylesheet_directory() . '/assets/js/service-gallery.js';
+
+	if ( ! file_exists( $script_path ) ) {
+		return;
+	}
+
+	wp_enqueue_script(
+		'somvio-service-gallery',
+		get_stylesheet_directory_uri() . '/assets/js/service-gallery.js',
+		array(),
+		(string) filemtime( $script_path ),
+		true
+	);
+}
+add_action( 'wp_enqueue_scripts', 'somvio_enqueue_service_gallery_assets' );
