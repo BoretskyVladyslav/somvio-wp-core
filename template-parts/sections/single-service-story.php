@@ -15,10 +15,10 @@ $somvio_image_path = get_stylesheet_directory() . '/assets/images/service-single
 $somvio_image_uri  = get_stylesheet_directory_uri() . '/assets/images/service-single-story.jpg';
 
 $somvio_story_features = array(
-	__( 'Flexible Scheduling', 'somvio' ),
-	__( 'Trusted & Insured Cleaners', 'somvio' ),
-	__( 'Eco-Friendly Products', 'somvio' ),
-	__( 'Satisfaction Guaranteed', 'somvio' ),
+	__( 'Instant Online Quote', 'somvio' ),
+	__( 'Book & Pay Online', 'somvio' ),
+	__( 'Fully Insured & Reliable', 'somvio' ),
+	__( 'Satisfaction Guarantee', 'somvio' ),
 );
 ?>
 <section class="service-story" aria-labelledby="service-story-title">

@@ -4155,94 +4155,6 @@ a.site-footer__contact-text:focus-visible {
 }
 
 /* -------------------------------------------------------------------------
-   Block: service-benefits — checklist strip (Figma 300:1734, client copy)
-   ------------------------------------------------------------------------- */
-.service-benefits {
-	position: relative;
-	padding: 28px var(--somvio-container-pad);
-	background-color: #e6f7f5;
-	color: var(--somvio-color-surface-dark);
-}
-
-.service-benefits__inner {
-	width: 100%;
-	max-width: 1170px;
-	margin-inline: auto;
-}
-
-.service-benefits__list {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	justify-content: space-between;
-	gap: 20px 30px;
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
-
-.service-benefits__item {
-	display: flex;
-	align-items: center;
-	gap: 15px;
-	flex: 1 1 220px;
-	min-width: 0;
-	max-width: 269px;
-}
-
-.service-benefits__icon {
-	display: inline-flex;
-	flex-shrink: 0;
-	align-items: center;
-	justify-content: center;
-	padding: 10px;
-	border: 1px solid rgba(24, 62, 88, 0.25);
-	border-radius: 50px;
-	color: var(--somvio-color-accent);
-	background-color: rgba(255, 255, 255, 0.55);
-}
-
-.service-benefits__icon svg {
-	display: block;
-	width: 36px;
-	height: 36px;
-}
-
-.service-benefits__label {
-	font-family: var(--somvio-font-sans);
-	font-size: 18px;
-	font-weight: 600;
-	line-height: 1.1;
-	color: var(--somvio-color-surface-dark);
-}
-
-@media (max-width: 767px) {
-	.service-benefits {
-		padding: 24px 20px;
-	}
-
-	.service-benefits__list {
-		flex-direction: column;
-		align-items: stretch;
-		gap: 16px;
-	}
-
-	.service-benefits__item {
-		flex: 1 1 auto;
-		max-width: none;
-	}
-
-	.service-benefits__icon svg {
-		width: 24px;
-		height: 24px;
-	}
-
-	.service-benefits__label {
-		font-size: 16px;
-	}
-}
-
-/* -------------------------------------------------------------------------
    Block: service-story — Figma 362:5002
    Our Story overview + 4-item feature bar on Single Service pages.
    ------------------------------------------------------------------------- */
@@ -4389,10 +4301,12 @@ a.site-footer__contact-text:focus-visible {
 }
 
 .service-story__feature-label {
+	flex: 1 1 auto;
+	min-width: 0;
 	font-family: var(--somvio-font-sans);
 	font-size: 18px;
 	font-weight: 600;
-	line-height: 1.1;
+	line-height: 1.2;
 	color: var(--somvio-color-text);
 }
 
