@@ -4459,6 +4459,210 @@ a.site-footer__contact-text:focus-visible {
 }
 
 /* -------------------------------------------------------------------------
+   Block: whats-included — Figma 366:5375
+   Room checklist cards on Single Service pages.
+   ------------------------------------------------------------------------- */
+.whats-included {
+	position: relative;
+	padding: 80px var(--somvio-container-pad);
+	background-color: var(--somvio-color-bg);
+	color: var(--somvio-color-text);
+}
+
+.whats-included__inner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 60px;
+	width: 100%;
+	max-width: 1170px;
+	margin-inline: auto;
+}
+
+.whats-included__header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 15px;
+	width: 100%;
+	max-width: 535px;
+	text-align: center;
+}
+
+.whats-included__badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: 10px 30px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50px;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+	white-space: nowrap;
+}
+
+.whats-included__title {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2rem, 1.4rem + 2vw, 3rem); /* → 48px */
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+	text-align: center;
+}
+
+.whats-included__subtitle {
+	margin: 0;
+	max-width: 430px;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text-subtle);
+	text-align: center;
+}
+
+.whats-included__grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 30px;
+	align-items: stretch;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.whats-included__card {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 20px;
+	width: 100%;
+	padding: 30px;
+	border-radius: var(--somvio-radius);
+	background-color: var(--somvio-color-surface-dark);
+}
+
+.whats-included__icon-wrap {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 10px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50px;
+	color: var(--somvio-color-accent);
+}
+
+.whats-included__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	overflow: hidden;
+}
+
+.whats-included__icon svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.whats-included__card-title {
+	margin: 0;
+	width: 100%;
+	font-family: var(--somvio-font-sans);
+	font-size: 24px;
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.whats-included__list {
+	display: flex;
+	flex-direction: column;
+	gap: 15px;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.whats-included__list-item {
+	position: relative;
+	padding-left: 24px;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.whats-included__list-item::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	top: 0.35em;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background-color: var(--somvio-color-accent);
+}
+
+.whats-included__actions {
+	display: flex;
+	justify-content: center;
+	width: 100%;
+}
+
+@media (max-width: 1023px) {
+	.whats-included {
+		padding: 64px var(--somvio-container-pad);
+	}
+
+	.whats-included__inner {
+		gap: 48px;
+	}
+
+	.whats-included__grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 24px;
+	}
+}
+
+@media (max-width: 767px) {
+	.whats-included {
+		padding: 56px 20px;
+	}
+
+	.whats-included__inner {
+		gap: 40px;
+	}
+
+	.whats-included__title {
+		font-size: 36px;
+	}
+
+	.whats-included__grid {
+		grid-template-columns: 1fr;
+		gap: 20px;
+	}
+
+	.whats-included__card {
+		padding: 24px;
+	}
+
+	.whats-included__card-title {
+		font-size: 20px;
+	}
+}
+
+/* -------------------------------------------------------------------------
    Block: faq — Figma 300:2375 (Services page slot 300:2177)
    Reusable accordion used on Home + Services (above CTA).
    ------------------------------------------------------------------------- */

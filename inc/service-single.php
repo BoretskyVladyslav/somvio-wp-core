@@ -80,3 +80,17 @@ function somvio_render_service_story() {
 	get_template_part( 'template-parts/sections/single-service', 'story' );
 }
 add_action( 'generate_after_header', 'somvio_render_service_story', 10 );
+
+/**
+ * Render the What's Included checklist section (Figma 366:5375).
+ *
+ * @return void
+ */
+function somvio_render_service_whats_included() {
+	if ( ! somvio_is_service_single_page() ) {
+		return;
+	}
+
+	get_template_part( 'template-parts/sections/single-service', 'whats-included' );
+}
+add_action( 'generate_after_header', 'somvio_render_service_whats_included', 12 );

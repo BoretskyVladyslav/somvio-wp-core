@@ -78,6 +78,7 @@ if ( ! is_string( $somvio_title ) || '' === $somvio_title ) {
 			</div>
 
 			<aside
+				id="somvio-instant-quote"
 				class="service-single-hero__quote quote-card reveal-on-scroll"
 				style="--reveal-delay: 0.1s;"
 				aria-label="<?php esc_attr_e( 'Get Your Instant Quote', 'somvio' ); ?>"
