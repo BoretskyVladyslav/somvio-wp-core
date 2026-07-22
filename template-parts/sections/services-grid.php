@@ -75,7 +75,9 @@ $somvio_services = array(
 				<?php
 				$image_path = $somvio_images_dir . '/' . $service['image'];
 				$image_url  = esc_url( $somvio_images_uri . '/' . $service['image'] );
-				$service_url = esc_url( home_url( '/services/' . $service['slug'] . '/' ) );
+				$service_url = function_exists( 'somvio_get_service_page_url' )
+					? esc_url( somvio_get_service_page_url( $service['slug'] ) )
+					: esc_url( home_url( '/services/' . $service['slug'] . '/' ) );
 				?>
 				<li class="services-card reveal-on-scroll" style="--reveal-delay: <?php echo esc_attr( (string) ( ( $index % 3 ) * 0.1 ) ); ?>s;">
 					<a class="services-card__link" href="<?php echo $service_url; ?>">

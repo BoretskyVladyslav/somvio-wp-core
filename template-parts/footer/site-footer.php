@@ -24,32 +24,41 @@ $somvio_location = function_exists( 'somvio_get_location' ) ? somvio_get_locatio
 $somvio_whatsapp = function_exists( 'somvio_get_whatsapp_url' ) ? somvio_get_whatsapp_url() : 'https://wa.me/447402495410';
 $somvio_socials  = function_exists( 'somvio_get_social_links' ) ? somvio_get_social_links() : array();
 
-$somvio_services = array(
-	array(
-		'label' => __( 'Regular Cleaning', 'somvio' ),
-		'url'   => home_url( '/services/regular-cleaning/' ),
-	),
-	array(
-		'label' => __( 'Deep Cleaning', 'somvio' ),
-		'url'   => home_url( '/services/deep-cleaning/' ),
-	),
-	array(
-		'label' => __( 'End of Tenancy', 'somvio' ),
-		'url'   => home_url( '/services/end-of-tenancy/' ),
-	),
-	array(
-		'label' => __( 'Airbnb Cleaning', 'somvio' ),
-		'url'   => home_url( '/services/airbnb-cleaning/' ),
-	),
-	array(
-		'label' => __( 'After Builders', 'somvio' ),
-		'url'   => home_url( '/services/after-builders/' ),
-	),
-	array(
-		'label' => __( 'Office Cleaning', 'somvio' ),
-		'url'   => home_url( '/services/office-cleaning/' ),
-	),
-);
+$somvio_services = array();
+
+if ( function_exists( 'somvio_get_single_service_pages' ) ) {
+	foreach ( somvio_get_single_service_pages() as $slug => $label ) {
+		$somvio_services[] = array(
+			'label' => $label,
+			'url'   => function_exists( 'somvio_get_service_page_url' )
+				? somvio_get_service_page_url( $slug )
+				: home_url( '/services/' . $slug . '/' ),
+		);
+	}
+} else {
+	$somvio_services = array(
+		array(
+			'label' => __( 'Regular Cleaning', 'somvio' ),
+			'url'   => home_url( '/services/regular-cleaning/' ),
+		),
+		array(
+			'label' => __( 'Deep Cleaning', 'somvio' ),
+			'url'   => home_url( '/services/deep-cleaning/' ),
+		),
+		array(
+			'label' => __( 'End of Tenancy', 'somvio' ),
+			'url'   => home_url( '/services/end-of-tenancy/' ),
+		),
+		array(
+			'label' => __( 'Airbnb Cleaning', 'somvio' ),
+			'url'   => home_url( '/services/airbnb-cleaning/' ),
+		),
+		array(
+			'label' => __( 'After Builders', 'somvio' ),
+			'url'   => home_url( '/services/after-builders/' ),
+		),
+	);
+}
 
 $somvio_quick_links = array(
 	array(

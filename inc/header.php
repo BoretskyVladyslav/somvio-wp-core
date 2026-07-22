@@ -167,42 +167,46 @@ add_filter( 'nav_menu_link_attributes', 'somvio_nav_menu_link_attributes', 10, 4
  * Fallback primary menu matching Figma (Services dropdown included).
  *
  * Used when no menu is assigned to the `primary` location.
+ * Service children link to published Single Service pages when available.
  *
  * @param array|stdClass $args wp_nav_menu() arguments.
  * @return void
  */
 function somvio_header_menu_fallback( $args = array() ) {
-	$home_url = esc_url( home_url( '/' ) );
-	$items    = array(
+	$home_url      = esc_url( home_url( '/' ) );
+	$services_url  = esc_url( home_url( '/services/' ) );
+	$service_pages = function_exists( 'somvio_get_single_service_pages' )
+		? somvio_get_single_service_pages()
+		: array(
+			'regular-cleaning' => __( 'Regular Cleaning', 'somvio' ),
+			'deep-cleaning'    => __( 'Deep Cleaning', 'somvio' ),
+			'end-of-tenancy'   => __( 'End of Tenancy', 'somvio' ),
+			'airbnb-cleaning'  => __( 'Airbnb Cleaning', 'somvio' ),
+			'after-builders'   => __( 'After Builders', 'somvio' ),
+		);
+
+	$children = array();
+
+	foreach ( $service_pages as $slug => $label ) {
+		$url = function_exists( 'somvio_get_service_page_url' )
+			? somvio_get_service_page_url( $slug )
+			: home_url( '/services/' . $slug . '/' );
+
+		$children[] = array(
+			'label' => $label,
+			'url'   => esc_url( $url ),
+		);
+	}
+
+	$items = array(
 		array(
 			'label' => __( 'Home', 'somvio' ),
 			'url'   => $home_url,
 		),
 		array(
 			'label'    => __( 'Services', 'somvio' ),
-			'url'      => esc_url( home_url( '/services/' ) ),
-			'children' => array(
-				array(
-					'label' => __( 'Regular Cleaning', 'somvio' ),
-					'url'   => esc_url( home_url( '/services/regular-cleaning/' ) ),
-				),
-				array(
-					'label' => __( 'Deep Cleaning', 'somvio' ),
-					'url'   => esc_url( home_url( '/services/deep-cleaning/' ) ),
-				),
-				array(
-					'label' => __( 'End of Tenancy', 'somvio' ),
-					'url'   => esc_url( home_url( '/services/end-of-tenancy/' ) ),
-				),
-				array(
-					'label' => __( 'Airbnb Cleaning', 'somvio' ),
-					'url'   => esc_url( home_url( '/services/airbnb-cleaning/' ) ),
-				),
-				array(
-					'label' => __( 'After Builders', 'somvio' ),
-					'url'   => esc_url( home_url( '/services/after-builders/' ) ),
-				),
-			),
+			'url'      => $services_url,
+			'children' => $children,
 		),
 		array(
 			'label' => __( 'About Us', 'somvio' ),
