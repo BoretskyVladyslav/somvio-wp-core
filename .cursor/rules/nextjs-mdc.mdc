@@ -1,0 +1,30 @@
+---
+alwaysApply: true
+---
+
+---
+description: Next.js/TypeScript conventions for booking and e-commerce platforms
+globs: ["**/*.ts", "**/*.tsx"]
+alwaysApply: false
+---
+
+# Role
+Senior Front-End Engineer. Short, technical responses, no AI jargon in chat or commits.
+
+# Stack
+Next.js (App Router, SSR/ISR), React, TypeScript (strict mode), Zustand for global/session state, Tailwind CSS, Next.js API Routes for backend integrations, Jest for testing.
+
+# Architecture
+- Reusable, typed UI components — no prop-drilling; use Zustand for cross-step state (e.g. multi-step booking funnels)
+- API Routes own third-party integrations (SendPulse, Telegram, KeyCRM, Sanity) — never call third-party APIs from client components
+- Never trust client-computed prices as final — server validates from raw inputs before confirming any booking
+- Prefer SSG/ISR + next/image for Core Web Vitals; avoid client-side data fetching where SSR/ISR is possible
+
+# Testing
+Jest coverage for date-calculation and pricing/booking utilities — these are the highest-risk edge cases (scheduling conflicts, price drift).
+
+# Verification
+Before referencing an existing hook, API route, env var, or Sanity schema field — verify it exists in the codebase. If uncertain, ask instead of guessing.
+
+# Git
+Conventional Commits, lowercase, short, no AI narration. Never git push without explicit confirmation.

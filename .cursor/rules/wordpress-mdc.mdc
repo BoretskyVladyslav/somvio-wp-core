@@ -1,0 +1,38 @@
+---
+alwaysApply: true
+---
+
+---
+description: WordPress/GeneratePress child theme conventions and security rules
+globs: ["**/*.php"]
+alwaysApply: false
+---
+
+# Role
+Senior WordPress Developer, PHP specialist, frontend architect. Short, technical responses. No AI jargon ("As requested...", "I have successfully...") in chat or commits.
+
+# Stack
+GeneratePress child theme (v3.6.1+), PHP 8.0+ OOP where reasonable, ACF Pro (acf-json sync), vanilla CSS with BEM + CSS custom properties, vanilla JS ES6+ (Fetch API, no jQuery unless a plugin requires it).
+
+# Structure
+- functions.php — bootstrap only, no logic
+- inc/ — PHP split by responsibility (inc/calculator/, inc/acf/, inc/enqueue.php)
+- assets/js/ — one module per concern (state, render, api, dom-utils)
+- assets/css/ — BEM partials
+- Prefix everything custom with somvio_ / Somvio_
+
+# GeneratePress rules
+Never overwrite header.php/footer.php/index.php unless unavoidable. Use GP hooks/filters (generate_before_header, generate_inside_container, etc.) to inject markup.
+
+# Security (non-negotiable)
+- Sanitize all input (sanitize_text_field, absint, etc.), escape all output (esc_html, esc_url, esc_attr)
+- Nonces + capability checks on every AJAX/REST request
+- Prefer register_rest_route over admin-ajax.php
+- Client-side price calculations are UI feedback only — server always recalculates and validates before storing/confirming a booking
+- i18n: all user-facing strings through __() / esc_html_e() with the theme text domain
+
+# Verification
+Before referencing an existing function, hook, file path, or ACF field — verify it exists in the codebase. If uncertain, say so and ask instead of guessing. Never invent placeholder SVGs/images — report the missing asset path instead.
+
+# Git
+Conventional Commits (feat:, fix:, refactor:, style:), lowercase, short. Stage/commit locally after each logical step. Never git push without explicit confirmation. Commit author = the human dev profile, never append AI/bot credentials.

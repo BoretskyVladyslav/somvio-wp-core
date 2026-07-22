@@ -1,0 +1,4213 @@
+/*
+Theme Name: Somvio Child
+Theme URI: https://github.com/BoretskyVladyslav/somvio-wp-core
+Description: High-performance child theme for Somvio Cleaning Services.
+Author: Vladyslav Boretskyi
+Template: generatepress
+Version: 1.0.0
+Requires at least: 6.5
+Requires PHP: 8.0
+Text Domain: somvio
+*/
+
+/* -------------------------------------------------------------------------
+   Design tokens — Figma MCP (300:1531 / 300:1533 / 300:2716)
+   Brand/Akcent: #40D7D0, #000000
+   ------------------------------------------------------------------------- */
+:root {
+	--somvio-color-text: #ffffff;
+	--somvio-color-text-muted: #5a5a5a;
+	--somvio-color-text-dark: #1c1c1c;
+	--somvio-color-bg: #00050e;
+	--somvio-color-surface: #ffffff;
+	--somvio-color-border: #e8e8e8;
+	--somvio-color-accent: #40d7d0;
+	--somvio-color-primary: var(--somvio-color-accent);
+	--somvio-color-accent-mid: #33aca6;
+	--somvio-color-accent-hover: #2a9490;
+	--somvio-color-accent-contrast: #ffffff;
+	--somvio-color-header-bg: #000000;
+	--somvio-color-header-bg-alt: #00050e;
+	--somvio-color-surface-dark: #091e2c;
+	--somvio-color-border-brand: #183e58;
+	--somvio-color-text-soft: #85959f;
+	--somvio-color-text-subtle: #7f8286;
+	--somvio-color-text-body: #ced2d5;
+	--somvio-color-text-light: #d3d3d3;
+	--somvio-color-dropdown-bg: var(--somvio-color-surface-dark);
+	--somvio-color-dropdown-hover: #133952;
+
+	--somvio-font-sans: "Montserrat", "Segoe UI", system-ui, -apple-system, sans-serif;
+	--somvio-font-size-base: 1rem;
+	--somvio-font-size-sm: 0.875rem;
+	--somvio-font-size-nav: 16px;
+	--somvio-font-size-phone: 18px;
+	--somvio-font-weight-nav: 600;
+	--somvio-line-height: 1.5;
+	--somvio-letter-spacing-nav: 0;
+
+	--somvio-container-max: 1920px;
+	/* Fluid side padding: 20px → 150px (Figma desktop) */
+	--somvio-container-pad: clamp(1.25rem, 2.2vw + 0.75rem, 9.375rem);
+	--somvio-header-pad-y: 30px;
+	--somvio-header-z: 999;
+	--somvio-logo-width: 222px;
+	--somvio-logo-height: 65px;
+	--somvio-header-height: calc(var(--somvio-logo-height) + (var(--somvio-header-pad-y) * 2));
+	--somvio-nav-gap: 20px;
+	--somvio-header-end-gap: clamp(1.25rem, 2vw + 0.5rem, 3.75rem);
+	--somvio-actions-gap: 10px;
+	--somvio-menu-item-pad: 10px;
+	--somvio-dropdown-pad-x: 30px;
+	--somvio-dropdown-pad-y: 10px;
+	--somvio-dropdown-min-width: 203px;
+	--somvio-icon-btn-pad: 15px;
+	--somvio-icon-btn-size: 24px;
+	--somvio-touch-min: 44px;
+	--somvio-radius: 4px;
+	--somvio-radius-cta: var(--somvio-radius);
+	--somvio-transition: 0.25s ease;
+	--somvio-drawer-duration: 0.3s;
+
+	/* Button UI kit — Figma 312:4966 */
+	--somvio-btn-radius: var(--somvio-radius);
+	--somvio-btn-transition: all 0.3s ease;
+	--somvio-btn-primary: #40d7d0;
+	--somvio-btn-primary-overlay: rgba(0, 0, 0, 0.2);
+	--somvio-btn-primary-hover: #1e837e;
+	--somvio-btn-outline-border: #33aca6;
+	--somvio-btn-text: #ffffff;
+	--somvio-btn-font: "Montserrat", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+body.somvio-no-scroll {
+	overflow: hidden;
+	touch-action: none;
+}
+
+/* -------------------------------------------------------------------------
+   Base reset / typography
+   ------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: var(--somvio-font-size-base);
+	line-height: var(--somvio-line-height);
+	color: var(--somvio-color-text);
+	background-color: var(--somvio-color-bg);
+}
+
+img {
+	max-width: 100%;
+	height: auto;
+	display: block;
+}
+
+a {
+	color: inherit;
+	text-decoration-thickness: 0.06em;
+	text-underline-offset: 0.15em;
+}
+
+/* -------------------------------------------------------------------------
+   Global dark canvas + full-bleed GeneratePress content shell
+   ------------------------------------------------------------------------- */
+body,
+html,
+#page,
+.site,
+#content,
+.site-content,
+.content-area,
+.site-main,
+#primary,
+#main {
+	background-color: var(--somvio-color-bg);
+	color: var(--somvio-color-text);
+}
+
+#page,
+.site,
+#content,
+.site-content,
+.content-area,
+.site-main,
+#primary {
+	width: 100%;
+	max-width: none;
+	margin: 0 !important;
+	margin-top: 0 !important;
+	padding: 0 !important;
+	padding-top: 0 !important;
+}
+
+/* Hero pages: kill any remaining GP top spacing above the fold */
+body.somvio-has-hero,
+body.somvio-has-hero #page,
+body.somvio-has-hero .site,
+body.somvio-has-hero #content,
+body.somvio-has-hero .site-content,
+body.somvio-has-hero .content-area,
+body.somvio-has-hero .site-main {
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+}
+
+/* Kill GP white “separate container” cards / constrained widths */
+.grid-container,
+.inside-article,
+.separate-containers .inside-article,
+.one-container .site-content,
+.one-container .container,
+.inside-page-header,
+.comment-content,
+.separate-containers .comments-area,
+.separate-containers .page-header,
+.separate-containers .paging-navigation {
+	max-width: none;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	background-color: transparent;
+	box-shadow: none;
+	border: 0;
+}
+
+.grid-container {
+	padding-inline: 0;
+}
+
+.separate-containers .site-main > *,
+.separate-containers .widget {
+	margin-bottom: 0;
+}
+
+/* Hide default WP/GP entry titles (section H2s own the headings) */
+.home .entry-header,
+.page .entry-header {
+	display: none !important;
+}
+
+/* Neutralize default GP footer until custom footer ships */
+.site-footer,
+.footer-widgets-container,
+.site-info,
+.inside-site-info,
+.copyright-bar {
+	background-color: var(--somvio-color-bg);
+	color: var(--somvio-color-text);
+	border: 0;
+	box-shadow: none;
+}
+
+.site-footer .footer-widgets,
+.footer-widgets-container {
+	display: none;
+}
+
+.site-info {
+	padding: 1.25rem var(--somvio-container-pad);
+	text-align: center;
+	font-size: var(--somvio-font-size-sm);
+	opacity: 0.55;
+}
+
+/* Utility: fluid BEM content shell for future blocks */
+.somvio-container {
+	width: 100%;
+	max-width: var(--somvio-container-max);
+	margin-inline: auto;
+	padding-inline: var(--somvio-container-pad);
+}
+
+.somvio-container--full {
+	max-width: none;
+	padding-inline: 0;
+}
+
+/* -------------------------------------------------------------------------
+   Block: somvio-header — Figma 300:1531 / 300:1533 / 300:2716
+   Fixed sticky nav; fully transparent until scrolled.
+   Aggressively override GP core + Customizer (#masthead / .inside-header).
+   ------------------------------------------------------------------------- */
+#masthead.site-header,
+#masthead.site-header.somvio-header,
+.site-header.somvio-header,
+.somvio-header {
+	position: fixed !important;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: var(--somvio-header-z);
+	background: transparent !important;
+	background-color: transparent !important;
+	background-image: none !important;
+	box-shadow: none;
+	color: var(--somvio-color-text);
+	transition:
+		background-color 0.3s ease,
+		box-shadow 0.3s ease;
+}
+
+/* Kill GP Customizer header alignment (center/right) on our custom bar */
+.header-aligned-center #masthead.site-header,
+.header-aligned-center .site-header.somvio-header,
+.header-aligned-right #masthead.site-header,
+.header-aligned-right .site-header.somvio-header,
+#masthead.site-header.somvio-header,
+.site-header.somvio-header {
+	text-align: left !important;
+}
+
+#masthead .inside-header,
+#masthead.site-header .inside-header,
+.inside-header.somvio-header__inner,
+.somvio-header__inner {
+	position: relative;
+	z-index: 2;
+	display: flex !important;
+	align-items: center;
+	justify-content: space-between !important;
+	gap: clamp(1rem, 2vw, 2rem);
+	width: 100%;
+	max-width: var(--somvio-container-max);
+	margin-inline: auto;
+	padding: var(--somvio-header-pad-y) var(--somvio-container-pad);
+	text-align: left;
+	background: transparent !important;
+	background-color: transparent !important;
+	background-image: none !important;
+	box-shadow: none;
+	transition:
+		background-color 0.3s ease,
+		box-shadow 0.3s ease;
+}
+
+/* Nuke leftover GP nav / header-wrap fills while header is transparent */
+body:not(.somvio-has-hero) .main-navigation,
+body.somvio-has-hero #masthead:not(.is-scrolled):not(.somvio-header--nav-open) .main-navigation,
+body.somvio-has-hero #masthead:not(.is-scrolled):not(.somvio-header--nav-open) .main-navigation ul,
+.header-wrap,
+#masthead:not(.is-scrolled):not(.somvio-header--nav-open) .header-wrap,
+#masthead:not(.is-scrolled):not(.somvio-header--nav-open) .main-navigation,
+#masthead:not(.is-scrolled):not(.somvio-header--nav-open) .main-navigation ul,
+.somvio-header:not(.is-scrolled):not(.somvio-header--nav-open) .main-navigation,
+.somvio-header:not(.is-scrolled):not(.somvio-header--nav-open) .main-navigation ul {
+	background: transparent !important;
+	background-color: transparent !important;
+	background-image: none !important;
+	box-shadow: none !important;
+}
+
+/* Solid bar ONLY after scroll (or when mobile drawer is open) */
+#masthead.site-header.is-scrolled,
+#masthead.site-header.somvio-header.is-scrolled,
+.site-header.somvio-header.is-scrolled,
+.somvio-header.is-scrolled,
+.somvio-header.somvio-header--nav-open {
+	background: var(--somvio-color-bg) !important;
+	background-color: var(--somvio-color-bg) !important;
+	box-shadow: 0 4px 24px rgba(0, 5, 14, 0.4);
+}
+
+/* Fixed header is out of flow — reserve space on non-hero pages */
+body:not(.somvio-has-hero) {
+	padding-top: var(--somvio-header-height);
+}
+
+.somvio-header__brand {
+	flex: 0 0 auto;
+	min-width: 0;
+	text-align: left;
+}
+
+.somvio-header__logo {
+	display: inline-flex;
+	align-items: center;
+	text-decoration: none;
+}
+
+.somvio-logo {
+	width: var(--somvio-logo-width);
+	height: var(--somvio-logo-height);
+	max-width: 100%;
+	object-fit: contain;
+}
+
+.somvio-header__end {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: var(--somvio-header-end-gap);
+	flex: 1 1 auto;
+	min-width: 0;
+	margin-left: auto;
+}
+
+.somvio-header__nav {
+	min-width: 0;
+}
+
+.somvio-header__drawer {
+	display: contents;
+}
+
+.somvio-header__drawer-actions {
+	display: none;
+}
+
+.somvio-header__menu {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--somvio-nav-gap);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.somvio-header__menu > .menu-item {
+	position: relative;
+}
+
+.somvio-header__link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 5px;
+	min-height: var(--somvio-touch-min);
+	padding: var(--somvio-menu-item-pad);
+	font-family: var(--somvio-font-sans);
+	font-size: var(--somvio-font-size-nav);
+	font-weight: var(--somvio-font-weight-nav);
+	letter-spacing: var(--somvio-letter-spacing-nav);
+	line-height: normal;
+	color: var(--somvio-color-text);
+	text-decoration: none;
+	white-space: nowrap;
+	transition: color 0.3s ease;
+}
+
+.somvio-header__link:hover,
+.somvio-header__link:focus-visible,
+.somvio-header__menu > .current-menu-item > .somvio-header__link,
+.somvio-header__menu > .current-menu-ancestor > .somvio-header__link,
+.somvio-header__menu > .menu-item-has-children:hover > .somvio-header__link,
+.somvio-header__menu > .menu-item-has-children:focus-within > .somvio-header__link {
+	color: var(--somvio-color-primary);
+}
+
+.somvio-header__chevron {
+	display: inline-flex;
+	flex-shrink: 0;
+	width: 20px;
+	height: 20px;
+	color: currentColor;
+	transition: transform var(--somvio-transition);
+}
+
+.somvio-header__chevron svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.somvio-header__chevron svg path {
+	fill: currentColor;
+}
+
+.somvio-header__menu > .menu-item-has-children:hover > .somvio-header__link .somvio-header__chevron,
+.somvio-header__menu > .menu-item-has-children:focus-within > .somvio-header__link .somvio-header__chevron {
+	transform: rotate(180deg);
+}
+
+/* Submenu / dropdown — Figma 300:1533 */
+.somvio-header__menu > .menu-item-has-children > .sub-menu {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	min-width: var(--somvio-dropdown-min-width);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	background-color: var(--somvio-color-dropdown-bg);
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transform: translateY(4px);
+	transition:
+		opacity var(--somvio-transition),
+		visibility var(--somvio-transition),
+		transform var(--somvio-transition);
+}
+
+.somvio-header__menu > .menu-item-has-children:hover > .sub-menu,
+.somvio-header__menu > .menu-item-has-children:focus-within > .sub-menu {
+	opacity: 1;
+	visibility: visible;
+	pointer-events: auto;
+	transform: translateY(0);
+}
+
+.somvio-header__sublink {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	min-height: var(--somvio-touch-min);
+	padding: var(--somvio-dropdown-pad-y) var(--somvio-dropdown-pad-x);
+	font-family: var(--somvio-font-sans);
+	font-size: var(--somvio-font-size-nav);
+	font-weight: var(--somvio-font-weight-nav);
+	letter-spacing: var(--somvio-letter-spacing-nav);
+	line-height: normal;
+	color: var(--somvio-color-text);
+	text-decoration: none;
+	white-space: nowrap;
+	background-color: transparent;
+	transition: background-color var(--somvio-transition);
+}
+
+.somvio-header__sublink:hover,
+.somvio-header__sublink:focus-visible,
+.somvio-header__menu .sub-menu .current-menu-item > .somvio-header__sublink {
+	background-color: var(--somvio-color-dropdown-hover);
+	color: var(--somvio-color-text);
+}
+
+.somvio-header__actions {
+	display: flex;
+	align-items: center;
+	gap: var(--somvio-actions-gap);
+	flex-shrink: 0;
+}
+
+.somvio-header__phone {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: var(--somvio-touch-min);
+	padding: var(--somvio-menu-item-pad);
+	font-family: var(--somvio-font-sans);
+	font-size: var(--somvio-font-size-phone);
+	font-weight: var(--somvio-font-weight-nav);
+	line-height: normal;
+	color: var(--somvio-color-text);
+	text-decoration: none;
+	white-space: nowrap;
+	transition: color 0.3s ease;
+}
+
+.somvio-header__phone:hover,
+.somvio-header__phone:focus-visible {
+	color: var(--somvio-color-primary);
+}
+
+/* Header Book Now uses global .btn system — keep layout hooks only */
+.somvio-header__cta.btn {
+	flex-shrink: 0;
+}
+
+/* Icon buttons — Figma 300:2716 (phone + burger): p 15px, icon 24px, radius 4px */
+.somvio-header__icon-btn {
+	display: none;
+	align-items: center;
+	justify-content: center;
+	min-width: var(--somvio-touch-min);
+	min-height: var(--somvio-touch-min);
+	padding: var(--somvio-icon-btn-pad);
+	border: 1px solid var(--somvio-color-accent-mid);
+	border-radius: var(--somvio-radius-cta);
+	background: transparent;
+	color: var(--somvio-color-text);
+	text-decoration: none;
+	cursor: pointer;
+	transition:
+		background-color var(--somvio-transition),
+		border-color var(--somvio-transition),
+		color var(--somvio-transition);
+}
+
+.somvio-header__icon-btn-icon {
+	display: inline-flex;
+	width: var(--somvio-icon-btn-size);
+	height: var(--somvio-icon-btn-size);
+	color: currentColor;
+}
+
+.somvio-header__icon-btn-icon svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.somvio-header__icon-btn-icon svg path {
+	fill: currentColor;
+}
+
+.somvio-header__icon-btn:hover,
+.somvio-header__icon-btn:focus-visible {
+	background-color: rgba(51, 172, 166, 0.15);
+	color: var(--somvio-color-accent-contrast);
+}
+
+.somvio-header__backdrop {
+	display: none;
+	position: fixed;
+	inset: 0;
+	z-index: 1;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background-color: rgba(0, 5, 14, 0.72);
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity var(--somvio-drawer-duration) ease;
+}
+
+/* -------------------------------------------------------------------------
+   Header — responsive scaling (1440 / 1280) before mobile drawer
+   ------------------------------------------------------------------------- */
+@media (max-width: 1440px) {
+	:root {
+		--somvio-nav-gap: 12px;
+		--somvio-logo-width: 210px;
+		--somvio-logo-height: 61px;
+	}
+}
+
+@media (max-width: 1280px) {
+	:root {
+		--somvio-header-pad-y: 24px;
+		--somvio-nav-gap: 8px;
+		--somvio-font-size-nav: 15px;
+		--somvio-font-size-phone: 16px;
+		--somvio-logo-width: 196px;
+		--somvio-logo-height: 57px;
+		--somvio-actions-gap: 8px;
+	}
+}
+
+/* -------------------------------------------------------------------------
+   Header — mobile / tablet drawer (< 1024px) — Figma 300:2716 ONLY
+   Row: space-between · logo 186×54 left · phone+burger (gap 20, pad 15) right
+   Neutralize GP ≤768px `.site-header { text-align:center }` + child stacking.
+   ------------------------------------------------------------------------- */
+@media (max-width: 1023px) {
+	:root {
+		--somvio-container-pad: 20px;
+		--somvio-header-pad-y: 20px;
+		--somvio-logo-width: 186px;
+		--somvio-logo-height: 54px;
+		--somvio-actions-gap: 20px;
+		--somvio-header-end-gap: 0;
+		--somvio-icon-btn-pad: 15px;
+		--somvio-icon-btn-size: 24px;
+	}
+
+	/* Kill GeneratePress mobile header centering / vertical stacking */
+	#masthead.site-header,
+	#masthead.site-header.somvio-header,
+	.site-header.somvio-header,
+	.somvio-header {
+		text-align: left !important;
+	}
+
+	#masthead .inside-header > *:not(:last-child),
+	#masthead .inside-header > *:not(:last-child):not(.main-navigation),
+	.inside-header.somvio-header__inner > * {
+		margin-bottom: 0 !important;
+		float: none !important;
+	}
+
+	#masthead .inside-header.somvio-header__inner,
+	.inside-header.somvio-header__inner,
+	.somvio-header__inner {
+		display: flex !important;
+		flex-direction: row !important;
+		flex-wrap: nowrap !important;
+		align-items: center !important;
+		justify-content: space-between !important;
+		gap: 20px;
+		width: 100%;
+		max-width: none;
+		margin: 0;
+		padding: 20px !important;
+		text-align: left !important;
+		background: transparent !important;
+		background-color: transparent !important;
+		box-shadow: none;
+	}
+
+	.somvio-header__brand {
+		flex: 0 0 auto;
+		margin: 0 !important;
+		text-align: left !important;
+	}
+
+	.somvio-header__logo {
+		display: inline-flex;
+		align-items: center;
+		justify-content: flex-start;
+	}
+
+	.somvio-header .somvio-logo {
+		display: block;
+		width: 186px;
+		height: 54px;
+		max-width: 186px;
+		object-fit: contain;
+	}
+
+	.somvio-header__end {
+		display: flex !important;
+		flex: 0 0 auto;
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 0;
+		width: auto;
+		max-width: none;
+		min-width: 0;
+		margin: 0 !important;
+	}
+
+	.somvio-header__actions {
+		display: flex !important;
+		flex: 0 0 auto;
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 20px;
+		margin: 0;
+	}
+
+	.somvio-header__phone--desktop {
+		display: none;
+	}
+
+	/* .btn comes later in CSS with display:inline-flex — beat it with higher specificity */
+	.somvio-header__actions > .somvio-header__cta,
+	.somvio-header__actions > .btn.somvio-header__cta,
+	.somvio-header__cta--desktop.btn {
+		display: none !important;
+	}
+
+	/* Figma icon btns: 15px pad + 24px icon = 54×54, border #33aca6, radius 4 */
+	.somvio-header__phone-btn,
+	.somvio-header__toggle {
+		display: inline-flex !important;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		flex-shrink: 0;
+		width: 54px;
+		height: 54px;
+		min-width: 54px;
+		min-height: 54px;
+		padding: 15px;
+		margin: 0;
+		border: 1px solid var(--somvio-color-accent-mid);
+		border-radius: 4px;
+		background: transparent;
+		color: var(--somvio-color-text);
+	}
+
+	.somvio-header__phone-btn .somvio-header__icon-btn-icon,
+	.somvio-header__toggle .somvio-header__icon-btn-icon {
+		width: 24px;
+		height: 24px;
+	}
+
+	.somvio-header--nav-open .somvio-header__toggle {
+		background-color: rgba(51, 172, 166, 0.2);
+	}
+
+	.somvio-header__nav {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		right: 0;
+		z-index: 2;
+		display: block;
+		max-height: 0;
+		overflow: hidden;
+		pointer-events: none;
+		visibility: hidden;
+		opacity: 0;
+		background-color: var(--somvio-color-header-bg-alt);
+		border-top: 1px solid rgba(255, 255, 255, 0.08);
+		transition:
+			max-height var(--somvio-drawer-duration) ease,
+			opacity var(--somvio-drawer-duration) ease,
+			visibility var(--somvio-drawer-duration) ease;
+	}
+
+	.somvio-header--nav-open .somvio-header__nav {
+		display: flex;
+		flex-direction: column;
+		max-height: min(80vh, 640px);
+		overflow: hidden;
+		pointer-events: auto;
+		visibility: visible;
+		opacity: 1;
+	}
+
+	.somvio-header__drawer {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+		gap: 8px;
+		min-height: 0;
+		padding: 12px var(--somvio-container-pad) 24px;
+		overflow: hidden;
+	}
+
+	.somvio-header__drawer-actions {
+		display: flex;
+		flex-direction: column;
+		flex-shrink: 0;
+		align-items: stretch;
+		gap: 12px;
+		margin-top: 12px;
+		padding-top: 16px;
+		border-top: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.somvio-header__drawer-actions .somvio-header__phone,
+	.somvio-header__drawer-actions .somvio-header__cta,
+	.somvio-header__drawer-actions .somvio-header__cta--drawer {
+		display: inline-flex;
+		width: 100%;
+		justify-content: center;
+		min-height: var(--somvio-touch-min);
+	}
+
+	.somvio-header__menu {
+		flex: 1 1 auto;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 0;
+		min-height: 0;
+		overflow-x: hidden;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.somvio-header__link {
+		justify-content: space-between;
+		width: 100%;
+		padding: 12px 4px;
+	}
+
+	.somvio-header__menu > .menu-item-has-children > .sub-menu {
+		position: static;
+		min-width: 0;
+		opacity: 1;
+		visibility: visible;
+		pointer-events: auto;
+		transform: none;
+		max-height: 0;
+		overflow: hidden;
+		background-color: var(--somvio-color-dropdown-bg);
+		transition: max-height var(--somvio-drawer-duration) ease;
+	}
+
+	.somvio-header__menu > .menu-item-has-children:hover > .sub-menu,
+	.somvio-header__menu > .menu-item-has-children:focus-within > .sub-menu {
+		max-height: 0;
+		opacity: 1;
+		visibility: visible;
+	}
+
+	.somvio-header__menu > .menu-item-has-children.is-submenu-open > .sub-menu {
+		max-height: 360px;
+	}
+
+	.somvio-header__menu > .menu-item-has-children:hover > .somvio-header__link .somvio-header__chevron,
+	.somvio-header__menu > .menu-item-has-children:focus-within > .somvio-header__link .somvio-header__chevron {
+		transform: none;
+	}
+
+	.somvio-header__menu > .menu-item-has-children.is-submenu-open > .somvio-header__link .somvio-header__chevron {
+		transform: rotate(180deg);
+	}
+
+	.somvio-header__menu > .menu-item-has-children.is-submenu-open > .somvio-header__link {
+		color: var(--somvio-color-primary);
+	}
+
+	.somvio-header__sublink {
+		padding: 12px 16px;
+	}
+
+	.somvio-header__backdrop {
+		display: block;
+		pointer-events: none;
+	}
+
+	.somvio-header--nav-open .somvio-header__backdrop {
+		pointer-events: auto;
+		opacity: 1;
+	}
+}
+
+/* Desktop: keep icon buttons / backdrop out of flow; Book Now stays in the bar only */
+@media (min-width: 1024px) {
+	.somvio-header__phone-btn,
+	.somvio-header__toggle,
+	.somvio-header__backdrop {
+		display: none;
+	}
+
+	.somvio-header__drawer-actions {
+		display: none !important;
+	}
+}
+
+/* -------------------------------------------------------------------------
+   Block: btn — Figma UI kit 312:4966
+   Variants: primary / outline|ghost · Sizes: sm / md / lg · Icon: has-icon
+   ------------------------------------------------------------------------- */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0;
+	margin: 0;
+	border: none;
+	border-radius: var(--somvio-btn-radius);
+	background: transparent;
+	font-family: var(--somvio-btn-font);
+	font-weight: 600;
+	letter-spacing: 0;
+	line-height: normal;
+	color: var(--somvio-btn-text);
+	text-align: center;
+	text-decoration: none;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: var(--somvio-btn-transition);
+	box-sizing: border-box;
+}
+
+.btn__label {
+	display: inline-block;
+}
+
+.btn__icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	color: currentColor;
+}
+
+.btn__icon svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.btn__icon svg path {
+	fill: currentColor;
+}
+
+/* Default size = Medium */
+.btn,
+.btn--md {
+	min-height: var(--somvio-touch-min);
+	padding: 20px 40px;
+	font-size: 18px;
+}
+
+.btn--sm {
+	min-height: var(--somvio-touch-min);
+	padding: 10px 20px;
+	font-size: 16px;
+}
+
+.btn--lg {
+	height: 68px;
+	min-height: 68px;
+	padding: 20px 40px;
+	font-size: 22px;
+}
+
+.btn--has-icon {
+	gap: 10px;
+}
+
+.btn--has-icon.btn--sm {
+	padding: 10px 15px 10px 20px;
+}
+
+.btn--has-icon.btn--md,
+.btn--has-icon.btn--lg,
+.btn--has-icon:not(.btn--sm):not(.btn--lg) {
+	padding: 20px 30px 20px 40px;
+}
+
+.btn--sm.btn--has-icon .btn__icon {
+	width: 20px;
+	height: 20px;
+}
+
+.btn--md.btn--has-icon .btn__icon,
+.btn--has-icon:not(.btn--sm):not(.btn--lg) .btn__icon {
+	width: 22px;
+	height: 22px;
+}
+
+.btn--lg.btn--has-icon .btn__icon {
+	width: 24px;
+	height: 24px;
+}
+
+/* Primary — filled teal + 20% black overlay (Figma Default) */
+.btn--primary {
+	border: 1px solid transparent;
+	background-color: var(--somvio-btn-primary);
+	background-image:
+		linear-gradient(90deg, var(--somvio-btn-primary-overlay), var(--somvio-btn-primary-overlay)),
+		linear-gradient(90deg, var(--somvio-btn-primary), var(--somvio-btn-primary));
+	color: var(--somvio-btn-text);
+}
+
+.btn--primary:hover,
+.btn--primary:focus-visible {
+	background-color: var(--somvio-btn-primary-hover);
+	background-image: none;
+	border-color: transparent;
+	color: var(--somvio-btn-text);
+	outline: none;
+}
+
+.btn--primary:active {
+	background-color: var(--somvio-btn-primary-hover);
+	background-image: none;
+	filter: brightness(0.92);
+	color: var(--somvio-btn-text);
+}
+
+/* Outline / Ghost — stroke #33ACA6 */
+.btn--outline,
+.btn--ghost {
+	border: 1px solid var(--somvio-btn-outline-border);
+	background-color: transparent;
+	background-image: none;
+	color: var(--somvio-btn-text);
+}
+
+.btn--outline:hover,
+.btn--outline:focus-visible,
+.btn--ghost:hover,
+.btn--ghost:focus-visible {
+	border-color: transparent;
+	background-color: var(--somvio-btn-primary);
+	background-image:
+		linear-gradient(90deg, var(--somvio-btn-primary-overlay), var(--somvio-btn-primary-overlay)),
+		linear-gradient(90deg, var(--somvio-btn-primary), var(--somvio-btn-primary));
+	color: var(--somvio-btn-text);
+	outline: none;
+}
+
+.btn--outline:active,
+.btn--ghost:active {
+	border-color: transparent;
+	background-color: var(--somvio-btn-primary-hover);
+	background-image: none;
+	color: var(--somvio-btn-text);
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+	opacity: 0.5;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+/* -------------------------------------------------------------------------
+   Block: service-card
+   ------------------------------------------------------------------------- */
+.service-card {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	padding: 1.5rem;
+	border: 1px solid var(--somvio-color-border);
+	border-radius: var(--somvio-radius-cta);
+	background-color: var(--somvio-color-surface);
+}
+
+.service-card__media {
+	overflow: hidden;
+	border-radius: calc(var(--somvio-radius-cta) - 0.125rem);
+	aspect-ratio: 16 / 10;
+	background-color: var(--somvio-color-border);
+}
+
+.service-card__media img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.service-card__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 3rem;
+	height: 3rem;
+	color: var(--somvio-color-accent);
+}
+
+.service-card__icon img,
+.service-card__icon svg {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
+.service-card__body {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	flex: 1;
+}
+
+.service-card__title {
+	margin: 0;
+	font-size: 1.125rem;
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--somvio-color-text-dark);
+}
+
+.service-card__text {
+	margin: 0;
+	color: var(--somvio-color-text-muted);
+}
+
+.service-card__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	margin-top: auto;
+}
+
+/* -------------------------------------------------------------------------
+   Block: adv-card (advantages / benefits)
+   ------------------------------------------------------------------------- */
+.adv-card {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.75rem;
+	padding: 1.25rem;
+}
+
+.adv-card__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	flex-shrink: 0;
+	color: var(--somvio-color-accent);
+}
+
+.adv-card__icon img,
+.adv-card__icon svg {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
+.adv-card__title {
+	margin: 0;
+	font-size: 1.0625rem;
+	font-weight: 700;
+	line-height: 1.3;
+	color: var(--somvio-color-text-dark);
+}
+
+.adv-card__text {
+	margin: 0;
+	font-size: var(--somvio-font-size-sm);
+	color: var(--somvio-color-text-muted);
+}
+
+/* -------------------------------------------------------------------------
+   Block: somvio-hero — Figma 310:4965
+   Full-bleed BG from absolute viewport top (under fixed transparent header).
+   Content clearance lives on .somvio-hero__inner only — never on the section.
+   ------------------------------------------------------------------------- */
+.somvio-hero {
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	margin: 0;
+	margin-top: 0 !important;
+	padding: 0;
+	padding-top: 0 !important;
+	color: var(--somvio-color-text);
+	background-color: var(--somvio-color-header-bg-alt);
+	background-image: url('assets/images/hero-bg.jpg');
+	background-repeat: no-repeat;
+	background-position: center top;
+	background-size: cover;
+}
+
+.somvio-header + .somvio-hero,
+#masthead + .somvio-hero,
+.site-header + .somvio-hero {
+	margin-top: 0 !important;
+}
+
+.somvio-hero__bg {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+	/* Figma: image opacity 50% over #00050e + gradient from 70% → 0 at 32.601% */
+	background-color: rgba(0, 5, 14, 0.5);
+	background-image: linear-gradient(
+		180deg,
+		rgba(0, 5, 14, 0.7) 0%,
+		rgba(0, 5, 14, 0) 32.601%
+	);
+}
+
+.somvio-hero__inner {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 64px;
+	max-width: 1170px;
+	margin-inline: auto;
+	/* Clear fixed header — padding on content shell only, not the section BG */
+	padding: calc(var(--somvio-header-height) + 56px) var(--somvio-container-pad) 0;
+	min-height: clamp(640px, 78vh, 844px);
+}
+
+.somvio-hero__grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(280px, 470px);
+	gap: 40px 72px;
+	align-items: start;
+	flex: 1 1 auto;
+}
+
+.somvio-hero__content {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 40px;
+	max-width: 571px;
+}
+
+.somvio-hero__title {
+	margin: 0;
+	max-width: 571px;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2.25rem, 1.2rem + 3vw, 4.5rem); /* → 72px */
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.somvio-hero__text {
+	margin: 0;
+	max-width: 518px;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem); /* → 20px */
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+}
+
+.somvio-hero__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+	align-items: flex-start;
+}
+
+/* Quote card — glassmorphism */
+.quote-card {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	width: 100%;
+	max-width: 470px;
+	min-height: 435px;
+	padding: 40px;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	border-radius: var(--somvio-radius-cta);
+	background-color: rgba(255, 255, 255, 0.15);
+	-webkit-backdrop-filter: blur(20px);
+	backdrop-filter: blur(20px);
+	box-shadow: 0 8px 32px rgba(0, 5, 14, 0.25);
+	justify-self: end;
+}
+
+.quote-card__title {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 24px;
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.quote-card__form {
+	display: flex;
+	flex-direction: column;
+	gap: 19px;
+	flex: 1 1 auto;
+}
+
+.quote-card__field {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	min-width: 0;
+}
+
+.quote-card__row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 30px;
+}
+
+.quote-card__label {
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+}
+
+.quote-card__select-wrap {
+	position: relative;
+	display: flex;
+	align-items: center;
+	width: 100%;
+}
+
+.quote-card__select {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 100%;
+	min-height: var(--somvio-touch-min);
+	padding: 10px 40px 10px 10px;
+	border: 1px solid #c0c0c0;
+	border-radius: var(--somvio-radius-cta);
+	background-color: transparent;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+	cursor: default;
+}
+
+.quote-card__select:disabled {
+	opacity: 1;
+	color: var(--somvio-color-text);
+}
+
+.quote-card__chevron {
+	position: absolute;
+	right: 10px;
+	top: 50%;
+	display: inline-flex;
+	width: 20px;
+	height: 20px;
+	color: var(--somvio-color-text);
+	pointer-events: none;
+	transform: translateY(-50%);
+}
+
+.quote-card__chevron svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.quote-card__chevron svg path {
+	fill: currentColor;
+}
+
+.quote-card__footer {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 16px;
+	margin-top: auto;
+	padding-top: 8px;
+}
+
+.quote-card__step {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: rgba(255, 255, 255, 0.5);
+	white-space: nowrap;
+}
+
+/* Reviews bar */
+.somvio-hero__reviews {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px 0;
+	width: 100%;
+	padding-block: 40px;
+	border-top: 1px solid rgba(255, 255, 255, 0.2);
+	background-color: transparent;
+}
+
+.somvio-hero__reviews-label {
+	display: flex;
+	flex-direction: column;
+	flex-shrink: 0;
+	width: 268px;
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.somvio-hero__reviews-label-line {
+	display: block;
+}
+
+.somvio-hero__ratings {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.somvio-hero__rating {
+	display: flex;
+	align-items: center;
+	gap: 18px;
+	min-width: 0;
+	background-color: transparent;
+}
+
+.somvio-hero__rating-logo {
+	flex-shrink: 0;
+	width: auto;
+	height: 50px;
+	object-fit: contain;
+	background-color: transparent;
+	background: none;
+	border: 0;
+	box-shadow: none;
+}
+
+.somvio-hero__rating-logo--google {
+	width: 50px;
+}
+
+.somvio-hero__rating-logo--yelp {
+	width: 41px;
+}
+
+.somvio-hero__rating-logo--trustpilot {
+	width: 52px;
+}
+
+.somvio-hero__rating-meta {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	line-height: 1.3;
+}
+
+.somvio-hero__rating-score {
+	font-family: var(--somvio-font-sans);
+	font-size: 20px;
+	font-weight: 600;
+	color: var(--somvio-color-text);
+}
+
+.somvio-hero__rating-count {
+	font-family: var(--somvio-font-sans);
+	font-size: 14px;
+	font-weight: 400;
+	color: var(--somvio-color-text);
+}
+
+.somvio-hero__ratings-sep {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 30px;
+	height: 30px;
+	margin-inline: 4px;
+	color: var(--somvio-color-text);
+	background-color: transparent;
+}
+
+.somvio-hero__ratings-sep svg {
+	display: block;
+	width: 30px;
+	height: 30px;
+}
+
+.somvio-hero__ratings-sep svg path {
+	fill: currentColor;
+}
+
+.somvio-hero__ratings-viewport {
+	flex: 1 1 auto;
+	width: auto;
+	min-width: 0;
+}
+
+.somvio-hero__ratings-track {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	animation: none;
+	white-space: normal;
+	transform: none;
+}
+
+.somvio-hero__ratings--duplicate {
+	display: none;
+}
+
+/* -------------------------------------------------------------------------
+   Hero — tablet / mobile — Figma 300:2715
+   Stack: content → quote card → reviews · seamless under header
+   ------------------------------------------------------------------------- */
+@media (max-width: 1199px) {
+	.somvio-hero__grid {
+		gap: 40px;
+	}
+
+	.quote-card {
+		justify-self: stretch;
+		max-width: none;
+	}
+
+	.somvio-hero__reviews-label {
+		width: auto;
+		min-width: 180px;
+		margin-right: 12px;
+	}
+}
+
+@media (max-width: 1023px) {
+	.somvio-hero {
+		overflow-x: clip;
+		margin-top: 0 !important;
+		padding-top: 0 !important;
+		background-color: var(--somvio-color-bg);
+		background-position: center top;
+	}
+
+	.somvio-header + .somvio-hero,
+	#masthead + .somvio-hero,
+	.site-header + .somvio-hero {
+		margin-top: 0 !important;
+	}
+
+	.somvio-hero__inner {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0;
+		max-width: none;
+		width: 100%;
+		/* Header clearance on inner shell only — BG stays edge-to-edge */
+		padding: var(--somvio-header-height) 0 0;
+		min-height: 0;
+	}
+
+	.somvio-hero__grid {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0;
+		width: 100%;
+	}
+
+	.somvio-hero__content {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 30px;
+		width: 100%;
+		max-width: none;
+		padding: 40px 20px;
+		box-sizing: border-box;
+	}
+
+	.somvio-hero__title {
+		width: 100%;
+		max-width: none;
+		font-size: 44px;
+		font-weight: 600;
+		line-height: 1.1;
+		letter-spacing: 0;
+	}
+
+	.somvio-hero__text {
+		width: 100%;
+		max-width: none;
+		font-size: 18px;
+		font-weight: 400;
+		line-height: 1.4;
+		letter-spacing: 0;
+	}
+
+	.somvio-hero__actions {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 20px;
+		width: 100%;
+	}
+
+	.somvio-hero__actions .btn {
+		width: 100%;
+		max-width: none;
+	}
+
+	/* Glass card: 335px on ~375 viewport (= 20px side inset), never overflow */
+	.quote-card {
+		width: min(335px, calc(100vw - 40px));
+		max-width: min(335px, calc(100% - 40px));
+		min-height: 0;
+		margin-inline: auto;
+		padding: 20px;
+		justify-self: center;
+		box-sizing: border-box;
+	}
+
+	.quote-card__form {
+		gap: 19px;
+	}
+
+	.quote-card__row {
+		grid-template-columns: 1fr 1fr;
+		gap: 30px;
+	}
+
+	.quote-card__select {
+		min-height: 44px;
+		padding: 10px 40px 10px 10px;
+	}
+
+	.quote-card__footer {
+		align-items: flex-end;
+		flex-wrap: nowrap;
+		gap: 12px;
+	}
+
+	.quote-card__footer .btn {
+		flex-shrink: 0;
+		min-height: 44px;
+	}
+
+	/* Reviews — Figma: column, centered, pt 40, gap 20 */
+	.somvio-hero__reviews {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 20px;
+		width: 100%;
+		padding: 40px 0px;
+		border-top: 0;
+		box-sizing: border-box;
+	}
+
+	.somvio-hero__reviews-label {
+		width: auto;
+		min-width: 0;
+		margin: 0;
+		text-align: center;
+	}
+
+	.somvio-hero__ratings-viewport {
+		flex: 0 0 auto;
+		width: 100%;
+		max-width: 100%;
+		padding: 20px 0;
+	}
+
+	.somvio-hero__ratings-track {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		animation: none;
+		white-space: normal;
+		transform: none;
+	}
+
+	.somvio-hero__ratings {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 0;
+		width: 100%;
+		max-width: 100%;
+		padding: 0;
+		overflow-x: visible;
+	}
+
+	.somvio-hero__ratings--duplicate {
+		display: none;
+	}
+
+	.somvio-hero__rating {
+		flex: 0 0 auto;
+		min-width: 0;
+	}
+
+	.somvio-hero__ratings-sep {
+		display: flex;
+		margin-inline: 2px;
+	}
+}
+
+/* Desktop / tablet: static centered flex reviews (no marquee) */
+@media (min-width: 768px) {
+	.somvio-hero__reviews {
+		display: flex;
+		align-items: center;
+	}
+
+	.somvio-hero__ratings-track {
+		animation: none;
+		white-space: normal;
+		transform: none;
+		width: 100%;
+	}
+
+	.somvio-hero__ratings--duplicate {
+		display: none;
+	}
+}
+
+/* Mobile only: infinite CSS marquee */
+@media (max-width: 767px) {
+	@keyframes somvio-reviews-marquee {
+		from {
+			transform: translateX(0);
+		}
+
+		to {
+			transform: translateX(-50%);
+		}
+	}
+
+	.somvio-hero__ratings-viewport {
+		overflow: hidden;
+		width: 100%;
+		padding: 20px 0;
+	}
+
+	.somvio-hero__ratings-track {
+		display: flex;
+		width: max-content;
+		white-space: nowrap;
+		animation: somvio-reviews-marquee 28s linear infinite;
+	}
+
+	.somvio-hero__ratings {
+		flex-wrap: nowrap;
+		justify-content: flex-start;
+		width: auto;
+	}
+
+	.somvio-hero__ratings--duplicate {
+		display: flex;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.somvio-hero__ratings-track {
+		animation: none;
+	}
+}
+
+/* Tablet refinement (768–1023): slightly roomier card + type */
+@media (max-width: 1023px) and (min-width: 768px) {
+	.somvio-hero__content {
+		padding: 48px 32px;
+		gap: 30px;
+	}
+
+	.somvio-hero__title {
+		font-size: 52px;
+	}
+
+	.somvio-hero__text {
+		font-size: 18px;
+	}
+
+	.quote-card {
+		width: min(470px, calc(100vw - 64px));
+		max-width: min(470px, calc(100% - 64px));
+		padding: 28px;
+	}
+
+	.somvio-hero__reviews {
+		padding: 40px 32px;
+	}
+}
+
+/* Phone polish (< 768) — exact Figma 300:2715 */
+@media (max-width: 767px) {
+	.somvio-hero__content {
+		padding: 40px 20px;
+		gap: 30px;
+	}
+
+	.somvio-hero__title {
+		font-size: 44px;
+		line-height: 1.1;
+		letter-spacing: 0;
+	}
+
+	.somvio-hero__text {
+		font-size: 18px;
+		line-height: 1.4;
+	}
+
+	.quote-card {
+		width: min(335px, calc(100vw - 40px));
+		max-width: min(335px, calc(100% - 40px));
+		padding: 20px;
+	}
+
+	.quote-card__row {
+		gap: min(30px, 4vw);
+	}
+}
+
+/* -------------------------------------------------------------------------
+   Block: why-choose — Figma 300:1393
+   ------------------------------------------------------------------------- */
+.why-choose {
+	position: relative;
+	padding: 80px var(--somvio-container-pad) 100px;
+	background-color: var(--somvio-color-bg);
+	color: var(--somvio-color-text);
+	overflow: hidden;
+}
+
+.why-choose__inner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 80px;
+	width: 100%;
+	max-width: 1170px;
+	margin-inline: auto;
+}
+
+.why-choose__header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 15px;
+	width: 100%;
+	max-width: 535px;
+	text-align: center;
+}
+
+.why-choose__badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: 10px 30px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50px;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	letter-spacing: 0;
+	color: var(--somvio-color-text);
+	white-space: nowrap;
+}
+
+.why-choose__title {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2rem, 1.4rem + 2vw, 3rem); /* → 48px */
+	font-weight: 600;
+	line-height: 1.1;
+	letter-spacing: 0;
+	color: var(--somvio-color-text);
+	text-align: center;
+}
+
+.why-choose__title-line {
+	display: block;
+}
+
+.why-choose__grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 370px));
+	gap: 30px;
+	justify-content: center;
+	align-items: start;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.why-choose__card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 20px;
+	width: 100%;
+	padding: 40px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: var(--somvio-radius);
+	background-color: var(--somvio-color-surface-dark);
+	box-shadow: 0 8px 32px rgba(24, 62, 88, 0.35);
+	text-align: center;
+	transition:
+		border-color var(--somvio-transition),
+		box-shadow var(--somvio-transition),
+		transform var(--somvio-transition);
+}
+
+.why-choose__card:hover,
+.why-choose__card:focus-within {
+	border-color: var(--somvio-color-accent-mid);
+	box-shadow: 0 12px 40px rgba(64, 215, 208, 0.18);
+	transform: translateY(-4px);
+}
+
+@media (min-width: 1024px) {
+	.why-choose__card--offset {
+		margin-top: 40px;
+	}
+
+	.why-choose__card--offset:hover,
+	.why-choose__card--offset:focus-within {
+		transform: translateY(36px);
+	}
+}
+
+.why-choose__icon-wrap {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50%;
+	transition: border-color var(--somvio-transition);
+}
+
+.why-choose__card:hover .why-choose__icon-wrap,
+.why-choose__card:focus-within .why-choose__icon-wrap {
+	border-color: var(--somvio-color-accent-mid);
+}
+
+.why-choose__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	color: var(--somvio-color-accent);
+}
+
+.why-choose__icon svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+	fill: currentColor;
+	stroke: none;
+}
+
+.why-choose__icon svg path {
+	fill: currentColor;
+	stroke: none;
+}
+
+.why-choose__card-title {
+	margin: 0;
+	width: 100%;
+	font-family: var(--somvio-font-sans);
+	font-size: 24px;
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.why-choose__card-text {
+	margin: 0;
+	width: 100%;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.1;
+	color: var(--somvio-color-text-body);
+}
+
+@media (max-width: 1199px) {
+	.why-choose__grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 20px;
+	}
+
+	.why-choose__card {
+		padding: 32px 24px;
+	}
+}
+
+@media (max-width: 1023px) {
+	.why-choose {
+		padding: 64px var(--somvio-container-pad) 72px;
+	}
+
+	.why-choose__inner {
+		gap: 48px;
+	}
+
+	.why-choose__grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 24px;
+	}
+
+	.why-choose__card--offset {
+		margin-top: 0;
+	}
+
+	.why-choose__card--offset:hover,
+	.why-choose__card--offset:focus-within {
+		transform: translateY(-4px);
+	}
+
+	.why-choose__card:last-child {
+		grid-column: 1 / -1;
+		max-width: 370px;
+		justify-self: center;
+		width: 100%;
+	}
+}
+
+@media (max-width: 767px) {
+	.why-choose {
+		padding: 56px 20px 64px;
+	}
+
+	.why-choose__inner {
+		gap: 40px;
+	}
+
+	.why-choose__badge {
+		padding: 10px 24px;
+	}
+
+	.why-choose__title {
+		font-size: 36px;
+	}
+
+	.why-choose__grid {
+		grid-template-columns: 1fr;
+		gap: 20px;
+	}
+
+	.why-choose__card,
+	.why-choose__card:last-child {
+		max-width: none;
+		width: 100%;
+		padding: 32px 24px;
+	}
+}
+
+/* -------------------------------------------------------------------------
+   Services Grid — Figma 300:1401
+   ------------------------------------------------------------------------- */
+.services-grid {
+	position: relative;
+	padding: 60px var(--somvio-container-pad) 100px;
+	background-color: var(--somvio-color-bg);
+	color: var(--somvio-color-text);
+}
+
+.services-grid__inner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 60px;
+	width: 100%;
+	max-width: 1170px;
+	margin-inline: auto;
+}
+
+.services-grid__header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 15px;
+	width: 100%;
+	max-width: 640px;
+	text-align: center;
+}
+
+.services-grid__badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: 10px 30px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50px;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	letter-spacing: 0;
+	color: var(--somvio-color-text);
+	white-space: nowrap;
+}
+
+.services-grid__title {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2rem, 1.4rem + 2vw, 3rem); /* → 48px */
+	font-weight: 600;
+	line-height: 1.1;
+	letter-spacing: 0;
+	color: var(--somvio-color-text);
+	text-align: center;
+}
+
+.services-grid__subtitle {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	letter-spacing: 0;
+	color: var(--somvio-color-text-subtle);
+	text-align: center;
+}
+
+.services-grid__list {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 370px));
+	gap: 30px;
+	justify-content: center;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.services-card {
+	width: 100%;
+	min-width: 0;
+}
+
+.services-card__link {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow: hidden;
+	border: 1px solid transparent;
+	border-radius: var(--somvio-radius);
+	background-color: var(--somvio-color-surface-dark);
+	text-decoration: none;
+	color: inherit;
+	transition:
+		border-color var(--somvio-transition),
+		background-color var(--somvio-transition),
+		box-shadow var(--somvio-transition);
+}
+
+.services-card__link:hover,
+.services-card__link:focus-visible {
+	border-color: var(--somvio-color-accent-mid);
+	background-color: #1a3648;
+	box-shadow: 0 12px 40px rgba(64, 215, 208, 0.12);
+	outline: none;
+}
+
+.services-card__link:hover .services-card__body,
+.services-card__link:focus-visible .services-card__body {
+	background-color: #1a3648;
+}
+
+.services-card__media {
+	position: relative;
+	width: 100%;
+	height: 320px;
+	overflow: hidden;
+	background-color: #061520;
+}
+
+.services-card__image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+	transition: transform var(--somvio-transition);
+}
+
+.services-card__link:hover .services-card__image,
+.services-card__link:focus-visible .services-card__image {
+	transform: scale(1.03);
+}
+
+.services-card__media-missing {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	padding: 24px;
+	font-size: 14px;
+	line-height: 1.4;
+	color: var(--somvio-color-text-subtle);
+	text-align: center;
+}
+
+.services-card__body {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	flex: 1 1 auto;
+	padding: 30px;
+	background-color: var(--somvio-color-surface-dark);
+	transition: background-color var(--somvio-transition);
+}
+
+.services-card__title {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 24px;
+	font-weight: 600;
+	line-height: 1.2;
+	letter-spacing: 0;
+	color: var(--somvio-color-text);
+}
+
+.services-card__text {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	letter-spacing: 0;
+	color: var(--somvio-color-text-body);
+}
+
+.services-card__price {
+	margin: 0;
+	margin-top: auto;
+	font-family: var(--somvio-font-sans);
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 1.3;
+	letter-spacing: 0;
+	color: var(--somvio-color-accent);
+}
+
+.services-grid__actions {
+	display: flex;
+	justify-content: center;
+	width: 100%;
+}
+
+@media (max-width: 1023px) {
+	.services-grid {
+		padding-block: 60px 80px;
+	}
+
+	.services-grid__inner {
+		gap: 48px;
+	}
+
+	.services-grid__list {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 24px;
+	}
+
+	.services-card__media {
+		height: 280px;
+	}
+}
+
+@media (max-width: 767px) {
+	.services-grid {
+		padding-block: 48px 64px;
+	}
+
+	.services-grid__inner {
+		gap: 40px;
+	}
+
+	.services-grid__badge {
+		padding: 10px 24px;
+	}
+
+	.services-grid__title {
+		font-size: 36px;
+	}
+
+	.services-grid__list {
+		grid-template-columns: 1fr;
+		gap: 20px;
+	}
+
+	.services-card__media {
+		height: 240px;
+	}
+
+	.services-card__body {
+		padding: 24px;
+		gap: 16px;
+	}
+
+	.services-card__title {
+		font-size: 20px;
+	}
+
+	.services-grid__actions {
+		width: 100%;
+	}
+
+	.services-grid__actions .btn {
+		width: 100%;
+		justify-content: center;
+	}
+}
+
+/* -------------------------------------------------------------------------
+   How It Works — Figma 300:1456
+   ------------------------------------------------------------------------- */
+.how-it-works {
+	position: relative;
+	padding: 40px var(--somvio-container-pad) 60px;
+	background-color: var(--somvio-color-surface-dark);
+	color: var(--somvio-color-text);
+}
+
+.how-it-works__inner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0;
+	width: 100%;
+	max-width: 1620px;
+	margin-inline: auto;
+}
+
+.how-it-works__header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 15px;
+	width: 100%;
+	text-align: center;
+}
+
+.how-it-works__badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: 10px 30px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50px;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	letter-spacing: 0;
+	color: var(--somvio-color-text);
+	white-space: nowrap;
+}
+
+.how-it-works__title {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2rem, 1.4rem + 2vw, 3rem); /* → 48px */
+	font-weight: 600;
+	line-height: 1.1;
+	letter-spacing: 0;
+	color: var(--somvio-color-text);
+	text-align: center;
+}
+
+.how-it-works__subtitle {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	letter-spacing: 0;
+	color: var(--somvio-color-text-subtle);
+	text-align: center;
+}
+
+.how-it-works__grid {
+	display: grid;
+	grid-template-columns: minmax(0, 795px) minmax(0, 570px);
+	gap: 30px;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	padding-top: 60px;
+}
+
+.how-it-works__media {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 795 / 516;
+	overflow: hidden;
+	border-radius: var(--somvio-radius);
+	background-color: #00050e;
+}
+
+.how-it-works__image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+}
+
+.how-it-works__media-missing {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	min-height: 240px;
+	padding: 24px;
+	font-size: 14px;
+	line-height: 1.4;
+	color: var(--somvio-color-text-subtle);
+	text-align: center;
+}
+
+.how-it-works__accordion {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	width: 100%;
+	min-width: 0;
+}
+
+.how-it-works__item {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	width: 100%;
+	padding: 20px;
+	border-radius: var(--somvio-radius);
+	background-color: #00050e;
+	transition: background-color var(--somvio-transition);
+}
+
+.how-it-works__item:hover,
+.how-it-works__item:focus-within,
+.how-it-works__item.is-open {
+	background-color: #00050e;
+}
+
+.how-it-works__item.is-open {
+	gap: 20px;
+}
+
+/*
+ * Kill GeneratePress form-button hover/focus fills (#55555e / #3f4047)
+ * that otherwise paint a grey overlay over accordion triggers.
+ */
+button.how-it-works__trigger,
+button.how-it-works__trigger:hover,
+button.how-it-works__trigger:focus,
+button.how-it-works__trigger:focus-visible,
+button.how-it-works__trigger:active {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	width: 100%;
+	min-height: var(--somvio-touch-min);
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	background-color: transparent;
+	background-image: none;
+	box-shadow: none;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+	appearance: none;
+	-webkit-appearance: none;
+}
+
+button.how-it-works__trigger:focus-visible {
+	outline: 2px solid var(--somvio-color-accent);
+	outline-offset: 4px;
+	border-radius: 2px;
+}
+
+.how-it-works__item-title {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 1.1;
+	letter-spacing: 0;
+	color: var(--somvio-color-text);
+}
+
+.how-it-works__icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 8px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50px;
+	color: var(--somvio-color-accent);
+	transition:
+		background-color var(--somvio-transition),
+		border-color var(--somvio-transition),
+		color var(--somvio-transition);
+}
+
+/* Hover/focus: teal icon ring only — never a light fill on the row/title */
+button.how-it-works__trigger:hover .how-it-works__icon,
+button.how-it-works__trigger:focus-visible .how-it-works__icon {
+	border-color: transparent;
+	background-color: var(--somvio-color-accent);
+	background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2));
+	color: #00050e;
+}
+
+.how-it-works__item.is-open .how-it-works__icon {
+	border-color: var(--somvio-color-border-brand);
+	background-color: transparent;
+	background-image: none;
+	color: var(--somvio-color-accent);
+}
+
+.how-it-works__item.is-open button.how-it-works__trigger:hover .how-it-works__icon,
+.how-it-works__item.is-open button.how-it-works__trigger:focus-visible .how-it-works__icon {
+	border-color: transparent;
+	background-color: var(--somvio-color-accent);
+	background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2));
+	color: #00050e;
+}
+
+.how-it-works__icon-plus,
+.how-it-works__icon-minus {
+	display: none;
+	width: 20px;
+	height: 20px;
+}
+
+.how-it-works__item:not(.is-open) .how-it-works__icon-plus,
+.how-it-works__item.is-open .how-it-works__icon-minus {
+	display: block;
+}
+
+.how-it-works__icon svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.how-it-works__icon svg path {
+	fill: currentColor;
+}
+
+.how-it-works__panel {
+	overflow: hidden;
+}
+
+.how-it-works__panel[hidden] {
+	display: none;
+}
+
+.how-it-works__panel-inner {
+	padding: 0;
+}
+
+.how-it-works__item-text {
+	margin: 0;
+	max-width: 438px;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.1;
+	letter-spacing: 0;
+	color: var(--somvio-color-text);
+}
+
+@media (max-width: 1023px) {
+	.how-it-works {
+		padding: 40px var(--somvio-container-pad) 64px;
+	}
+
+	.how-it-works__grid {
+		grid-template-columns: 1fr;
+		gap: 32px;
+		padding-top: 48px;
+	}
+
+	.how-it-works__media {
+		order: -1;
+		max-width: 795px;
+		margin-inline: auto;
+	}
+
+	.how-it-works__accordion {
+		width: 100%;
+	}
+
+	.how-it-works__trigger {
+		min-height: var(--somvio-touch-min);
+	}
+
+	.how-it-works__icon {
+		width: 44px;
+		height: 44px;
+		padding: 12px;
+	}
+
+	.how-it-works__icon-plus,
+	.how-it-works__icon-minus {
+		width: 20px;
+		height: 20px;
+	}
+}
+
+@media (max-width: 767px) {
+	.how-it-works {
+		padding: 32px 20px 56px;
+	}
+
+	.how-it-works__badge {
+		padding: 10px 24px;
+	}
+
+	.how-it-works__title {
+		font-size: 36px;
+	}
+
+	.how-it-works__grid {
+		gap: 24px;
+		padding-top: 40px;
+	}
+
+	.how-it-works__item {
+		padding: 16px;
+	}
+
+	.how-it-works__item.is-open {
+		gap: 16px;
+	}
+
+	.how-it-works__item-title {
+		font-size: 18px;
+	}
+
+	.how-it-works__item-text {
+		max-width: none;
+		line-height: 1.4;
+	}
+}
+
+/* -------------------------------------------------------------------------
+   Before / After — Figma 323:5028
+   ------------------------------------------------------------------------- */
+.before-after {
+	position: relative;
+	padding: 100px var(--somvio-container-pad) 100px;
+	background-color: var(--somvio-color-bg);
+	color: var(--somvio-color-text);
+}
+
+.before-after__inner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 60px;
+	width: 100%;
+	max-width: 1170px;
+	margin-inline: auto;
+}
+
+.before-after__header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 15px;
+	width: 100%;
+	text-align: center;
+}
+
+.before-after__badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: 10px 30px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50px;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	letter-spacing: 0;
+	color: var(--somvio-color-text);
+	white-space: nowrap;
+}
+
+.before-after__title {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2rem, 1.4rem + 2vw, 3rem); /* → 48px */
+	font-weight: 600;
+	line-height: 1.1;
+	letter-spacing: 0;
+	color: var(--somvio-color-text);
+	text-align: center;
+}
+
+.before-after__subtitle {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	letter-spacing: 0;
+	color: var(--somvio-color-text-subtle);
+	text-align: center;
+}
+
+.before-after__slider {
+	position: relative;
+	width: 100%;
+	touch-action: none;
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+.before-after__frame {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 1170 / 658;
+	overflow: hidden;
+	border-radius: var(--somvio-radius);
+	background-color: var(--somvio-color-surface-dark);
+	cursor: ew-resize;
+}
+
+.before-after__layer {
+	position: absolute;
+	inset: 0;
+}
+
+.before-after__layer--after {
+	z-index: 1;
+}
+
+.before-after__layer--before {
+	z-index: 2;
+	width: 100%;
+	overflow: hidden;
+	clip-path: inset(0 calc(100% - var(--ba-pos, 50%)) 0 0);
+}
+
+.before-after__image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	object-position: center;
+	pointer-events: none;
+}
+
+.before-after__divider {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: var(--ba-pos, 50%);
+	z-index: 3;
+	width: 4px;
+	background-color: #ffffff;
+	transform: translateX(-50%);
+	pointer-events: none;
+}
+
+.before-after__handle {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	padding: 10px;
+	border-radius: 50px;
+	background-color: #ffffff;
+	color: #1c1b1f;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+	transform: translate(-50%, -50%);
+	pointer-events: auto;
+	cursor: ew-resize;
+	touch-action: none;
+}
+
+.before-after__handle-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	/* Figma expand_all is vertical; rotate for horizontal compare UX */
+	transform: rotate(90deg);
+}
+
+.before-after__handle-icon svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.before-after__handle-icon svg path {
+	fill: currentColor;
+}
+
+.before-after__range {
+	position: absolute;
+	inset: 0;
+	z-index: 4;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	opacity: 0;
+	cursor: ew-resize;
+	appearance: none;
+	-webkit-appearance: none;
+	touch-action: none;
+}
+
+.before-after__range::-webkit-slider-thumb {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 44px;
+	height: 100%;
+	border: 0;
+	background: transparent;
+	cursor: ew-resize;
+}
+
+.before-after__range::-moz-range-thumb {
+	width: 44px;
+	height: 44px;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	cursor: ew-resize;
+}
+
+.before-after__slider--dragging .before-after__frame,
+.before-after__slider--dragging .before-after__handle {
+	cursor: grabbing;
+}
+
+.before-after__missing {
+	margin: 0;
+	padding: 24px;
+	width: 100%;
+	border: 1px dashed var(--somvio-color-border-brand);
+	border-radius: var(--somvio-radius);
+	font-size: 14px;
+	line-height: 1.4;
+	color: var(--somvio-color-text-subtle);
+	text-align: center;
+}
+
+@media (max-width: 1023px) {
+	.before-after {
+		padding: 72px var(--somvio-container-pad) 80px;
+	}
+
+	.before-after__inner {
+		gap: 48px;
+	}
+}
+
+@media (max-width: 767px) {
+	.before-after {
+		padding: 56px 20px 64px;
+	}
+
+	.before-after__inner {
+		gap: 40px;
+	}
+
+	.before-after__badge {
+		padding: 10px 24px;
+	}
+
+	.before-after__title {
+		font-size: 36px;
+	}
+
+	.before-after__divider {
+		width: 3px;
+	}
+
+	.before-after__handle {
+		width: 48px;
+		height: 48px;
+		padding: 12px;
+	}
+}
+
+/* -------------------------------------------------------------------------
+   Testimonials — Figma 325:5029
+   ------------------------------------------------------------------------- */
+.testimonials {
+	position: relative;
+	padding: 80px var(--somvio-container-pad) 100px;
+	background-color: var(--somvio-color-bg);
+	color: var(--somvio-color-text);
+	overflow: hidden;
+}
+
+.testimonials__inner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 60px;
+	width: 100%;
+	max-width: 1170px;
+	margin-inline: auto;
+}
+
+.testimonials__header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 15px;
+	width: 100%;
+	max-width: 535px;
+	text-align: center;
+}
+
+.testimonials__badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: 10px 30px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50px;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	letter-spacing: 0;
+	color: var(--somvio-color-text);
+	white-space: nowrap;
+}
+
+.testimonials__title {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2rem, 1.4rem + 2vw, 3rem); /* → 48px */
+	font-weight: 600;
+	line-height: 1.1;
+	letter-spacing: 0;
+	color: var(--somvio-color-text);
+	text-align: center;
+}
+
+.testimonials__grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 370px));
+	gap: 30px;
+	justify-content: center;
+	align-items: start;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.testimonials__card {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 20px;
+	width: 100%;
+	padding: 30px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: var(--somvio-radius);
+	background-color: var(--somvio-color-surface-dark);
+}
+
+@media (min-width: 1024px) {
+	.testimonials__card--offset {
+		margin-top: 46px;
+	}
+}
+
+.testimonials__stars {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 5px;
+	align-items: flex-start;
+}
+
+.testimonials__star {
+	display: inline-flex;
+	flex-shrink: 0;
+	width: 24px;
+	height: 24px;
+	color: var(--somvio-color-accent);
+}
+
+.testimonials__star svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.testimonials__card-title {
+	margin: 0;
+	width: 100%;
+	font-family: var(--somvio-font-sans);
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 1.1;
+	letter-spacing: 0;
+	color: var(--somvio-color-text);
+}
+
+.testimonials__quote {
+	margin: 0;
+	width: 100%;
+}
+
+.testimonials__quote-text {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.1;
+	letter-spacing: 0;
+	color: var(--somvio-color-text);
+}
+
+.testimonials__author {
+	margin: 0;
+	width: 100%;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	font-style: italic;
+	line-height: 1.1;
+	letter-spacing: 0;
+	color: var(--somvio-color-text-soft);
+}
+
+.testimonials__trust-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 24px;
+	width: 100%;
+	padding: 40px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: var(--somvio-radius);
+}
+
+.testimonials__trust-item {
+	display: flex;
+	align-items: center;
+	gap: 18px;
+	min-width: 0;
+	flex: 1 1 0;
+	max-width: 268px;
+}
+
+.testimonials__trust-logo {
+	display: block;
+	flex-shrink: 0;
+	width: auto;
+	height: 50px;
+	object-fit: contain;
+}
+
+.testimonials__trust-item--google .testimonials__trust-logo {
+	width: 50px;
+	height: 50px;
+}
+
+.testimonials__trust-item--yelp .testimonials__trust-logo {
+	width: 41px;
+	height: 50px;
+}
+
+.testimonials__trust-item--trustpilot .testimonials__trust-logo {
+	width: 52px;
+	height: 50px;
+}
+
+.testimonials__trust-meta {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+}
+
+.testimonials__trust-score {
+	font-family: var(--somvio-font-sans);
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 1.3;
+	letter-spacing: 0;
+	color: var(--somvio-color-text);
+}
+
+.testimonials__trust-count {
+	font-family: var(--somvio-font-sans);
+	font-size: 14px;
+	font-weight: 400;
+	line-height: 1.3;
+	letter-spacing: 0;
+	color: var(--somvio-color-text);
+}
+
+@media (max-width: 1023px) {
+	.testimonials {
+		padding: 64px var(--somvio-container-pad) 80px;
+	}
+
+	.testimonials__inner {
+		gap: 48px;
+	}
+
+	.testimonials__grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 24px;
+	}
+
+	.testimonials__card--offset {
+		margin-top: 0;
+	}
+
+	.testimonials__card:last-child {
+		grid-column: 1 / -1;
+		max-width: 370px;
+		justify-self: center;
+	}
+
+	.testimonials__trust-bar {
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 32px;
+		padding: 32px 24px;
+	}
+
+	.testimonials__trust-item {
+		flex: 0 1 auto;
+		max-width: none;
+	}
+}
+
+@media (max-width: 767px) {
+	.testimonials {
+		padding: 56px 20px 64px;
+	}
+
+	.testimonials__inner {
+		gap: 40px;
+	}
+
+	.testimonials__badge {
+		padding: 10px 24px;
+	}
+
+	.testimonials__title {
+		font-size: 36px;
+	}
+
+	.testimonials__grid {
+		grid-template-columns: 1fr;
+		gap: 20px;
+	}
+
+	.testimonials__card,
+	.testimonials__card:last-child {
+		max-width: none;
+		width: 100%;
+		padding: 24px;
+	}
+
+	.testimonials__quote-text,
+	.testimonials__author {
+		line-height: 1.4;
+	}
+
+	.testimonials__trust-bar {
+		display: none;
+	}
+}
+
+/* -------------------------------------------------------------------------
+   CTA Banner — Figma 325:5030
+   BG photo @ ~80% via dark veil + top gradient overlay.
+   ------------------------------------------------------------------------- */
+.cta-banner {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	isolation: isolate;
+	overflow: hidden;
+	padding: 80px var(--somvio-container-pad);
+	color: var(--somvio-color-text);
+	text-align: center;
+	background-color: var(--somvio-color-bg);
+	background-image: url('assets/images/cta-banner-bg.jpg');
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: cover;
+}
+
+.cta-banner__overlay {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	/* Figma: image opacity 80% + gradient from 70% → 0 */
+	background-color: rgba(0, 5, 14, 0.2);
+	background-image: linear-gradient(
+		180deg,
+		rgba(0, 5, 14, 0.7) 0%,
+		rgba(0, 5, 14, 0) 100%
+	);
+}
+
+.cta-banner__inner {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 20px;
+	width: 100%;
+	max-width: 1170px;
+	margin-inline: auto;
+}
+
+.cta-banner__badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: 10px 30px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50px;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+	white-space: nowrap;
+}
+
+.cta-banner__title {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2rem, 1.4rem + 2vw, 3rem); /* → 48px */
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+	text-align: center;
+}
+
+.cta-banner__subtitle {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text-light);
+	text-align: center;
+}
+
+.cta-banner__btn {
+	margin-top: 0;
+}
+
+@media (max-width: 767px) {
+	.cta-banner {
+		padding: 60px 20px;
+	}
+
+	.cta-banner__overlay {
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		/* Figma 300:2892 — image @80% + gradient 70% → 0 @ 169.18% */
+		background-color: rgba(0, 5, 14, 0.2);
+		background-image: linear-gradient(
+			180deg,
+			rgba(0, 5, 14, 0.7) 0%,
+			rgba(0, 5, 14, 0) 169.18%
+		);
+	}
+
+	.cta-banner__badge {
+		padding: 10px 24px;
+	}
+
+	.cta-banner__title {
+		font-size: 36px;
+	}
+
+	.cta-banner__btn {
+		width: 100%;
+		max-width: 335px;
+	}
+}
+
+/* -------------------------------------------------------------------------
+   Site Footer — Figma 325:5030
+   ------------------------------------------------------------------------- */
+.site-footer {
+	position: relative;
+	padding: 80px var(--somvio-container-pad) 20px;
+	background-color: #00050e;
+	color: var(--somvio-color-text);
+}
+
+.site-footer__inner {
+	display: flex;
+	flex-direction: column;
+	gap: 60px;
+	width: 100%;
+	max-width: 1170px;
+	margin-inline: auto;
+}
+
+.site-footer__grid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 30px;
+	align-items: start;
+	width: 100%;
+}
+
+.site-footer__col--brand {
+	display: flex;
+	flex-direction: column;
+	gap: 62px;
+	align-items: flex-start;
+}
+
+.site-footer__logo {
+	display: inline-flex;
+	line-height: 0;
+}
+
+.site-footer__logo img {
+	display: block;
+	width: 189px;
+	height: auto;
+	max-width: 100%;
+}
+
+.site-footer__tagline {
+	margin: 0;
+	max-width: 220px;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.1;
+	color: var(--somvio-color-text-soft);
+}
+
+.site-footer__social {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 30px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.site-footer__social-link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	color: var(--somvio-color-accent);
+	text-decoration: none;
+	transition: color 0.3s ease;
+}
+
+.site-footer__social-link:hover,
+.site-footer__social-link:focus-visible {
+	color: var(--somvio-color-primary);
+	outline: none;
+}
+
+.site-footer__social-icon {
+	display: inline-flex;
+	width: 32px;
+	height: 32px;
+}
+
+.site-footer__social-icon svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.site-footer__social-icon svg path {
+	fill: currentColor;
+}
+
+.site-footer__heading {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.1;
+	color: var(--somvio-color-text-soft);
+}
+
+.site-footer__list {
+	display: flex;
+	flex-direction: column;
+	gap: 30px;
+	margin: 30px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.site-footer__link {
+	display: inline-flex;
+	min-height: 24px;
+	align-items: center;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+	text-decoration: none;
+	transition: color 0.3s ease;
+}
+
+.site-footer__link:hover,
+.site-footer__link:focus-visible {
+	color: var(--somvio-color-primary);
+	outline: none;
+}
+
+/* Keep footer nav links uniform — no active/current teal highlight */
+.site-footer__list .site-footer__link,
+.site-footer__list .site-footer__link--current,
+.site-footer__list .current-menu-item a,
+.site-footer__list .current_page_item a {
+	color: var(--somvio-color-text);
+}
+
+.site-footer__list .site-footer__link:hover,
+.site-footer__list .site-footer__link:focus-visible,
+.site-footer__list .site-footer__link--current:hover,
+.site-footer__list .site-footer__link--current:focus-visible,
+.site-footer__list .current-menu-item a:hover,
+.site-footer__list .current-menu-item a:focus-visible,
+.site-footer__list .current_page_item a:hover,
+.site-footer__list .current_page_item a:focus-visible {
+	color: var(--somvio-color-primary);
+}
+
+.site-footer__contact {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	margin: 30px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.site-footer__contact-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+}
+
+.site-footer__contact-icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	padding: 8px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50px;
+	color: var(--somvio-color-accent);
+}
+
+.site-footer__contact-icon svg {
+	display: block;
+	width: 24px;
+	height: 24px;
+}
+
+.site-footer__contact-icon svg path {
+	fill: currentColor;
+}
+
+.site-footer__contact-text {
+	min-width: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+	text-decoration: none;
+	word-break: break-word;
+	transition: color 0.3s ease;
+}
+
+a.site-footer__contact-text:hover,
+a.site-footer__contact-text:focus-visible {
+	color: var(--somvio-color-primary);
+	outline: none;
+}
+
+.site-footer__whatsapp {
+	margin-top: 10px;
+	align-self: flex-start;
+}
+
+.site-footer__col--contact {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.site-footer__bottom {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
+	padding: 30px 0;
+	border-top: 1px solid rgba(133, 149, 159, 0.2);
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.1;
+	color: var(--somvio-color-text-soft);
+}
+
+.site-footer__copyright,
+.site-footer__legal {
+	margin: 0;
+}
+
+.site-footer__legal {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.site-footer__legal-link {
+	color: var(--somvio-color-text-soft);
+	text-decoration: none;
+	transition: color 0.3s ease;
+}
+
+.site-footer__legal-link:hover,
+.site-footer__legal-link:focus-visible {
+	color: var(--somvio-color-primary);
+	outline: none;
+}
+
+.site-footer__legal-sep {
+	color: var(--somvio-color-text-soft);
+}
+
+/* Hide leftover GP footer chrome if any */
+.site-info,
+.footer-widgets,
+.footer-bar-active .footer-bar {
+	display: none !important;
+}
+
+@media (max-width: 1023px) {
+	.site-footer {
+		padding: 64px var(--somvio-container-pad) 20px;
+	}
+
+	.site-footer__inner {
+		gap: 48px;
+	}
+
+	.site-footer__grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 40px 30px;
+	}
+
+	.site-footer__col--brand {
+		gap: 32px;
+		grid-column: 1 / -1;
+	}
+}
+
+@media (max-width: 767px) {
+	.site-footer {
+		padding: 56px 20px 16px;
+	}
+
+	.site-footer__inner {
+		gap: 40px;
+	}
+
+	.site-footer__grid {
+		grid-template-columns: 1fr;
+		gap: 40px;
+	}
+
+	.site-footer__col--brand {
+		gap: 28px;
+	}
+
+	.site-footer__list {
+		gap: 20px;
+		margin-top: 20px;
+	}
+
+	.site-footer__link {
+		min-height: 44px;
+	}
+
+	.site-footer__whatsapp {
+		width: 100%;
+		justify-content: center;
+	}
+
+	.site-footer__bottom {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 16px;
+		padding: 24px 0;
+	}
+}
+
+/* -------------------------------------------------------------------------
+   Scroll reveal — IntersectionObserver toggles .is-revealed
+   ------------------------------------------------------------------------- */
+.reveal-on-scroll {
+	opacity: 0;
+	transform: translateY(30px);
+	will-change: transform, opacity;
+	transition:
+		opacity 0.6s ease-out,
+		transform 0.6s ease-out;
+	transition-delay: var(--reveal-delay, 0s);
+}
+
+.reveal-on-scroll.is-revealed {
+	opacity: 1;
+	transform: translateY(0);
+	will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.reveal-on-scroll {
+		opacity: 1;
+		transform: none;
+		transition: none;
+		will-change: auto;
+	}
+}
+
+/* -------------------------------------------------------------------------
+   Block: services-hero — Figma 300:2161
+   Compact inner-page hero; same BG + transparent header merge as homepage.
+   ------------------------------------------------------------------------- */
+.services-hero {
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	margin: 0;
+	margin-top: 0 !important;
+	padding: 0;
+	padding-top: 0 !important;
+	color: var(--somvio-color-text);
+	background-color: var(--somvio-color-header-bg-alt);
+	background-image: url('assets/images/hero-bg.jpg');
+	background-repeat: no-repeat;
+	background-position: center top;
+	background-size: cover;
+}
+
+.somvio-header + .services-hero,
+#masthead + .services-hero,
+.site-header + .services-hero {
+	margin-top: 0 !important;
+}
+
+.services-hero__bg {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+	background-color: rgba(0, 5, 14, 0.5);
+	background-image: linear-gradient(
+		180deg,
+		rgba(0, 5, 14, 0.7) 0%,
+		rgba(0, 5, 14, 0) 32.601%
+	);
+}
+
+.services-hero__inner {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 20px;
+	max-width: 1170px;
+	margin-inline: auto;
+	/* Clear fixed header — compact Figma py-60 content shell */
+	padding: calc(var(--somvio-header-height) + 60px) var(--somvio-container-pad) 60px;
+}
+
+.services-hero__breadcrumbs {
+	width: 100%;
+}
+
+.services-hero__breadcrumb-list {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.services-hero__breadcrumb-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: var(--somvio-font-size-base);
+	font-weight: 400;
+	line-height: 1.4;
+}
+
+.services-hero__breadcrumb-link {
+	color: var(--somvio-color-text);
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+	transition: color var(--somvio-transition);
+}
+
+.services-hero__breadcrumb-link:hover,
+.services-hero__breadcrumb-link:focus-visible {
+	color: var(--somvio-color-accent);
+}
+
+.services-hero__breadcrumb-sep {
+	display: inline-flex;
+	flex-shrink: 0;
+	width: 18px;
+	height: 18px;
+	color: var(--somvio-color-accent);
+}
+
+.services-hero__breadcrumb-sep svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.services-hero__breadcrumb-current {
+	color: var(--somvio-color-text-light);
+}
+
+.services-hero__title {
+	margin: 0;
+	max-width: 571px;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2.25rem, 1.2rem + 3vw, 4.5rem); /* → 72px */
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.services-hero__subtitle {
+	margin: 0;
+	max-width: 518px;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem); /* → 20px */
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+}
+
+@media (max-width: 767px) {
+	.services-hero__inner {
+		padding-top: calc(var(--somvio-header-height) + 40px);
+		padding-bottom: 40px;
+		gap: 16px;
+	}
+}
+
+/* -------------------------------------------------------------------------
+   Block: faq — Figma 300:2375 (Services page slot 300:2177)
+   Reusable accordion used on Home + Services (above CTA).
+   ------------------------------------------------------------------------- */
+.faq {
+	position: relative;
+	padding: 60px var(--somvio-container-pad);
+	background-color: var(--somvio-color-bg);
+	color: var(--somvio-color-text);
+}
+
+.faq__inner {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 40px;
+	width: 100%;
+	max-width: 1170px;
+	margin-inline: auto;
+}
+
+.faq__header {
+	margin: 0;
+}
+
+.faq__title {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(1.75rem, 1.2rem + 1.5vw, 2.5rem);
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+	text-align: center;
+}
+
+.faq__accordion {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	width: 100%;
+}
+
+.faq__item {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	width: 100%;
+	padding: 20px;
+	border-radius: var(--somvio-radius);
+	background-color: var(--somvio-color-surface-dark);
+	transition: gap var(--somvio-transition);
+}
+
+.faq__item.is-open {
+	gap: 20px;
+}
+
+/*
+ * Kill GeneratePress form-button hover/focus fills on FAQ triggers.
+ */
+button.faq__trigger,
+button.faq__trigger:hover,
+button.faq__trigger:focus,
+button.faq__trigger:focus-visible,
+button.faq__trigger:active {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	width: 100%;
+	min-height: var(--somvio-touch-min);
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	background-color: transparent;
+	background-image: none;
+	box-shadow: none;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+	appearance: none;
+	-webkit-appearance: none;
+}
+
+button.faq__trigger:focus-visible {
+	outline: 2px solid var(--somvio-color-accent);
+	outline-offset: 4px;
+	border-radius: 2px;
+}
+
+.faq__item-title {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 20px;
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.faq__item.is-open .faq__item-title {
+	font-size: 24px;
+}
+
+.faq__icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 8px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50px;
+	color: var(--somvio-color-accent);
+	transition:
+		background-color var(--somvio-transition),
+		border-color var(--somvio-transition),
+		color var(--somvio-transition);
+}
+
+button.faq__trigger:hover .faq__icon,
+button.faq__trigger:focus-visible .faq__icon {
+	border-color: transparent;
+	background-color: var(--somvio-color-accent);
+	background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2));
+	color: #00050e;
+}
+
+.faq__icon-plus,
+.faq__icon-minus {
+	display: none;
+	width: 20px;
+	height: 20px;
+}
+
+.faq__item:not(.is-open) .faq__icon-plus,
+.faq__item.is-open .faq__icon-minus {
+	display: block;
+}
+
+.faq__icon svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.faq__icon svg path {
+	fill: currentColor;
+}
+
+.faq__panel {
+	overflow: hidden;
+}
+
+.faq__panel[hidden] {
+	display: none;
+}
+
+.faq__panel-inner {
+	padding: 0;
+}
+
+.faq__item-text {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+@media (max-width: 767px) {
+	.faq {
+		padding: 40px var(--somvio-container-pad);
+	}
+
+	.faq__inner {
+		gap: 28px;
+	}
+
+	.faq__item {
+		padding: 16px;
+	}
+
+	.faq__item-title,
+	.faq__item.is-open .faq__item-title {
+		font-size: 18px;
+	}
+}
+
+/* -------------------------------------------------------------------------
+   Block: services-list — Figma 300:2170 (desktop) / 300:2648 (mobile)
+   Separate image + text panels, gap 30px, h 400; zig-zag via order.
+   ------------------------------------------------------------------------- */
+.services-list {
+	position: relative;
+	padding: 60px var(--somvio-container-pad);
+	background-color: var(--somvio-color-bg);
+	color: var(--somvio-color-text);
+}
+
+.services-list__inner {
+	display: flex;
+	flex-direction: column;
+	gap: 30px;
+	width: 100%;
+	max-width: 1170px;
+	margin-inline: auto;
+}
+
+.services-list__item {
+	display: flex;
+	flex-direction: row;
+	align-items: stretch;
+	gap: 30px;
+	width: 100%;
+	min-height: 400px;
+	scroll-margin-top: calc(var(--somvio-header-height) + 16px);
+	background: transparent;
+}
+
+.services-list__item--media-end {
+	flex-direction: row-reverse;
+}
+
+.services-list__media {
+	position: relative;
+	flex: 1 1 0;
+	min-width: 0;
+	height: 400px;
+	overflow: hidden;
+	border-radius: 4px;
+	background-color: #061520;
+}
+
+.services-list__image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+	border-radius: 4px;
+}
+
+.services-list__media-missing {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	min-height: 220px;
+	padding: 24px;
+	font-size: 14px;
+	line-height: 1.4;
+	color: var(--somvio-color-text-subtle);
+	text-align: center;
+}
+
+.services-list__body {
+	display: grid;
+	flex: 1 1 0;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas:
+		"title price"
+		"text text"
+		"cta cta";
+	gap: 20px;
+	align-content: center;
+	min-width: 0;
+	min-height: 400px;
+	padding: 30px;
+	border-radius: 4px;
+	background-color: var(--somvio-color-surface-dark); /* #091e2c */
+}
+
+.services-list__title {
+	grid-area: title;
+	align-self: end;
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 24px;
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.services-list__price {
+	grid-area: price;
+	align-self: end;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: none;
+	font-family: var(--somvio-font-sans);
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-accent); /* #40d7d0 */
+	white-space: nowrap;
+}
+
+.services-list__text {
+	grid-area: text;
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.5;
+	color: var(--somvio-color-text-body); /* #ced2d5 */
+}
+
+.services-list__cta.btn {
+	grid-area: cta;
+	justify-self: start;
+}
+
+/* ≥768: keep Figma desktop tokens (30/30/400/24). Only ease fixed heights on narrow tablets. */
+@media (max-width: 1023px) and (min-width: 768px) {
+	.services-list__item {
+		min-height: 0;
+	}
+
+	.services-list__media {
+		height: auto;
+		min-height: 360px;
+	}
+
+	.services-list__body {
+		min-height: 0;
+	}
+}
+
+@media (max-width: 767px) {
+	/* Figma mobile Variant4 300:2648 — stack, gap 5px image→body, p 20, footer price|cta */
+	.services-list {
+		padding: 40px 0;
+	}
+
+	.services-list__inner {
+		gap: 20px;
+		padding-inline: 20px; /* Figma Variant4 px-20 */
+	}
+
+	.services-list__item,
+	.services-list__item--media-start,
+	.services-list__item--media-end {
+		flex-direction: column;
+		gap: 5px;
+		min-height: 0;
+	}
+
+	.services-list__media {
+		flex: 0 0 auto;
+		width: 100%;
+		height: 220px;
+		min-height: 220px;
+	}
+
+	.services-list__body {
+		flex: 0 0 auto;
+		width: 100%;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			"title title"
+			"text text"
+			"price cta";
+		align-content: start;
+		gap: 20px;
+		padding: 20px;
+		min-height: 0;
+	}
+
+	.services-list__title {
+		align-self: start;
+		font-size: 24px;
+	}
+
+	.services-list__price {
+		align-self: center;
+		justify-self: start;
+	}
+
+	.services-list__cta.btn {
+		justify-self: end;
+		width: auto;
+	}
+}

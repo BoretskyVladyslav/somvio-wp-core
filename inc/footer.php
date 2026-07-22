@@ -1,0 +1,114 @@
+<?php
+/**
+ * Pre-footer CTA banner + global site footer.
+ *
+ * Figma node: 325:5030
+ *
+ * @package Somvio_Child
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Contact email (filterable).
+ *
+ * @return array{display: string, href: string}
+ */
+function somvio_get_email() {
+	$email = apply_filters(
+		'somvio_email',
+		array(
+			'display' => 'info@somvio.co.uk',
+			'href'    => 'mailto:info@somvio.co.uk',
+		)
+	);
+
+	return array(
+		'display' => isset( $email['display'] ) ? (string) $email['display'] : 'info@somvio.co.uk',
+		'href'    => isset( $email['href'] ) ? (string) $email['href'] : 'mailto:info@somvio.co.uk',
+	);
+}
+
+/**
+ * Contact location (filterable).
+ *
+ * @return string
+ */
+function somvio_get_location() {
+	return (string) apply_filters( 'somvio_location', __( 'London, United Kingdom', 'somvio' ) );
+}
+
+/**
+ * WhatsApp chat URL (filterable).
+ *
+ * @return string
+ */
+function somvio_get_whatsapp_url() {
+	return esc_url( apply_filters( 'somvio_whatsapp_url', 'https://wa.me/447512345678' ) );
+}
+
+/**
+ * Social profile URLs (filterable).
+ *
+ * @return array<string, array{label: string, url: string, icon: string}>
+ */
+function somvio_get_social_links() {
+	$links = array(
+		'instagram' => array(
+			'label' => __( 'Instagram', 'somvio' ),
+			'url'   => 'https://www.instagram.com/',
+			'icon'  => 'icon-instagram',
+		),
+		'facebook'  => array(
+			'label' => __( 'Facebook', 'somvio' ),
+			'url'   => 'https://www.facebook.com/',
+			'icon'  => 'icon-facebook',
+		),
+		'whatsapp'  => array(
+			'label' => __( 'WhatsApp', 'somvio' ),
+			'url'   => somvio_get_whatsapp_url(),
+			'icon'  => 'icon-whatsapp',
+		),
+		'tiktok'    => array(
+			'label' => __( 'TikTok', 'somvio' ),
+			'url'   => 'https://www.tiktok.com/',
+			'icon'  => 'icon-tiktok',
+		),
+	);
+
+	return apply_filters( 'somvio_social_links', $links );
+}
+
+/**
+ * Replace GeneratePress footer with Somvio footer + CTA.
+ *
+ * @return void
+ */
+function somvio_replace_default_footer() {
+	remove_action( 'generate_footer', 'generate_construct_footer_widgets', 5 );
+	remove_action( 'generate_footer', 'generate_construct_footer' );
+
+	add_action( 'generate_before_footer', 'somvio_render_cta_banner', 10 );
+	add_action( 'generate_footer', 'somvio_render_site_footer', 10 );
+}
+add_action( 'after_setup_theme', 'somvio_replace_default_footer', 20 );
+
+/**
+ * Render the pre-footer CTA banner.
+ *
+ * @return void
+ */
+function somvio_render_cta_banner() {
+	get_template_part( 'template-parts/sections/cta', 'banner' );
+}
+
+/**
+ * Render the custom site footer.
+ *
+ * @return void
+ */
+function somvio_render_site_footer() {
+	get_template_part( 'template-parts/footer/site', 'footer' );
+}
