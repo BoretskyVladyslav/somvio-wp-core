@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$somvio_images_uri = get_stylesheet_directory_uri() . '/assets/images';
+$somvio_icons_uri = get_stylesheet_directory_uri() . '/assets/icons';
 
 $somvio_testimonials = array(
 	array(
@@ -65,7 +65,6 @@ $somvio_trust_badges = array(
 <section class="testimonials" aria-labelledby="testimonials-title">
 	<div class="testimonials__inner">
 		<header class="testimonials__header">
-			<p class="testimonials__badge"><?php esc_html_e( 'Social Proof', 'somvio' ); ?></p>
 			<h2 id="testimonials-title" class="testimonials__title reveal-on-scroll">
 				<?php esc_html_e( 'Testimonials', 'somvio' ); ?>
 			</h2>
@@ -98,7 +97,7 @@ $somvio_trust_badges = array(
 				<div class="testimonials__trust-item testimonials__trust-item--<?php echo esc_attr( $badge['mod'] ); ?>">
 					<img
 						class="testimonials__trust-logo"
-						src="<?php echo esc_url( $somvio_images_uri . '/' . $badge['logo'] ); ?>"
+						src="<?php echo esc_url( $somvio_icons_uri . '/' . $badge['logo'] ); ?>"
 						alt="<?php echo esc_attr( $badge['alt'] ); ?>"
 						width="<?php echo esc_attr( (string) $badge['width'] ); ?>"
 						height="<?php echo esc_attr( (string) $badge['height'] ); ?>"

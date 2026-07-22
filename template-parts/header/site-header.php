@@ -16,6 +16,7 @@ $somvio_site_name = get_bloginfo( 'name', 'display' );
 $somvio_book_url  = somvio_get_book_now_url();
 $somvio_logo_src  = esc_url( get_stylesheet_directory_uri() . '/assets/images/logo.svg' );
 $somvio_phone     = somvio_get_phone();
+$somvio_whatsapp  = function_exists( 'somvio_get_whatsapp_url' ) ? somvio_get_whatsapp_url() : 'https://wa.me/447402495410';
 ?>
 <header id="masthead" class="site-header somvio-header" role="banner">
 	<div class="inside-header somvio-header__inner">
@@ -59,6 +60,18 @@ $somvio_phone     = somvio_get_phone();
 						>
 							<?php echo esc_html( $somvio_phone['display'] ); ?>
 						</a>
+
+						<a
+							class="btn btn--outline btn--sm somvio-header__whatsapp"
+							href="<?php echo esc_url( $somvio_whatsapp ); ?>"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							<span class="btn__label"><?php esc_html_e( 'WhatsApp Us', 'somvio' ); ?></span>
+						</a>
+						<p class="somvio-header__whatsapp-hint">
+							<?php esc_html_e( 'Prefer to text us for a quick response.', 'somvio' ); ?>
+						</p>
 
 						<a class="btn btn--outline btn--sm btn--has-icon somvio-header__cta somvio-header__cta--drawer" href="<?php echo $somvio_book_url; ?>">
 							<span class="btn__label"><?php esc_html_e( 'Book Now', 'somvio' ); ?></span>

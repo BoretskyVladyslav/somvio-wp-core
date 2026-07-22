@@ -12,25 +12,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 $somvio_home_url  = home_url( '/' );
 $somvio_site_name = get_bloginfo( 'name', 'display' );
 $somvio_logo_src  = get_stylesheet_directory_uri() . '/assets/images/logo.svg';
-$somvio_phone     = function_exists( 'somvio_get_phone' ) ? somvio_get_phone() : array(
-	'display' => '07512 345678',
-	'href'    => 'tel:+447512345678',
+$somvio_phone    = function_exists( 'somvio_get_phone' ) ? somvio_get_phone() : array(
+	'display' => '+44 7402 495410',
+	'href'    => 'tel:+447402495410',
 );
-$somvio_email     = function_exists( 'somvio_get_email' ) ? somvio_get_email() : array(
-	'display' => 'info@somvio.co.uk',
-	'href'    => 'mailto:info@somvio.co.uk',
+$somvio_email    = function_exists( 'somvio_get_email' ) ? somvio_get_email() : array(
+	'display' => 'Info@somvio.co.uk',
+	'href'    => 'mailto:Info@somvio.co.uk',
 );
-$somvio_location  = function_exists( 'somvio_get_location' ) ? somvio_get_location() : __( 'London, United Kingdom', 'somvio' );
-$somvio_whatsapp  = function_exists( 'somvio_get_whatsapp_url' ) ? somvio_get_whatsapp_url() : 'https://wa.me/447512345678';
-$somvio_socials   = function_exists( 'somvio_get_social_links' ) ? somvio_get_social_links() : array();
-
-// Override phone display to match Figma footer when using default FR header number.
-if ( '+33 980 8989 65' === $somvio_phone['display'] ) {
-	$somvio_phone = array(
-		'display' => '07512 345678',
-		'href'    => 'tel:+447512345678',
-	);
-}
+$somvio_location = function_exists( 'somvio_get_location' ) ? somvio_get_location() : __( 'London, United Kingdom', 'somvio' );
+$somvio_whatsapp = function_exists( 'somvio_get_whatsapp_url' ) ? somvio_get_whatsapp_url() : 'https://wa.me/447402495410';
+$somvio_socials  = function_exists( 'somvio_get_social_links' ) ? somvio_get_social_links() : array();
 
 $somvio_services = array(
 	array(
@@ -202,6 +194,9 @@ $somvio_year = (int) gmdate( 'Y' );
 				>
 					<span class="btn__label"><?php esc_html_e( 'WhatsApp Us', 'somvio' ); ?></span>
 				</a>
+				<p class="site-footer__whatsapp-hint">
+					<?php esc_html_e( 'Prefer to text us for a quick response.', 'somvio' ); ?>
+				</p>
 			</div>
 		</div>
 

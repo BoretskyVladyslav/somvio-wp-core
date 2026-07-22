@@ -52,3 +52,17 @@ function somvio_render_service_single_hero() {
 	get_template_part( 'template-parts/hero/service-single', 'hero' );
 }
 add_action( 'generate_after_header', 'somvio_render_service_single_hero', 5 );
+
+/**
+ * Render the benefits checklist strip below the Single Service hero.
+ *
+ * @return void
+ */
+function somvio_render_service_benefits() {
+	if ( ! somvio_is_service_single_page() ) {
+		return;
+	}
+
+	get_template_part( 'template-parts/sections/service', 'benefits' );
+}
+add_action( 'generate_after_header', 'somvio_render_service_benefits', 8 );

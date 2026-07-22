@@ -71,14 +71,14 @@ function somvio_get_phone() {
 	$phone = apply_filters(
 		'somvio_phone',
 		array(
-			'display' => '+33 980 8989 65',
-			'href'    => 'tel:+33980898965',
+			'display' => '+44 7402 495410',
+			'href'    => 'tel:+447402495410',
 		)
 	);
 
 	return array(
-		'display' => isset( $phone['display'] ) ? (string) $phone['display'] : '+33 980 8989 65',
-		'href'    => isset( $phone['href'] ) ? (string) $phone['href'] : 'tel:+33980898965',
+		'display' => isset( $phone['display'] ) ? (string) $phone['display'] : '+44 7402 495410',
+		'href'    => isset( $phone['href'] ) ? (string) $phone['href'] : 'tel:+447402495410',
 	);
 }
 

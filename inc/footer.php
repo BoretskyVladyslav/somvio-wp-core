@@ -20,14 +20,14 @@ function somvio_get_email() {
 	$email = apply_filters(
 		'somvio_email',
 		array(
-			'display' => 'info@somvio.co.uk',
-			'href'    => 'mailto:info@somvio.co.uk',
+			'display' => 'Info@somvio.co.uk',
+			'href'    => 'mailto:Info@somvio.co.uk',
 		)
 	);
 
 	return array(
-		'display' => isset( $email['display'] ) ? (string) $email['display'] : 'info@somvio.co.uk',
-		'href'    => isset( $email['href'] ) ? (string) $email['href'] : 'mailto:info@somvio.co.uk',
+		'display' => isset( $email['display'] ) ? (string) $email['display'] : 'Info@somvio.co.uk',
+		'href'    => isset( $email['href'] ) ? (string) $email['href'] : 'mailto:Info@somvio.co.uk',
 	);
 }
 
@@ -46,11 +46,11 @@ function somvio_get_location() {
  * @return string
  */
 function somvio_get_whatsapp_url() {
-	return esc_url( apply_filters( 'somvio_whatsapp_url', 'https://wa.me/447512345678' ) );
+	return esc_url( apply_filters( 'somvio_whatsapp_url', 'https://wa.me/447402495410' ) );
 }
 
 /**
- * Social profile URLs (filterable).
+ * Social profile URLs (filterable). TikTok intentionally omitted.
  *
  * @return array<string, array{label: string, url: string, icon: string}>
  */
@@ -70,11 +70,6 @@ function somvio_get_social_links() {
 			'label' => __( 'WhatsApp', 'somvio' ),
 			'url'   => somvio_get_whatsapp_url(),
 			'icon'  => 'icon-whatsapp',
-		),
-		'tiktok'    => array(
-			'label' => __( 'TikTok', 'somvio' ),
-			'url'   => 'https://www.tiktok.com/',
-			'icon'  => 'icon-tiktok',
 		),
 	);
 
