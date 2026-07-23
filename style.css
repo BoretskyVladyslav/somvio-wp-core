@@ -4356,6 +4356,158 @@ a.site-footer__contact-text:focus-visible {
 }
 
 /* -------------------------------------------------------------------------
+   Block: about-story — Figma 300:2032
+   Our Story: image left + brand history copy right.
+   ------------------------------------------------------------------------- */
+.about-story {
+	display: block;
+	position: relative;
+	float: none;
+	clear: both;
+	flex: none;
+	width: 100%;
+	max-width: none;
+	margin: 0;
+	padding: 80px var(--somvio-container-pad);
+	box-sizing: border-box;
+	background-color: var(--somvio-color-bg);
+	color: var(--somvio-color-text);
+}
+
+.site-main > .about-story,
+#primary > .about-story,
+#main > .about-story {
+	display: block;
+	float: none;
+	flex: none;
+	width: 100%;
+	max-width: none;
+	margin-inline: 0;
+}
+
+.about-story__inner {
+	display: block;
+	width: 100%;
+	max-width: 1170px;
+	margin-inline: auto;
+}
+
+.about-story__grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 30px;
+	align-items: center;
+	width: 100%;
+}
+
+.about-story__media {
+	margin: 0;
+	width: 100%;
+	min-width: 0;
+	overflow: hidden;
+	border-radius: var(--somvio-radius);
+	background-color: var(--somvio-color-surface-dark);
+	aspect-ratio: 795 / 503;
+}
+
+.about-story__image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+	border-radius: var(--somvio-radius);
+}
+
+.about-story__media-missing {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 280px;
+	padding: 24px;
+	font-size: 14px;
+	line-height: 1.4;
+	color: var(--somvio-color-text-subtle);
+	text-align: center;
+}
+
+.about-story__content {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: center;
+	gap: 30px;
+	min-width: 0;
+}
+
+.about-story__badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: 10px 30px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50px;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+	white-space: nowrap;
+}
+
+.about-story__title {
+	margin: 0;
+	max-width: 570px;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(1.75rem, 1.2rem + 1.5vw, 2.25rem); /* → 36px */
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.about-story__copy {
+	display: flex;
+	flex-direction: column;
+	gap: 1.4em;
+	max-width: 518px;
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(1rem, 0.9rem + 0.35vw, 1.25rem); /* → 20px */
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+}
+
+.about-story__copy p {
+	margin: 0;
+}
+
+@media (max-width: 991px) {
+	.about-story {
+		padding: 60px 20px;
+	}
+
+	.about-story__grid {
+		grid-template-columns: 1fr;
+		gap: 30px;
+	}
+
+	.about-story__media {
+		aspect-ratio: 16 / 10;
+	}
+
+	.about-story__content {
+		gap: 24px;
+	}
+
+	.about-story__title,
+	.about-story__copy {
+		max-width: none;
+	}
+}
+
+/* -------------------------------------------------------------------------
    Block: service-story — Figma 362:5002
    Our Story overview + 4-item feature bar on Single Service pages.
    ------------------------------------------------------------------------- */
