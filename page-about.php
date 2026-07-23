@@ -5,7 +5,7 @@
  * About Us landing. Hero is the first full-width block inside main;
  * Our Story and Social Proof (Testimonials) follow in the page body.
  *
- * Figma nodes: 384:5980 (hero), 300:2032 (story)
+ * Figma nodes: 384:5980 (hero), 300:2032 (story), 300:2112 (why choose)
  *
  * @package Somvio_Child
  */
@@ -30,6 +30,8 @@ get_header();
 			get_template_part( 'template-parts/sections/about', 'hero' );
 
 			get_template_part( 'template-parts/sections/about', 'story' );
+
+			get_template_part( 'template-parts/sections/about', 'why-choose' );
 
 			/**
 			 * About Us page body sections (future blocks above Social Proof).

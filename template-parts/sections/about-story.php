@@ -13,6 +13,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $somvio_image_path = get_stylesheet_directory() . '/assets/images/about-story.jpg';
 $somvio_image_uri  = get_stylesheet_directory_uri() . '/assets/images/about-story.jpg';
+
+if ( file_exists( $somvio_image_path ) ) {
+	$somvio_image_uri .= '?v=' . rawurlencode( (string) filemtime( $somvio_image_path ) );
+}
 ?>
 <section class="about-story" aria-labelledby="about-story-title">
 	<div class="about-story__inner">
