@@ -4722,6 +4722,177 @@ a.site-footer__contact-text:focus-visible {
 }
 
 /* -------------------------------------------------------------------------
+   Block: about-numbers — Figma 300:2124
+   By the Numbers — 4-stat metrics grid.
+   ------------------------------------------------------------------------- */
+.about-numbers {
+	display: block;
+	position: relative;
+	float: none;
+	clear: both;
+	flex: none;
+	width: 100%;
+	max-width: none;
+	margin: 0;
+	padding: 80px var(--somvio-container-pad);
+	box-sizing: border-box;
+	background-color: var(--somvio-color-bg);
+	color: var(--somvio-color-text);
+}
+
+.site-main > .about-numbers,
+#primary > .about-numbers,
+#main > .about-numbers {
+	display: block;
+	float: none;
+	flex: none;
+	width: 100%;
+	max-width: none;
+	margin-inline: 0;
+}
+
+.about-numbers__inner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 60px;
+	width: 100%;
+	max-width: 1170px;
+	margin-inline: auto;
+}
+
+.about-numbers__header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 15px;
+	width: 100%;
+	max-width: 535px;
+	text-align: center;
+}
+
+.about-numbers__badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: 10px 30px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: 50px;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+	white-space: nowrap;
+}
+
+.about-numbers__title {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2rem, 1.4rem + 2vw, 3rem); /* → 48px */
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+	text-align: center;
+}
+
+.about-numbers__grid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 30px;
+	align-items: stretch;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.about-numbers__card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 20px;
+	width: 100%;
+	min-width: 0;
+	padding: 40px;
+	border: 1px solid var(--somvio-color-border-brand);
+	border-radius: var(--somvio-radius);
+	background-color: var(--somvio-color-surface-dark);
+	box-sizing: border-box;
+	text-align: center;
+	transition:
+		border-color var(--somvio-transition),
+		transform var(--somvio-transition),
+		box-shadow var(--somvio-transition);
+}
+
+.about-numbers__card:hover,
+.about-numbers__card:focus-within {
+	border-color: var(--somvio-color-accent-mid);
+	box-shadow: 0 8px 28px rgba(64, 215, 208, 0.12);
+	transform: translateY(-2px);
+}
+
+.about-numbers__value {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2.25rem, 1.5rem + 2vw, 3.75rem); /* → 60px */
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-accent);
+	white-space: nowrap;
+}
+
+.about-numbers__label {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+	white-space: nowrap;
+}
+
+@media (max-width: 991px) {
+	.about-numbers {
+		padding: 60px 20px;
+	}
+
+	.about-numbers__inner {
+		gap: 40px;
+	}
+
+	.about-numbers__grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.about-numbers__card {
+		padding: 32px 24px;
+	}
+
+	.about-numbers__label {
+		white-space: normal;
+	}
+}
+
+@media (max-width: 767px) {
+	.about-numbers__grid {
+		grid-template-columns: 1fr;
+	}
+
+	.about-numbers__title {
+		font-size: 36px;
+	}
+
+	.about-numbers__value {
+		font-size: 48px;
+		white-space: normal;
+	}
+}
+
+/* -------------------------------------------------------------------------
    Block: service-story — Figma 362:5002
    Our Story overview + 4-item feature bar on Single Service pages.
    ------------------------------------------------------------------------- */
