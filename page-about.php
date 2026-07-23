@@ -2,8 +2,10 @@
 /**
  * Template Name: About Us
  *
- * About Us landing. Global header and footer come from theme hooks;
- * Social Proof (Testimonials) is included in the page body.
+ * About Us landing. Hero sits under the transparent header; Social Proof
+ * (Testimonials) and footer come from the page body / theme hooks.
+ *
+ * Figma node: 384:5980
  *
  * @package Somvio_Child
  */
@@ -13,6 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 get_header();
+
+get_template_part( 'template-parts/sections/about', 'hero' );
 ?>
 
 	<div <?php generate_do_attr( 'content' ); ?>>

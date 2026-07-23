@@ -4160,6 +4160,180 @@ a.site-footer__contact-text:focus-visible {
 }
 
 /* -------------------------------------------------------------------------
+   Block: about-hero — Figma 384:5980
+   Full-bleed dark hero; transparent header merge; accent title + CTAs.
+   ------------------------------------------------------------------------- */
+.about-hero {
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	margin: 0;
+	margin-top: 0 !important;
+	padding: 0;
+	padding-top: 0 !important;
+	min-height: 608px;
+	color: var(--somvio-color-text);
+	background-color: var(--somvio-color-header-bg-alt);
+	background-image: url('assets/images/about-hero-bg.jpg');
+	background-repeat: no-repeat;
+	background-position: center top;
+	background-size: cover;
+}
+
+.somvio-header + .about-hero,
+#masthead + .about-hero,
+.site-header + .about-hero {
+	margin-top: 0 !important;
+}
+
+.about-hero__bg {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+	/* Figma: image ~40% opacity + top gradient for header/text readability */
+	background-color: rgba(0, 5, 14, 0.6);
+	background-image: linear-gradient(
+		180deg,
+		rgba(0, 5, 14, 0.7) 0%,
+		rgba(0, 5, 14, 0) 32.601%
+	);
+}
+
+.about-hero__inner {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 20px;
+	max-width: 1170px;
+	margin-inline: auto;
+	/* Clear fixed header — Figma content top ~125px on desktop header */
+	padding: calc(var(--somvio-header-height) + 60px) var(--somvio-container-pad) 60px;
+	min-height: 608px;
+	box-sizing: border-box;
+}
+
+.about-hero__breadcrumbs {
+	width: 100%;
+}
+
+.about-hero__breadcrumb-list {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.about-hero__breadcrumb-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: var(--somvio-font-size-base);
+	font-weight: 400;
+	line-height: 1.4;
+}
+
+.about-hero__breadcrumb-link {
+	color: var(--somvio-color-text);
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+	transition: color var(--somvio-transition);
+}
+
+.about-hero__breadcrumb-link:hover,
+.about-hero__breadcrumb-link:focus-visible {
+	color: var(--somvio-color-accent);
+}
+
+.about-hero__breadcrumb-sep {
+	display: inline-flex;
+	flex-shrink: 0;
+	width: 18px;
+	height: 18px;
+	color: var(--somvio-color-text);
+}
+
+.about-hero__breadcrumb-sep svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.about-hero__breadcrumb-current {
+	color: var(--somvio-color-text);
+}
+
+.about-hero__title {
+	margin: 0;
+	max-width: 571px;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2.25rem, 1.2rem + 3vw, 4.5rem); /* → 72px */
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.about-hero__title-accent {
+	color: var(--somvio-color-accent);
+}
+
+.about-hero__text {
+	margin: 0;
+	max-width: 518px;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem); /* → 20px */
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+}
+
+.about-hero__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+	align-items: flex-start;
+}
+
+@media (max-width: 767px) {
+	.about-hero {
+		min-height: 0;
+		background-position: center top;
+	}
+
+	.about-hero__inner {
+		padding: calc(var(--somvio-header-height) + 40px) 20px 40px;
+		min-height: 0;
+		gap: 24px;
+	}
+
+	.about-hero__title {
+		max-width: none;
+		font-size: 2.5rem; /* 40px */
+	}
+
+	.about-hero__text {
+		max-width: none;
+	}
+
+	.about-hero__actions {
+		width: 100%;
+	}
+
+	.about-hero__actions .btn {
+		flex: 1 1 auto;
+		justify-content: center;
+		text-align: center;
+	}
+}
+
+/* -------------------------------------------------------------------------
    Block: service-story — Figma 362:5002
    Our Story overview + 4-item feature bar on Single Service pages.
    ------------------------------------------------------------------------- */
