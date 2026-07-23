@@ -2,7 +2,7 @@
 /**
  * FAQ page — hero body class, accordion section, assets.
  *
- * Accordion UI: Figma 300:2375. Hero: Figma 300:2369.
+ * Accordion UI: Figma 300:2375. Hero content: Figma 300:2371.
  * Dedicated FAQ page template owns markup; this file wires detection + enqueue.
  *
  * @package Somvio_Child

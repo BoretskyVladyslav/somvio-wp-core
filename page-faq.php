@@ -5,7 +5,7 @@
  * FAQ landing. Hero is the first full-width block inside main;
  * accordion follows in the page body.
  *
- * Figma nodes: 300:2369 (hero), 300:2375 (accordion)
+ * Figma nodes: 300:2371 (hero content), 300:2375 (accordion)
  *
  * @package Somvio_Child
  */
@@ -36,7 +36,7 @@ get_header();
 			 */
 			do_action( 'somvio_faq_page_content' );
 
-			get_template_part( 'template-parts/sections/faq' );
+			get_template_part( 'template-parts/sections/faq', 'accordion' );
 
 			if ( generate_has_default_loop() ) {
 				while ( have_posts() ) :

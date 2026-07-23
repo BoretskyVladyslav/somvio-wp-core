@@ -1,6 +1,8 @@
 <?php
 /**
- * FAQ page hero — Figma 300:2369.
+ * FAQ page hero content — Figma 300:2371 (within header 300:2369).
+ *
+ * Overlay: photo at 40% opacity over #00050e (Figma header img opacity-40).
  *
  * @package Somvio_Child
  */
@@ -48,7 +50,7 @@ if ( file_exists( $somvio_bg_path ) ) {
 						?>
 					</span>
 					<span class="faq-hero__breadcrumb-current">
-						<?php esc_html_e( 'FAQ', 'somvio' ); ?>
+						<?php esc_html_e( 'Frequently Asked Questions', 'somvio' ); ?>
 					</span>
 				</li>
 			</ol>
