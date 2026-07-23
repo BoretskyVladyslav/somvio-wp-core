@@ -2,7 +2,8 @@
 /**
  * About Us — Why Choose Somvio benefits grid.
  *
- * Figma node: 300:2112
+ * Figma node: 300:2112 (6-card promise grid).
+ * Note: composition 389:6012 is Numbers + Social Proof (not this grid).
  *
  * @package Somvio_Child
  */

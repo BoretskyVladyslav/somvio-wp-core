@@ -2,7 +2,7 @@
 /**
  * Testimonials — customer reviews and trust proof.
  *
- * Figma node: 325:5029
+ * Figma: 300:2040 (section), 300:2042 (Social Proof badge), composition 389:6012.
  *
  * @package Somvio_Child
  */

@@ -90,7 +90,7 @@ function somvio_get_phone() {
 function somvio_enqueue_header_assets() {
 	wp_enqueue_style(
 		'somvio-montserrat',
-		'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap',
+		'https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;1,400&display=swap',
 		array(),
 		null
 	);

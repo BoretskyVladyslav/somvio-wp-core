@@ -3024,11 +3024,11 @@ button.how-it-works__trigger:focus-visible .how-it-works__icon {
 }
 
 /* -------------------------------------------------------------------------
-   Testimonials — Figma 325:5029
+   Testimonials / Social Proof — Figma 300:2040 (badge 300:2042), composition 389:6012
    ------------------------------------------------------------------------- */
 .testimonials {
 	position: relative;
-	padding: 80px var(--somvio-container-pad) 100px;
+	padding: 0 var(--somvio-container-pad) 100px;
 	background-color: var(--somvio-color-bg);
 	color: var(--somvio-color-text);
 	overflow: hidden;
@@ -3050,8 +3050,11 @@ button.how-it-works__trigger:focus-visible .how-it-works__icon {
 	align-items: center;
 	gap: 15px;
 	width: 100%;
-	max-width: 535px;
+	max-width: 1170px;
+	padding-top: 80px;
+	border-top: 1px solid var(--somvio-color-accent);
 	text-align: center;
+	box-sizing: border-box;
 }
 
 .testimonials__badge {
@@ -3241,11 +3244,15 @@ button.how-it-works__trigger:focus-visible .how-it-works__icon {
 
 @media (max-width: 1023px) {
 	.testimonials {
-		padding: 64px var(--somvio-container-pad) 80px;
+		padding: 0 var(--somvio-container-pad) 80px;
 	}
 
 	.testimonials__inner {
 		gap: 48px;
+	}
+
+	.testimonials__header {
+		padding-top: 64px;
 	}
 
 	.testimonials__grid {
@@ -3278,11 +3285,15 @@ button.how-it-works__trigger:focus-visible .how-it-works__icon {
 
 @media (max-width: 767px) {
 	.testimonials {
-		padding: 56px 20px 64px;
+		padding: 0 20px 64px;
 	}
 
 	.testimonials__inner {
 		gap: 40px;
+	}
+
+	.testimonials__header {
+		padding-top: 56px;
 	}
 
 	.testimonials__badge {
@@ -4604,6 +4615,7 @@ a.site-footer__contact-text:focus-visible {
 	align-items: flex-start;
 	gap: 20px;
 	width: 100%;
+	height: 100%;
 	min-width: 0;
 	min-height: 230px;
 	padding: 40px;
@@ -4837,21 +4849,25 @@ a.site-footer__contact-text:focus-visible {
 
 .about-numbers__value {
 	margin: 0;
+	width: 100%;
 	font-family: var(--somvio-font-sans);
 	font-size: clamp(2.25rem, 1.5rem + 2vw, 3.75rem); /* → 60px */
 	font-weight: 600;
 	line-height: 1.1;
 	color: var(--somvio-color-accent);
+	text-align: center;
 	white-space: nowrap;
 }
 
 .about-numbers__label {
 	margin: 0;
+	width: 100%;
 	font-family: var(--somvio-font-sans);
 	font-size: 16px;
 	font-weight: 400;
 	line-height: 1.1;
 	color: var(--somvio-color-text);
+	text-align: center;
 	white-space: nowrap;
 }
 

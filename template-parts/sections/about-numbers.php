@@ -1,8 +1,8 @@
 <?php
 /**
- * About Us — By the Numbers stats grid.
+ * About Us — By the Numbers stats grid (Our Promise metrics).
  *
- * Figma node: 300:2124
+ * Figma: 300:2124, About composition 389:6012.
  *
  * @package Somvio_Child
  */

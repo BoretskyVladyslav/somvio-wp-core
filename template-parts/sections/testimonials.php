@@ -1,6 +1,8 @@
 <?php
 /**
- * Testimonials section markup — Figma 325:5029.
+ * Testimonials / Social Proof section markup.
+ *
+ * Figma: 300:2040 (section), 300:2042 (badge), parent composition 389:6012.
  *
  * @package Somvio_Child
  */
@@ -9,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+$somvio_icons_dir = get_stylesheet_directory() . '/assets/icons';
 $somvio_icons_uri = get_stylesheet_directory_uri() . '/assets/icons';
 
 $somvio_testimonials = array(
@@ -65,7 +68,8 @@ $somvio_trust_badges = array(
 <section class="testimonials" aria-labelledby="testimonials-title">
 	<div class="testimonials__inner">
 		<header class="testimonials__header">
-			<h2 id="testimonials-title" class="testimonials__title reveal-on-scroll">
+			<p class="testimonials__badge reveal-on-scroll"><?php esc_html_e( 'Social Proof', 'somvio' ); ?></p>
+			<h2 id="testimonials-title" class="testimonials__title reveal-on-scroll" style="--reveal-delay: 0.05s;">
 				<?php esc_html_e( 'Testimonials', 'somvio' ); ?>
 			</h2>
 		</header>
@@ -92,12 +96,20 @@ $somvio_trust_badges = array(
 			<?php endforeach; ?>
 		</ul>
 
-		<div class="testimonials__trust-bar">
+		<div class="testimonials__trust-bar reveal-on-scroll" style="--reveal-delay: 0.2s;">
 			<?php foreach ( $somvio_trust_badges as $badge ) : ?>
+				<?php
+				$logo_path = $somvio_icons_dir . '/' . $badge['logo'];
+				$logo_uri  = $somvio_icons_uri . '/' . $badge['logo'];
+
+				if ( file_exists( $logo_path ) ) {
+					$logo_uri .= '?v=' . rawurlencode( (string) filemtime( $logo_path ) );
+				}
+				?>
 				<div class="testimonials__trust-item testimonials__trust-item--<?php echo esc_attr( $badge['mod'] ); ?>">
 					<img
 						class="testimonials__trust-logo"
-						src="<?php echo esc_url( $somvio_icons_uri . '/' . $badge['logo'] ); ?>"
+						src="<?php echo esc_url( $logo_uri ); ?>"
 						alt="<?php echo esc_attr( $badge['alt'] ); ?>"
 						width="<?php echo esc_attr( (string) $badge['width'] ); ?>"
 						height="<?php echo esc_attr( (string) $badge['height'] ); ?>"
