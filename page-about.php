@@ -2,8 +2,8 @@
 /**
  * Template Name: About Us
  *
- * About Us landing. Hero sits under the transparent header; Social Proof
- * (Testimonials) and footer come from the page body / theme hooks.
+ * About Us landing. Hero is the first full-width block inside main;
+ * Social Proof (Testimonials) follows in the page body.
  *
  * Figma node: 384:5980
  *
@@ -15,8 +15,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 get_header();
-
-get_template_part( 'template-parts/sections/about', 'hero' );
 ?>
 
 	<div <?php generate_do_attr( 'content' ); ?>>
@@ -28,6 +26,8 @@ get_template_part( 'template-parts/sections/about', 'hero' );
 			 * @since 0.1
 			 */
 			do_action( 'generate_before_main_content' );
+
+			get_template_part( 'template-parts/sections/about', 'hero' );
 
 			/**
 			 * About Us page body sections (future blocks above Social Proof).

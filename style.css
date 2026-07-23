@@ -4162,22 +4162,41 @@ a.site-footer__contact-text:focus-visible {
 /* -------------------------------------------------------------------------
    Block: about-hero — Figma 384:5980
    Full-bleed dark hero; transparent header merge; accent title + CTAs.
+   Must stay a block-level section (never a .site-content flex/grid sibling).
    ------------------------------------------------------------------------- */
 .about-hero {
+	display: block;
 	position: relative;
 	isolation: isolate;
 	overflow: hidden;
+	float: none;
+	clear: both;
+	flex: none;
+	width: 100%;
+	max-width: none;
 	margin: 0;
 	margin-top: 0 !important;
 	padding: 0;
 	padding-top: 0 !important;
 	min-height: 608px;
+	box-sizing: border-box;
 	color: var(--somvio-color-text);
 	background-color: var(--somvio-color-header-bg-alt);
 	background-image: url('assets/images/about-hero-bg.jpg');
 	background-repeat: no-repeat;
 	background-position: center top;
 	background-size: cover;
+}
+
+.site-main > .about-hero,
+#primary > .about-hero,
+#main > .about-hero {
+	display: block;
+	float: none;
+	flex: none;
+	width: 100%;
+	max-width: none;
+	margin-inline: 0;
 }
 
 .somvio-header + .about-hero,
@@ -4190,6 +4209,8 @@ a.site-footer__contact-text:focus-visible {
 	position: absolute;
 	inset: 0;
 	z-index: 0;
+	width: 100%;
+	height: 100%;
 	pointer-events: none;
 	/* Figma: image ~40% opacity + top gradient for header/text readability */
 	background-color: rgba(0, 5, 14, 0.6);
@@ -4207,6 +4228,7 @@ a.site-footer__contact-text:focus-visible {
 	flex-direction: column;
 	align-items: flex-start;
 	gap: 20px;
+	width: 100%;
 	max-width: 1170px;
 	margin-inline: auto;
 	/* Clear fixed header — Figma content top ~125px on desktop header */
