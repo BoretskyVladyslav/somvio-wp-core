@@ -1,8 +1,9 @@
 <?php
 /**
- * FAQ accordion section.
+ * FAQ page — hero body class, accordion section, assets.
  *
- * Accordion UI: Figma 300:2375 (FAQ page). Rendered on the homepage before CTA.
+ * Accordion UI: Figma 300:2375. Hero: Figma 300:2369.
+ * Dedicated FAQ page template owns markup; this file wires detection + enqueue.
  *
  * @package Somvio_Child
  */
@@ -12,31 +13,45 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Whether the current view should show the FAQ section.
+ * Whether the current view is the FAQ page.
+ *
+ * @return bool
+ */
+function somvio_is_faq_page() {
+	if ( is_page( 'faq' ) ) {
+		return true;
+	}
+
+	if ( is_page_template( 'page-faq.php' ) ) {
+		return true;
+	}
+
+	return (bool) apply_filters( 'somvio_is_faq_page', false );
+}
+
+/**
+ * Whether the current view should show the FAQ accordion section.
  *
  * @return bool
  */
 function somvio_should_render_faq() {
-	if ( function_exists( 'somvio_is_hero_page' ) && somvio_is_hero_page() ) {
-		return true;
-	}
-
-	return (bool) apply_filters( 'somvio_should_render_faq', false );
+	return somvio_is_faq_page();
 }
 
 /**
- * Render the FAQ section on the homepage (below Testimonials).
+ * Mark FAQ so the transparent sticky header merges with the hero.
  *
- * @return void
+ * @param string[] $classes Body classes.
+ * @return string[]
  */
-function somvio_render_faq_home() {
-	if ( ! function_exists( 'somvio_is_hero_page' ) || ! somvio_is_hero_page() ) {
-		return;
+function somvio_faq_body_class( $classes ) {
+	if ( somvio_is_faq_page() ) {
+		$classes[] = 'somvio-has-hero';
 	}
 
-	get_template_part( 'template-parts/sections/faq' );
+	return $classes;
 }
-add_action( 'generate_after_header', 'somvio_render_faq_home', 35 );
+add_filter( 'body_class', 'somvio_faq_body_class' );
 
 /**
  * Enqueue accordion script wherever FAQ needs it.
