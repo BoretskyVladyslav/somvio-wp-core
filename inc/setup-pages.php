@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** @var int Bump to re-run page seeding on admin_init / theme switch. */
-const SOMVIO_CORE_PAGES_VERSION = 2;
+const SOMVIO_CORE_PAGES_VERSION = 3;
 
 /**
  * Core pages to ensure exist (slug => title).
@@ -165,6 +165,38 @@ function somvio_ensure_page( $slug, $title, $parent_id = 0 ) {
 }
 
 /**
+ * Ensure the About Us page exists with the About Us template.
+ *
+ * @return int Page ID or 0.
+ */
+function somvio_ensure_about_page() {
+	$page_id = somvio_ensure_page( 'about-us', 'About Us' );
+
+	if ( $page_id <= 0 ) {
+		return 0;
+	}
+
+	$page = get_post( $page_id );
+
+	if ( $page instanceof WP_Post && 'publish' !== $page->post_status ) {
+		wp_update_post(
+			array(
+				'ID'          => $page_id,
+				'post_status' => 'publish',
+			)
+		);
+	}
+
+	$template = get_post_meta( $page_id, '_wp_page_template', true );
+
+	if ( 'page-about.php' !== $template ) {
+		update_post_meta( $page_id, '_wp_page_template', 'page-about.php' );
+	}
+
+	return $page_id;
+}
+
+/**
  * Ensure a single-service page exists with the Single Service template.
  *
  * @param string $slug      Service slug.
@@ -225,6 +257,11 @@ function somvio_setup_core_pages() {
 		$page_ids = array();
 
 		foreach ( somvio_get_core_pages() as $slug => $title ) {
+			if ( 'about-us' === $slug ) {
+				$page_ids[ $slug ] = somvio_ensure_about_page();
+				continue;
+			}
+
 			$page_ids[ $slug ] = somvio_ensure_page( $slug, $title );
 		}
 
