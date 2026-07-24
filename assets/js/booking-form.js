@@ -1,5 +1,5 @@
 /**
- * Booking page 4-step form + sticky order summary (Figma 418:6213).
+ * Booking page form (Figma 418:6214 Block 1).
  * Client price is preview-only; server recalculates on submit.
  */
 (function () {
@@ -111,13 +111,6 @@
 		var calWeekdays = root.querySelector('[data-booking-cal-weekdays]');
 		var calPrev = root.querySelector('[data-booking-cal-prev]');
 		var calNext = root.querySelector('[data-booking-cal-next]');
-		var summaryService = root.querySelector('[data-summary-service]');
-		var summaryRooms = root.querySelector('[data-summary-rooms]');
-		var summaryExtras = root.querySelector('[data-summary-extras]');
-		var summaryDatetime = root.querySelector('[data-summary-datetime]');
-		var summaryAddress = root.querySelector('[data-summary-address]');
-		var summaryTotal = root.querySelector('[data-summary-total]');
-		var summaryLive = root.querySelector('[data-summary-live]');
 		var globalError = root.querySelector('[data-booking-error]');
 
 		var today = new Date();
@@ -219,56 +212,8 @@
 			state.previewTotal = getPreviewTotal(state);
 		}
 
-		function renderSummary() {
+		function syncState() {
 			readFields();
-
-			if (summaryService) {
-				summaryService.textContent = services[state.service] || state.service || (i18n.notSelected || 'Not selected');
-			}
-
-			if (summaryRooms) {
-				summaryRooms.textContent =
-					state.bedrooms +
-					' bed · ' +
-					state.toilets +
-					' toilet · ' +
-					state.kitchens +
-					' kitchen · ' +
-					state.bathrooms +
-					' bath';
-			}
-
-			if (summaryExtras) {
-				var addonDefs = rates.addons || {};
-				var labels = state.addons
-					.map(function (key) {
-						return addonDefs[key] && addonDefs[key].label ? addonDefs[key].label : key;
-					})
-					.filter(Boolean);
-				summaryExtras.textContent = labels.length ? labels.join(', ') : i18n.none || 'None';
-			}
-
-			if (summaryDatetime) {
-				if (state.date && state.time) {
-					summaryDatetime.textContent = formatDisplayDate(state.date) + ' · ' + formatSlot(state.time);
-				} else if (state.date) {
-					summaryDatetime.textContent = formatDisplayDate(state.date);
-				} else {
-					summaryDatetime.textContent = i18n.notSelected || 'Not selected';
-				}
-			}
-
-			if (summaryAddress) {
-				summaryAddress.textContent = trim(state.address) || i18n.notSelected || 'Not selected';
-			}
-
-			var text = formatMoney(state.previewTotal);
-			if (summaryTotal) {
-				summaryTotal.textContent = text;
-			}
-			if (summaryLive) {
-				summaryLive.textContent = (i18n.estimatedTotal || 'Estimated total') + ' ' + text;
-			}
 		}
 
 		function renderServiceCards() {
@@ -391,7 +336,7 @@
 							dateDisplay.value = formatDisplayDate(iso);
 						}
 						renderCalendar();
-						renderSummary();
+						syncState();
 						showError('');
 					});
 				}
@@ -453,14 +398,7 @@
 			clearFieldErrors();
 			showError('');
 			setLoading(false);
-			renderSummary();
-
-			if (isSuccess) {
-				var summary = root.querySelector('[data-booking-summary]');
-				if (summary) {
-					summary.hidden = true;
-				}
-			}
+			syncState();
 
 			root.dispatchEvent(
 				new CustomEvent('somvio:booking-step', {
@@ -582,7 +520,7 @@
 			state.submitting = true;
 			setLoading(true);
 			readFields();
-			renderSummary();
+			syncState();
 
 			var payload = {
 				service: state.service,
@@ -626,7 +564,7 @@
 
 					if (result.status === 409 && result.data && result.data.data && result.data.data.total != null) {
 						state.previewTotal = Number(result.data.data.total);
-						renderSummary();
+						syncState();
 						showError(result.data.message || i18n.submitError || 'Something went wrong. Please try again.');
 						return;
 					}
@@ -642,7 +580,7 @@
 
 					if (result.data.total != null) {
 						state.previewTotal = Number(result.data.total);
-						renderSummary();
+						syncState();
 					}
 
 					setStep(SUCCESS_STEP);
@@ -665,7 +603,7 @@
 			btn.addEventListener('click', function () {
 				state.service = btn.getAttribute('data-booking-service') || '';
 				renderServiceCards();
-				renderSummary();
+				syncState();
 			});
 		});
 
@@ -710,7 +648,7 @@
 				state[key] = String(n);
 				syncButtons(n);
 				setActive();
-				renderSummary();
+				syncState();
 			}
 
 			syncButtons(parseInt(input.value, 10) || min);
@@ -739,7 +677,7 @@
 					state.addons.splice(idx, 1);
 				}
 				renderAddons();
-				renderSummary();
+				syncState();
 			});
 		});
 
@@ -751,7 +689,7 @@
 					timeField.value = state.time;
 				}
 				renderSlots();
-				renderSummary();
+				syncState();
 				setFieldError('time', '');
 				showError('');
 			});
@@ -814,7 +752,7 @@
 			}
 			el.addEventListener('input', function () {
 				state[key] = el.value;
-				renderSummary();
+				syncState();
 			});
 		});
 
@@ -831,7 +769,7 @@
 		renderWeekdays();
 		renderServiceCards();
 		renderAddons();
-		renderSummary();
+		syncState();
 		setStep(1);
 	}
 
