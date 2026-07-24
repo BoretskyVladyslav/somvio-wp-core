@@ -10093,6 +10093,13 @@ body.somvio-has-hero.page-booking .site-main > * {
 	outline: none;
 }
 
+.booking-form__cal-nav:disabled,
+.booking-form__cal-nav[aria-disabled='true'] {
+	opacity: 0.35;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
 .booking-form__cal-day.is-outside {
 	color: rgba(255, 255, 255, 0.35) !important;
 	-webkit-text-fill-color: rgba(255, 255, 255, 0.35);
@@ -10101,11 +10108,20 @@ body.somvio-has-hero.page-booking .site-main > * {
 	opacity: 1 !important;
 }
 
-.booking-form__cal-day.is-disabled {
+.booking-form__cal-day.is-disabled,
+.booking-form__cal-day:disabled {
 	cursor: not-allowed;
-	color: rgba(255, 255, 255, 0.4) !important;
-	-webkit-text-fill-color: rgba(255, 255, 255, 0.4);
+	pointer-events: none !important;
+	color: rgba(255, 255, 255, 0.35) !important;
+	-webkit-text-fill-color: rgba(255, 255, 255, 0.35) !important;
+	background-color: rgba(255, 255, 255, 0.08);
 	opacity: 1 !important;
+}
+
+.booking-form__cal-day.is-outside.is-disabled,
+.booking-form__cal-day.is-outside:disabled {
+	color: rgba(255, 255, 255, 0.22) !important;
+	-webkit-text-fill-color: rgba(255, 255, 255, 0.22) !important;
 }
 
 .booking-form__cal-day.is-selected,

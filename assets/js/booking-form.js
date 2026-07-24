@@ -321,6 +321,48 @@
 			});
 		}
 
+		function syncCalViewToDate(iso) {
+			if (!iso) {
+				return false;
+			}
+			var parts = String(iso).split('-');
+			if (parts.length !== 3) {
+				return false;
+			}
+			var y = parseInt(parts[0], 10);
+			var m = parseInt(parts[1], 10) - 1;
+			if (isNaN(y) || isNaN(m) || m < 0 || m > 11) {
+				return false;
+			}
+			state.calYear = y;
+			state.calMonth = m;
+			return true;
+		}
+
+		function canNavigatePrevMonth() {
+			return (
+				state.calYear > today.getFullYear() ||
+				(state.calYear === today.getFullYear() && state.calMonth > today.getMonth())
+			);
+		}
+
+		function isPastDate(dateObj) {
+			var cellDay = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+			return cellDay < today;
+		}
+
+		function updateCalNavButtons() {
+			if (calPrev) {
+				var allowPrev = canNavigatePrevMonth();
+				calPrev.disabled = !allowPrev;
+				calPrev.setAttribute('aria-disabled', allowPrev ? 'false' : 'true');
+			}
+			if (calNext) {
+				calNext.disabled = false;
+				calNext.setAttribute('aria-disabled', 'false');
+			}
+		}
+
 		function renderCalendar() {
 			if (!calGrid || !calLabel) {
 				return;
@@ -328,6 +370,7 @@
 
 			var months = i18n.months || [];
 			calLabel.textContent = (months[state.calMonth] || '') + ' ' + state.calYear;
+			updateCalNavButtons();
 
 			var first = new Date(state.calYear, state.calMonth, 1);
 			var startDow = first.getDay();
@@ -375,14 +418,15 @@
 				btn.style.opacity = '1';
 				btn.style.display = 'flex';
 
-				var cellDay = new Date(cell.date.getFullYear(), cell.date.getMonth(), cell.date.getDate());
-				var past = cellDay < today;
+				var past = isPastDate(cell.date);
 				if (cell.outside) {
 					btn.classList.add('is-outside');
 				}
 				if (past) {
 					btn.classList.add('is-disabled');
 					btn.disabled = true;
+					btn.setAttribute('aria-disabled', 'true');
+					btn.tabIndex = -1;
 				}
 				if (state.date === iso) {
 					btn.classList.add('is-selected');
@@ -395,7 +439,11 @@
 					btn.addEventListener('click', function (event) {
 						event.preventDefault();
 						event.stopPropagation();
+						if (isPastDate(cell.date)) {
+							return;
+						}
 						state.date = iso;
+						syncCalViewToDate(iso);
 						var dateField = field('date');
 						if (dateField) {
 							dateField.value = iso;
@@ -437,6 +485,14 @@
 		function setCalendarOpen(open) {
 			if (!calendarEl) {
 				return;
+			}
+			if (open) {
+				if (state.date) {
+					syncCalViewToDate(state.date);
+				} else {
+					state.calYear = today.getFullYear();
+					state.calMonth = today.getMonth();
+				}
 			}
 			calendarEl.hidden = !open;
 			if (dateBlock) {
@@ -605,6 +661,29 @@
 					setFieldError('date', i18n.selectDate || 'Please select a date.');
 					showError(i18n.selectDate || 'Please select a date.');
 					return false;
+				}
+				var selectedParts = String(state.date).split('-');
+				if (selectedParts.length === 3) {
+					var selectedDay = new Date(
+						parseInt(selectedParts[0], 10),
+						parseInt(selectedParts[1], 10) - 1,
+						parseInt(selectedParts[2], 10)
+					);
+					if (isPastDate(selectedDay)) {
+						state.date = '';
+						var dateField = field('date');
+						if (dateField) {
+							dateField.value = '';
+						}
+						if (dateDisplay) {
+							dateDisplay.value = '';
+						}
+						setFieldError('date', i18n.selectDate || 'Please select a date.');
+						showError(i18n.selectDate || 'Please select a future date.');
+						updateSlotsAvailability();
+						updateNextAvailability();
+						return false;
+					}
 				}
 				if (!state.time) {
 					setFieldError('time', i18n.selectTime || 'Please select a time slot.');
@@ -838,6 +917,9 @@
 
 		if (calPrev) {
 			calPrev.addEventListener('click', function () {
+				if (!canNavigatePrevMonth()) {
+					return;
+				}
 				state.calMonth -= 1;
 				if (state.calMonth < 0) {
 					state.calMonth = 11;
