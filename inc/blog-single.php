@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** @var int Bump to re-run demo blog post seeding. */
-const SOMVIO_DEMO_BLOG_POST_VERSION = 1;
+const SOMVIO_DEMO_BLOG_POST_VERSION = 3;
 
 /**
  * Whether the current view is a single blog post.
@@ -39,17 +39,33 @@ function somvio_blog_single_body_class( $classes ) {
 add_filter( 'body_class', 'somvio_blog_single_body_class' );
 
 /**
- * Demo single-post definition (Figma 300:2415).
+ * Demo single-post definition (Figma 300:2415 hero + 300:2421 body).
  *
  * @return array{slug:string,title:string,category:string,date:string,content:string,image:string}
  */
 function somvio_get_demo_blog_post_definition() {
+	$content  = '<p>Keeping your home clean is about more than appearance—it\'s about creating a healthier, more comfortable environment for you and your family. While regular tidying helps maintain order, professional cleaning reaches areas that are often overlooked, removing dust, bacteria and allergens that accumulate over time.</p>';
+	$content .= "\n\n";
+	$content .= '<p>The ideal cleaning schedule depends on your lifestyle, household size and daily routine. Families with children or pets generally benefit from weekly or bi-weekly cleaning, while smaller households may only require professional cleaning once a month. High-traffic areas such as kitchens, bathrooms and living rooms usually need more frequent attention than guest rooms or storage spaces.</p>';
+	$content .= "\n\n";
+	$content .= '<p>Professional cleaners use specialized equipment and high-quality cleaning products to achieve results that are difficult to replicate with everyday household supplies. From sanitizing surfaces to removing stubborn dirt and polishing finishes, a professional service helps preserve the condition of your home while saving you valuable time.</p>';
+	$content .= "\n\n";
+	$content .= '<p>Regular cleaning also improves indoor air quality by reducing dust, pollen and other airborne particles. This can be especially beneficial for people who suffer from allergies or respiratory conditions. Clean floors, fresh upholstery and sanitized bathrooms contribute to a healthier living space throughout the year.</p>';
+	$content .= "\n\n";
+	$content .= '<p>Many homeowners choose to combine routine maintenance with seasonal deep cleaning. While weekly or bi-weekly visits keep the property looking its best, deep cleaning every three to six months focuses on hard-to-reach areas such as behind furniture, inside appliances, window frames and baseboards. This approach ensures every part of your home receives the attention it deserves.</p>';
+	$content .= "\n\n";
+	$content .= '<p>If you\'re preparing for a special event, moving into a new property or leaving a rental home, scheduling a professional deep clean can make the process significantly easier. It provides peace of mind and ensures your property looks immaculate from top to bottom.</p>';
+	$content .= "\n\n";
+	$content .= '<p>At Somvio, we offer flexible cleaning plans designed to fit your schedule and your home\'s unique needs. Whether you\'re looking for a one-time deep clean or regular maintenance, our experienced team is committed to delivering exceptional results with every visit.</p>';
+	$content .= "\n\n";
+	$content .= '<p>A clean home is an investment in your health, comfort and well-being. By scheduling professional cleaning on a regular basis, you can enjoy more free time while keeping your living space spotless all year round.</p>';
+
 	return array(
 		'slug'     => 'how-often-should-you-schedule-professional-cleaning',
 		'title'    => 'How Often Should You Schedule Professional Cleaning?',
 		'category' => 'Cleaning Tips',
 		'date'     => '2024-12-16 10:00:00',
-		'content'  => "Regular professional cleaning helps maintain a healthier living environment and extends the life of your furniture and flooring.\n\nA consistent schedule keeps dust, allergens, and buildup under control so your home stays comfortable between visits.",
+		'content'  => $content,
 		'image'    => 'assets/images/blog-single-hero-bg.jpg',
 	);
 }
@@ -185,12 +201,13 @@ function somvio_ensure_demo_blog_post() {
 		$post_id = (int) $post_id;
 	}
 
-	// Keep title / date / slug aligned with the Figma demo.
+	// Keep title / date / slug / body aligned with the Figma demo.
 	wp_update_post(
 		array(
 			'ID'            => $post_id,
 			'post_title'    => $def['title'],
 			'post_name'     => $slug,
+			'post_content'  => $def['content'],
 			'post_status'   => 'publish',
 			'post_date'     => $def['date'],
 			'post_date_gmt' => get_gmt_from_date( $def['date'] ),

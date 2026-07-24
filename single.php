@@ -28,8 +28,10 @@ get_header();
 
 			get_template_part( 'template-parts/sections/blog', 'single-hero' );
 
+			get_template_part( 'template-parts/sections/blog', 'single-content' );
+
 			/**
-			 * Single post sections (Article Body, Author / Related).
+			 * Single post sections (Author / Related extensions).
 			 *
 			 * @since 1.0.0
 			 */

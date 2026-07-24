@@ -7656,3 +7656,210 @@ body.somvio-has-hero.single-post .site-main > * {
 		font-size: 1rem;
 	}
 }
+
+/* -------------------------------------------------------------------------
+   Block: blog-single-content — Figma 300:2421
+   Article + related links (left) / sticky Instant Quote (right).
+   Desktop ≥992: 2-col; below: stacked (quote first).
+   ------------------------------------------------------------------------- */
+.blog-single-content {
+	display: block !important;
+	float: none !important;
+	flex: none !important;
+	clear: both;
+	width: 100% !important;
+	max-width: none;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	background-color: var(--somvio-color-bg);
+	color: var(--somvio-color-text-body);
+}
+
+.site-main > .blog-single-content,
+#primary > .blog-single-content,
+#main > .blog-single-content {
+	display: block !important;
+	float: none !important;
+	flex: none !important;
+	width: 100% !important;
+	max-width: none;
+	margin-inline: 0;
+}
+
+.blog-single-content__inner {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 40px;
+	align-items: start;
+	width: 100%;
+	max-width: 1170px;
+	margin-inline: auto;
+	padding: 60px var(--somvio-container-pad);
+	box-sizing: border-box;
+}
+
+.blog-single-content__quote.quote-card--solid {
+	width: 100%;
+	max-width: none;
+	min-height: 0;
+	justify-self: stretch;
+	border: none;
+	border-radius: var(--somvio-radius);
+	background-color: var(--somvio-color-surface-dark); /* #091e2c */
+	-webkit-backdrop-filter: none;
+	backdrop-filter: none;
+	box-shadow: none;
+}
+
+.blog-single-content__article {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	min-width: 0;
+}
+
+.blog-single-content__media {
+	margin: 0;
+	width: 100%;
+	overflow: hidden;
+	border-radius: 12px;
+}
+
+.blog-single-content__image {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 770 / 463;
+	object-fit: cover;
+	border-radius: 12px;
+}
+
+.blog-single-content__entry {
+	font-family: var(--somvio-font-sans);
+	font-size: 14px;
+	font-weight: 400;
+	line-height: 1.3;
+	color: var(--somvio-color-text-body); /* #ced2d5 — readable on dark */
+}
+
+.blog-single-content__entry > *:first-child {
+	margin-top: 0;
+}
+
+.blog-single-content__entry > *:last-child {
+	margin-bottom: 0;
+}
+
+.blog-single-content__entry p {
+	margin: 0 0 1.15em;
+	color: inherit;
+}
+
+.blog-single-content__entry strong,
+.blog-single-content__entry b {
+	font-weight: 600;
+	color: var(--somvio-color-text);
+}
+
+.blog-single-content__entry a {
+	color: var(--somvio-color-accent);
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+}
+
+.blog-single-content__entry a:hover,
+.blog-single-content__entry a:focus-visible {
+	color: var(--somvio-color-accent-mid);
+}
+
+.blog-single-content__related {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin-top: 8px;
+	padding-top: 8px;
+}
+
+.blog-single-content__related-title {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.3;
+	color: var(--somvio-color-text);
+}
+
+.blog-single-content__related-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.blog-single-content__related-item {
+	margin: 0;
+}
+
+.blog-single-content__related-link {
+	font-family: var(--somvio-font-sans);
+	font-size: 14px;
+	font-weight: 400;
+	line-height: 1.3;
+	color: var(--somvio-color-text-body);
+	text-decoration: none;
+	transition: color var(--somvio-transition);
+}
+
+.blog-single-content__related-link:hover,
+.blog-single-content__related-link:focus-visible {
+	color: var(--somvio-color-accent);
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+}
+
+.blog-single-content .quote-card__step {
+	color: rgba(255, 255, 255, 0.5);
+}
+
+@media (min-width: 992px) {
+	.blog-single-content__inner {
+		grid-template-columns: minmax(0, 1fr) 370px;
+		gap: 30px;
+		/* Figma 300:2421: px 375 / py 60 on 1920 → 1170 content */
+		padding: 60px var(--somvio-container-pad);
+	}
+
+	.blog-single-content__article {
+		grid-column: 1;
+		grid-row: 1;
+	}
+
+	.blog-single-content__quote {
+		grid-column: 2;
+		grid-row: 1;
+		position: sticky;
+		top: calc(var(--somvio-header-height) + 24px);
+		align-self: start;
+		z-index: 2;
+	}
+}
+
+@media (max-width: 991px) {
+	.blog-single-content__inner {
+		padding: 40px 20px;
+		gap: 32px;
+	}
+
+	/* Quote first on tablet/mobile for conversion */
+	.blog-single-content__quote {
+		order: -1;
+	}
+
+	.blog-single-content__inner {
+		display: flex;
+		flex-direction: column;
+	}
+}
