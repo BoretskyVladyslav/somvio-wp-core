@@ -219,6 +219,28 @@ $somvio_year = (int) gmdate( 'Y' );
 				);
 				?>
 			</p>
+
+			<a
+				class="somvio-developer-credit"
+				href="https://michaelstudioo.com.ua"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				<span class="somvio-developer-credit__label"><?php esc_html_e( 'Developed by', 'somvio' ); ?></span>
+				<span class="somvio-developer-credit__brand">
+					<span class="somvio-developer-credit__logo" aria-hidden="true">
+						<?php
+						$somvio_ms_logo = get_stylesheet_directory() . '/assets/icons/logo-michael-studioo.svg';
+						if ( file_exists( $somvio_ms_logo ) ) {
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted local SVG asset.
+							echo file_get_contents( $somvio_ms_logo );
+						}
+						?>
+					</span>
+					<span class="somvio-developer-credit__name">Michael Studioo</span>
+				</span>
+			</a>
+
 			<p class="site-footer__legal">
 				<a class="site-footer__legal-link" href="<?php echo esc_url( home_url( '/privacy-policy/' ) ); ?>">
 					<?php esc_html_e( 'Privacy Policy', 'somvio' ); ?>
