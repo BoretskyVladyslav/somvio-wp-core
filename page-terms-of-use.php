@@ -15,28 +15,27 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 get_header();
+
+$somvio_legal_hero_args = array(
+	'title'      => __( 'Terms & Conditions', 'somvio' ),
+	'breadcrumb' => __( 'Terms of Use', 'somvio' ),
+	'lead'       => __( 'Please read these Terms carefully before booking our services.', 'somvio' ),
+	'aria_label' => __( 'Terms of Use', 'somvio' ),
+);
 ?>
 
 	<div <?php generate_do_attr( 'content' ); ?>>
 		<main <?php generate_do_attr( 'main' ); ?>>
 			<?php
+			// Hero first — Figma 300:2239 (Home → Terms of Use / Terms & Conditions / lead).
+			get_template_part( 'template-parts/sections/legal-hero', null, $somvio_legal_hero_args );
+
 			/**
 			 * generate_before_main_content hook.
 			 *
 			 * @since 0.1
 			 */
 			do_action( 'generate_before_main_content' );
-
-			get_template_part(
-				'template-parts/sections/legal',
-				'hero',
-				array(
-					'title'      => __( 'Terms & Conditions', 'somvio' ),
-					'breadcrumb' => __( 'Terms of Use', 'somvio' ),
-					'lead'       => __( 'Please read these Terms carefully before booking our services.', 'somvio' ),
-					'aria_label' => __( 'Terms of Use', 'somvio' ),
-				)
-			);
 
 			/**
 			 * Terms of Use page body (content sections).

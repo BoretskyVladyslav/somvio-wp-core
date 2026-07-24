@@ -37,6 +37,7 @@ function somvio_is_legal_page() {
 function somvio_legal_body_class( $classes ) {
 	if ( somvio_is_legal_page() ) {
 		$classes[] = 'somvio-has-hero';
+		$classes[] = 'somvio-legal-page';
 	}
 
 	return $classes;
