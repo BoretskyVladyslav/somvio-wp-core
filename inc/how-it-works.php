@@ -25,6 +25,10 @@ function somvio_should_render_how_it_works() {
 		return true;
 	}
 
+	if ( function_exists( 'somvio_is_blog_page' ) && somvio_is_blog_page() ) {
+		return true;
+	}
+
 	return (bool) apply_filters( 'somvio_should_render_how_it_works', false );
 }
 

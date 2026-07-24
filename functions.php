@@ -22,6 +22,7 @@ require_once get_stylesheet_directory() . '/inc/header.php';
 require_once get_stylesheet_directory() . '/inc/hero.php';
 require_once get_stylesheet_directory() . '/inc/services-page.php';
 require_once get_stylesheet_directory() . '/inc/about-page.php';
+require_once get_stylesheet_directory() . '/inc/blog-page.php';
 require_once get_stylesheet_directory() . '/inc/service-single.php';
 require_once get_stylesheet_directory() . '/inc/services-list.php';
 require_once get_stylesheet_directory() . '/inc/why-choose.php';
