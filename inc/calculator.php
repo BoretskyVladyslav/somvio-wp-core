@@ -289,7 +289,6 @@ function somvio_enqueue_quote_calculator_assets() {
 				'stepOf'           => __( 'Step %1$d of %2$d', 'somvio' ),
 				'titleDefault'     => __( 'Get Your Instant Quote', 'somvio' ),
 				'titleDate'        => __( 'Get Your Date', 'somvio' ),
-				'titleAddons'      => __( 'Add-ons & Extras', 'somvio' ),
 				'selectDate'       => __( 'Select date', 'somvio' ),
 				'selectTime'       => __( 'Please select a time slot.', 'somvio' ),
 				'nextStep'         => __( 'Next Step', 'somvio' ),

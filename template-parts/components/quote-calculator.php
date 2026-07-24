@@ -2,8 +2,8 @@
 /**
  * Multi-step Instant Quote calculator component.
  *
- * Figma: 300:1766 (step1), 300:1852 (step2), 300:1818 (step3),
- * 300:1792 (step4), 409:6039 (success).
+ * Figma: 300:1766 (step1), 300:1852 + time (step2), 300:1792 (step3),
+ * 409:6039 (success).
  *
  * Args (via get_template_part 3rd param / $args):
  * - variant: 'glass'|'solid' (default glass)
@@ -31,10 +31,8 @@ $somvio_qc_default = isset( $somvio_qc_args['default_service'] )
 $somvio_qc_services  = somvio_get_quote_service_options();
 $somvio_qc_props     = somvio_get_quote_property_options();
 $somvio_qc_rates     = somvio_get_quote_rates();
-$somvio_qc_slots     = isset( $somvio_qc_rates['time_slots'] ) ? $somvio_qc_rates['time_slots'] : array();
-$somvio_qc_addons    = isset( $somvio_qc_rates['addons'] ) && is_array( $somvio_qc_rates['addons'] ) ? $somvio_qc_rates['addons'] : array();
-$somvio_qc_symbol    = isset( $somvio_qc_rates['symbol'] ) ? (string) $somvio_qc_rates['symbol'] : '£';
-$somvio_qc_uid       = 'qc-' . wp_unique_id();
+$somvio_qc_slots = isset( $somvio_qc_rates['time_slots'] ) ? $somvio_qc_rates['time_slots'] : array();
+$somvio_qc_uid   = 'qc-' . wp_unique_id();
 
 if ( ! isset( $somvio_qc_services[ $somvio_qc_default ] ) ) {
 	$somvio_qc_default = 'regular-cleaning';
@@ -253,42 +251,8 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 			</div>
 		</div>
 
-		<?php /* —— Step 3: Add-ons (optional) —— */ ?>
+		<?php /* —— Step 3: Contact (Figma 300:1792) —— */ ?>
 		<div class="quote-calculator__step" data-quote-step="3" data-quote-panel hidden>
-			<div
-				class="quote-calculator__addons"
-				data-quote-addons
-				role="group"
-				aria-label="<?php esc_attr_e( 'Add-ons and extras', 'somvio' ); ?>"
-			>
-				<?php foreach ( $somvio_qc_addons as $addon_key => $addon ) : ?>
-					<label class="quote-calculator__addon">
-						<input
-							type="checkbox"
-							class="quote-calculator__addon-input sr-only"
-							name="addons[]"
-							value="<?php echo esc_attr( $addon_key ); ?>"
-							data-quote-addon="<?php echo esc_attr( $addon_key ); ?>"
-						>
-						<span class="quote-calculator__addon-icon" aria-hidden="true">
-							<?php
-							$icon = isset( $addon['icon'] ) ? sanitize_file_name( (string) $addon['icon'] ) : 'icon-sparkle';
-							echo somvio_get_icon( $icon ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							?>
-						</span>
-						<span class="quote-calculator__addon-body">
-							<span class="quote-calculator__addon-label"><?php echo esc_html( $addon['label'] ); ?></span>
-							<span class="quote-calculator__addon-price">
-								+<?php echo esc_html( $somvio_qc_symbol . (string) (int) $addon['price'] ); ?>
-							</span>
-						</span>
-					</label>
-				<?php endforeach; ?>
-			</div>
-		</div>
-
-		<?php /* —— Step 4: Contact (Figma 300:1792) —— */ ?>
-		<div class="quote-calculator__step" data-quote-step="4" data-quote-panel hidden>
 			<div class="quote-card__field quote-card__field--full">
 				<label class="quote-card__label" for="<?php echo esc_attr( $somvio_qc_uid ); ?>-name">
 					<?php esc_html_e( 'Full name', 'somvio' ); ?>
@@ -360,8 +324,8 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 			</div>
 		</div>
 
-		<?php /* —— Step 5: Success (Figma 409:6039) —— */ ?>
-		<div class="quote-calculator__step quote-calculator__step--success" data-quote-step="5" data-quote-panel hidden>
+		<?php /* —— Success (Figma 409:6039) —— */ ?>
+		<div class="quote-calculator__step quote-calculator__step--success" data-quote-step="4" data-quote-panel hidden>
 			<div class="quote-calculator__success">
 				<span class="quote-calculator__success-icon" aria-hidden="true">
 					<?php echo somvio_get_icon( 'icon-check-circle' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -405,7 +369,7 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 			<p class="quote-card__step" data-quote-step-label>
 				<?php
 				/* translators: 1: current step, 2: total steps */
-				echo esc_html( sprintf( __( 'Step %1$d of %2$d', 'somvio' ), 1, 4 ) );
+				echo esc_html( sprintf( __( 'Step %1$d of %2$d', 'somvio' ), 1, 3 ) );
 				?>
 			</p>
 		</div>

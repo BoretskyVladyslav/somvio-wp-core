@@ -1279,6 +1279,8 @@ body:not(.somvio-has-hero) {
 	backdrop-filter: blur(20px);
 	box-shadow: 0 8px 32px rgba(0, 5, 14, 0.25);
 	justify-self: end;
+	box-sizing: border-box;
+	overflow: hidden;
 }
 
 .quote-card__title {
@@ -7701,15 +7703,17 @@ body.somvio-has-hero.single-post .site-main > * {
 
 .blog-single-content__quote.quote-card--solid {
 	width: 100%;
-	max-width: none;
+	max-width: 100%;
 	min-height: 0;
 	justify-self: stretch;
+	padding: clamp(20px, 4vw, 32px);
 	border: none;
 	border-radius: var(--somvio-radius);
 	background-color: var(--somvio-color-surface-dark); /* #091e2c */
 	-webkit-backdrop-filter: none;
 	backdrop-filter: none;
 	box-shadow: none;
+	box-sizing: border-box;
 }
 
 .blog-single-content__article {
@@ -7879,9 +7883,47 @@ body.somvio-has-hero.single-post .site-main > * {
 
 .quote-calculator {
 	position: relative;
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
 }
 
-.quote-calculator[data-step="1"] [data-quote-back] {
+.quote-calculator *,
+.quote-calculator *::before,
+.quote-calculator *::after {
+	box-sizing: border-box;
+}
+
+.quote-calculator__form,
+.quote-calculator__step,
+.quote-calculator__calendar,
+.quote-calculator__slots,
+.quote-calculator__footer,
+.quote-calculator__actions,
+.quote-card__select-wrap,
+.quote-card__field,
+.quote-card__row {
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+}
+
+.quote-calculator .quote-card__select,
+.quote-calculator__input,
+.quote-calculator__textarea,
+.quote-calculator__date-input,
+.quote-calculator__slot {
+	width: 100%;
+	max-width: 100%;
+}
+
+.quote-calculator__actions .btn {
+	max-width: 100%;
+}
+
+.quote-calculator[data-step="1"] [data-quote-back],
+.quote-calculator[data-step="4"] [data-quote-back],
+.quote-calculator--success [data-quote-back] {
 	display: none !important;
 }
 
@@ -8137,80 +8179,6 @@ body.somvio-has-hero.single-post .site-main > * {
 	display: none !important;
 }
 
-.quote-calculator__addons {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 12px;
-	width: 100%;
-}
-
-.quote-calculator__addon {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	min-height: 56px;
-	padding: 10px 12px;
-	border: 1px solid #c0c0c0;
-	border-radius: var(--somvio-radius);
-	background: transparent;
-	cursor: pointer;
-	box-sizing: border-box;
-	transition: border-color 0.15s ease, background-color 0.15s ease;
-}
-
-.quote-calculator__addon:hover {
-	border-color: rgba(255, 255, 255, 0.6);
-}
-
-.quote-calculator__addon.is-selected,
-.quote-calculator__addon:has(.quote-calculator__addon-input:checked) {
-	border-color: transparent;
-	background: var(--somvio-color-accent-mid);
-}
-
-.quote-calculator__addon-icon {
-	display: inline-flex;
-	flex-shrink: 0;
-	width: 24px;
-	height: 24px;
-	color: var(--somvio-color-text);
-}
-
-.quote-calculator__addon-icon svg {
-	display: block;
-	width: 100%;
-	height: 100%;
-}
-
-.quote-calculator__addon-body {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	min-width: 0;
-}
-
-.quote-calculator__addon-label {
-	font-family: var(--somvio-font-sans);
-	font-size: 14px;
-	font-weight: 400;
-	line-height: 1.3;
-	color: var(--somvio-color-text);
-}
-
-.quote-calculator__addon-price {
-	font-family: var(--somvio-font-sans);
-	font-size: 12px;
-	font-weight: 600;
-	line-height: 1.3;
-	color: rgba(255, 255, 255, 0.85);
-}
-
-.quote-calculator__addon-input:focus-visible + .quote-calculator__addon-icon {
-	outline: 2px solid var(--somvio-color-accent);
-	outline-offset: 2px;
-	border-radius: 2px;
-}
-
 .quote-calculator__summary {
 	display: flex;
 	flex-direction: column;
@@ -8434,10 +8402,6 @@ body.somvio-has-hero.single-post .site-main > * {
 		gap: 12px;
 	}
 
-	.quote-calculator__addons {
-		grid-template-columns: 1fr;
-	}
-
 	.quote-calculator--success {
 		padding: 24px 16px !important;
 	}
@@ -8470,6 +8434,69 @@ body.somvio-has-hero.single-post .site-main > * {
 
 	.quote-card__step {
 		text-align: right;
+	}
+}
+
+/* Narrow sidebar / solid quote card (blog single, etc.) */
+.blog-single-content__quote.quote-calculator,
+.quote-calculator.quote-card--solid {
+	width: 100%;
+	max-width: 100%;
+}
+
+.blog-single-content__quote .quote-card__row {
+	gap: clamp(12px, 3vw, 30px);
+}
+
+.blog-single-content__quote .quote-calculator__slots {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+}
+
+.blog-single-content__quote .quote-calculator__slot {
+	font-size: 14px;
+	padding: 8px;
+	min-height: 40px;
+}
+
+.blog-single-content__quote .quote-calculator__cal-header {
+	padding: 12px 10px;
+}
+
+.blog-single-content__quote .quote-calculator__cal-weekdays,
+.blog-single-content__quote .quote-calculator__cal-grid {
+	padding-inline: 8px;
+	gap: 2px;
+}
+
+.blog-single-content__quote .quote-calculator__cal-day,
+.blog-single-content__quote .quote-calculator__cal-weekday {
+	width: clamp(28px, 8vw, 36px);
+	height: clamp(28px, 8vw, 36px);
+	font-size: 13px;
+}
+
+.blog-single-content__quote .quote-calculator__footer {
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.blog-single-content__quote .quote-calculator__actions {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.blog-single-content__quote .quote-card__step {
+	flex-shrink: 0;
+}
+
+@media (max-width: 420px) {
+	.blog-single-content__quote .quote-card__row {
+		grid-template-columns: 1fr;
+	}
+
+	.blog-single-content__quote .quote-calculator__slots {
+		grid-template-columns: 1fr;
 	}
 }
 

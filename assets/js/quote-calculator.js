@@ -5,7 +5,8 @@
 (function () {
 	'use strict';
 
-	var TOTAL_STEPS = 4;
+	var TOTAL_STEPS = 3;
+	var SUCCESS_STEP = 4;
 	var cfg = window.somvioQuoteCalc || {};
 	var rates = cfg.rates || {};
 	var i18n = cfg.i18n || {};
@@ -107,15 +108,7 @@
 				? Number(rates.property_mult[state.property])
 				: 1;
 
-		var addonTotal = 0;
-		var addonDefs = rates.addons || {};
-		(state.addons || []).forEach(function (key) {
-			if (addonDefs[key] && addonDefs[key].price != null) {
-				addonTotal += Number(addonDefs[key].price);
-			}
-		});
-
-		return Math.round(((base + bathExtra) * svcMult * propMult + addonTotal) * 100) / 100;
+		return Math.round((base + bathExtra) * svcMult * propMult * 100) / 100;
 	}
 
 	/**
@@ -187,7 +180,6 @@
 			bathrooms: '2',
 			date: '',
 			time: '',
-			addons: [],
 			name: '',
 			email: '',
 			phone: '',
@@ -206,16 +198,6 @@
 			return root.querySelector('[data-quote-field-error="' + name + '"]');
 		}
 
-		function readAddons() {
-			var selected = [];
-			root.querySelectorAll('[data-quote-addon]').forEach(function (input) {
-				if (input.checked) {
-					selected.push(input.getAttribute('data-quote-addon') || input.value);
-				}
-			});
-			state.addons = selected;
-		}
-
 		function readFields() {
 			['service', 'property', 'bedrooms', 'bathrooms', 'date', 'time', 'name', 'email', 'phone', 'comment'].forEach(
 				function (key) {
@@ -225,7 +207,6 @@
 					}
 				}
 			);
-			readAddons();
 			state.previewTotal = getPreviewTotal(state);
 		}
 
@@ -405,19 +386,10 @@
 			});
 		}
 
-		function renderAddons() {
-			root.querySelectorAll('[data-quote-addon]').forEach(function (input) {
-				var card = input.closest('.quote-calculator__addon');
-				if (card) {
-					card.classList.toggle('is-selected', input.checked);
-				}
-			});
-		}
-
 		function setStep(step) {
 			state.step = step;
 			root.setAttribute('data-step', String(step));
-			var isSuccess = step === 5;
+			var isSuccess = step === SUCCESS_STEP;
 
 			root.classList.toggle('quote-calculator--success', isSuccess);
 
@@ -429,13 +401,10 @@
 			if (titleEl) {
 				titleEl.hidden = isSuccess;
 				if (!isSuccess) {
-					if (step === 2) {
-						titleEl.textContent = i18n.titleDate || 'Get Your Date';
-					} else if (step === 3) {
-						titleEl.textContent = i18n.titleAddons || 'Add-ons & Extras';
-					} else {
-						titleEl.textContent = i18n.titleDefault || 'Get Your Instant Quote';
-					}
+					titleEl.textContent =
+						step === 2
+							? i18n.titleDate || 'Get Your Date'
+							: i18n.titleDefault || 'Get Your Instant Quote';
 				}
 			}
 
@@ -450,8 +419,9 @@
 			}
 
 			if (backBtn) {
+				// Never show Back on step 1 or success — Close only on success.
 				backBtn.hidden = isSuccess || step <= 1;
-				backBtn.setAttribute('aria-hidden', step <= 1 ? 'true' : 'false');
+				backBtn.setAttribute('aria-hidden', isSuccess || step <= 1 ? 'true' : 'false');
 			}
 
 			if (nextBtn && nextLabel) {
@@ -476,9 +446,6 @@
 				renderSlots();
 			}
 			if (step === 3) {
-				renderAddons();
-			}
-			if (step === 4) {
 				readFields();
 				renderPrice();
 			}
@@ -498,7 +465,7 @@
 		/**
 		 * @returns {{ valid: boolean, firstInvalid: HTMLElement|null }}
 		 */
-		function validateStep4() {
+		function validateContact() {
 			readFields();
 			clearFieldErrors();
 			showError('');
@@ -567,11 +534,7 @@
 			}
 
 			if (state.step === 3) {
-				return true;
-			}
-
-			if (state.step === 4) {
-				var result = validateStep4();
+				var result = validateContact();
 				if (!result.valid && result.firstInvalid) {
 					result.firstInvalid.focus();
 				}
@@ -589,7 +552,7 @@
 				return Promise.resolve();
 			}
 
-			var validation = validateStep4();
+			var validation = validateContact();
 			if (!validation.valid) {
 				if (validation.firstInvalid) {
 					validation.firstInvalid.focus();
@@ -609,7 +572,6 @@
 				bathrooms: parseInt(state.bathrooms, 10),
 				date: state.date,
 				time: state.time,
-				addons: state.addons.slice(),
 				name: trim(state.name),
 				email: trim(state.email),
 				phone: normalizePhone(state.phone),
@@ -650,7 +612,7 @@
 						state.previewTotal = Number(result.data.total);
 						renderPrice();
 					}
-					setStep(5);
+					setStep(SUCCESS_STEP);
 					root.dispatchEvent(
 						new CustomEvent('somvio:quote-success', {
 							bubbles: true,
@@ -672,7 +634,6 @@
 			state.step = 1;
 			state.date = '';
 			state.time = '';
-			state.addons = [];
 			state.name = '';
 			state.email = '';
 			state.phone = '';
@@ -690,12 +651,7 @@
 				dateDisplay.value = '';
 			}
 
-			root.querySelectorAll('[data-quote-addon]').forEach(function (input) {
-				input.checked = false;
-			});
-
 			renderSlots();
-			renderAddons();
 			clearFieldErrors();
 			setStep(1);
 			readFields();
@@ -732,14 +688,6 @@
 				renderSlots();
 				setFieldError('time', '');
 				showError('');
-			});
-		});
-
-		root.querySelectorAll('[data-quote-addon]').forEach(function (input) {
-			input.addEventListener('change', function () {
-				readAddons();
-				renderAddons();
-				renderPrice();
 			});
 		});
 
@@ -797,7 +745,7 @@
 				if (state.submitting) {
 					return;
 				}
-				if (state.step === 5) {
+				if (state.step === SUCCESS_STEP) {
 					resetCalculator();
 					return;
 				}
