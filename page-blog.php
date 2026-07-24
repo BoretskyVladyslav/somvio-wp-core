@@ -2,9 +2,11 @@
 /**
  * Template Name: Blog
  *
- * Blog landing shell. Process Steps (How It Works) sits in the page body
- * before the global footer / CTA stack. No default post loop — keep main
- * clean for custom section templates.
+ * Blog landing. Hero is the first full-width block inside main;
+ * Process Steps (How It Works) follows in the page body.
+ * No default post loop — keep main clean for custom section templates.
+ *
+ * Figma nodes: 300:2181 (hero)
  *
  * @package Somvio_Child
  */
@@ -14,8 +16,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 get_header();
-
-get_template_part( 'template-parts/sections/blog', 'hero' );
 ?>
 
 	<div <?php generate_do_attr( 'content' ); ?>>
@@ -27,6 +27,8 @@ get_template_part( 'template-parts/sections/blog', 'hero' );
 			 * @since 0.1
 			 */
 			do_action( 'generate_before_main_content' );
+
+			get_template_part( 'template-parts/sections/blog', 'hero' );
 
 			/**
 			 * Blog page body sections (posts grid, etc.).

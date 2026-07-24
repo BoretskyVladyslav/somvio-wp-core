@@ -6358,17 +6358,17 @@ a.site-footer__contact-text:focus-visible {
 /* -------------------------------------------------------------------------
    Block: blog-hero — Figma 300:2181
    Full-bleed dark hero; transparent header merge; breadcrumbs + title + lead.
-   Must stay a block-level section (never a .site-content flex/grid sibling).
+   Must stay a block-level section inside main (never a .site-content flex sibling).
    ------------------------------------------------------------------------- */
 .blog-hero {
-	display: block;
+	display: block !important;
 	position: relative;
 	isolation: isolate;
 	overflow: hidden;
-	float: none;
+	float: none !important;
 	clear: both;
-	flex: none;
-	width: 100%;
+	flex: none !important;
+	width: 100% !important;
 	max-width: none;
 	margin: 0;
 	margin-top: 0 !important;
@@ -6380,13 +6380,37 @@ a.site-footer__contact-text:focus-visible {
 	background-color: var(--somvio-color-header-bg-alt);
 }
 
+/* Blog page shell: stacked full-width blocks (hero → body → process steps) */
+body.somvio-has-hero.blog .site-content,
+body.somvio-has-hero.page-template-page-blog-php .site-content,
+body.somvio-has-hero.blog .content-area,
+body.somvio-has-hero.page-template-page-blog-php .content-area,
+body.somvio-has-hero.blog .site-main,
+body.somvio-has-hero.page-template-page-blog-php .site-main {
+	display: block !important;
+	float: none !important;
+	flex: none !important;
+	width: 100% !important;
+	max-width: none;
+}
+
+body.somvio-has-hero.blog .site-main > *,
+body.somvio-has-hero.page-template-page-blog-php .site-main > * {
+	display: block;
+	float: none !important;
+	flex: none !important;
+	width: 100% !important;
+	max-width: none;
+	margin-inline: 0;
+}
+
 .site-main > .blog-hero,
 #primary > .blog-hero,
 #main > .blog-hero {
-	display: block;
-	float: none;
-	flex: none;
-	width: 100%;
+	display: block !important;
+	float: none !important;
+	flex: none !important;
+	width: 100% !important;
 	max-width: none;
 	margin-inline: 0;
 }
@@ -6439,7 +6463,7 @@ a.site-footer__contact-text:focus-visible {
 	width: 100%;
 	max-width: 1170px;
 	margin-inline: auto;
-	/* Clear fixed header — Figma content pad ~60px below header */
+	/* Clear fixed header — Figma: px 375 / py 60 on 1920 → 1170 content + 60px pad */
 	padding: calc(var(--somvio-header-height) + 60px) var(--somvio-container-pad) 60px;
 	min-height: 480px;
 	box-sizing: border-box;
@@ -6465,7 +6489,7 @@ a.site-footer__contact-text:focus-visible {
 	gap: 10px;
 	margin: 0;
 	font-family: var(--somvio-font-sans);
-	font-size: var(--somvio-font-size-base);
+	font-size: var(--somvio-font-size-base); /* 16px */
 	font-weight: 400;
 	line-height: 1.4;
 }
