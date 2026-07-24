@@ -62,6 +62,13 @@ $somvio_steps = array(
 		'open'  => false,
 	),
 );
+
+$somvio_preview_path = get_stylesheet_directory() . '/assets/images/how-it-works-preview.jpg';
+$somvio_preview_uri  = get_stylesheet_directory_uri() . '/assets/images/how-it-works-preview.jpg';
+
+if ( file_exists( $somvio_preview_path ) ) {
+	$somvio_preview_uri .= '?v=' . rawurlencode( (string) filemtime( $somvio_preview_path ) );
+}
 ?>
 <section class="how-it-works" aria-labelledby="how-it-works-title">
 	<div class="how-it-works__inner">
@@ -77,15 +84,17 @@ $somvio_steps = array(
 
 		<div class="how-it-works__grid">
 			<div class="how-it-works__media reveal-on-scroll" style="--reveal-delay: 0.05s;">
-				<img
-					class="how-it-works__image"
-					src="<?php echo esc_url( get_stylesheet_directory_uri() . '/assets/images/how-it-works-preview.jpg' ); ?>"
-					alt="<?php esc_attr_e( 'Modern clean living room with city view', 'somvio' ); ?>"
-					width="795"
-					height="516"
-					loading="lazy"
-					decoding="async"
-				>
+				<?php if ( file_exists( $somvio_preview_path ) ) : ?>
+					<img
+						class="how-it-works__image"
+						src="<?php echo esc_url( $somvio_preview_uri ); ?>"
+						alt="<?php esc_attr_e( 'Modern clean living room with city view', 'somvio' ); ?>"
+						width="795"
+						height="516"
+						loading="lazy"
+						decoding="async"
+					>
+				<?php endif; ?>
 			</div>
 
 			<div class="how-it-works__accordion" data-accordion>

@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** @var int Bump to re-run page seeding on admin_init / theme switch. */
-const SOMVIO_CORE_PAGES_VERSION = 5;
+const SOMVIO_CORE_PAGES_VERSION = 6;
 
 /**
  * Core pages to ensure exist (slug => title).

@@ -3,7 +3,8 @@
  * Template Name: Blog
  *
  * Blog landing shell. Process Steps (How It Works) sits in the page body
- * before the global footer / CTA stack.
+ * before the global footer / CTA stack. No default post loop — keep main
+ * clean for custom section templates.
  *
  * @package Somvio_Child
  */
@@ -33,13 +34,6 @@ get_header();
 			do_action( 'somvio_blog_page_content' );
 
 			get_template_part( 'template-parts/sections/how', 'it-works' );
-
-			if ( generate_has_default_loop() ) {
-				while ( have_posts() ) :
-					the_post();
-					generate_do_template_part( 'page' );
-				endwhile;
-			}
 
 			/**
 			 * generate_after_main_content hook.
