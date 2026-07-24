@@ -49,13 +49,6 @@ $somvio_services = array(
 		'text'  => __( 'Keep your home consistently clean, tidy, and fresh.', 'somvio' ),
 		'price' => __( 'From £35', 'somvio' ),
 	),
-	array(
-		'slug'  => 'commercial-office',
-		'image' => 'service-commercial-office.png',
-		'title' => __( 'Commercial / Office Cleaning', 'somvio' ),
-		'text'  => __( 'Keep your home consistently clean, tidy, and fresh.', 'somvio' ),
-		'price' => __( 'From £35', 'somvio' ),
-	),
 );
 ?>
 <section class="services-grid" aria-labelledby="services-grid-title">

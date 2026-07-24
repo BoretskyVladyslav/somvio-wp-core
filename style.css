@@ -9323,7 +9323,7 @@ body.somvio-has-hero.page-booking .site-main > * {
 
 /* -------------------------------------------------------------------------
    Block: booking-form — Figma 418:6214 (Block 1)
-   Card width = 4 cols × 240 + 3 × 20 gap + 2 × 40 pad = 1100px.
+   Tight wrap: 4 × 240px cols + 3 × 20 gap + 2 × 40 pad = 1100px.
    ------------------------------------------------------------------------- */
 .booking-form {
 	display: block;
@@ -9347,15 +9347,16 @@ body.somvio-has-hero.page-booking .site-main > * {
 }
 
 .booking-form__form {
-	width: 100%;
-	max-width: 1100px; /* 4×240 + 3×20 + 2×40 */
+	width: max-content;
+	max-width: 100%;
 }
 
 .booking-form__card {
 	display: flex;
 	flex-direction: column;
 	gap: 20px;
-	width: 100%;
+	width: max-content;
+	max-width: 100%;
 	padding: 40px;
 	border-radius: 4px;
 	background-color: #091e2c; /* Figma 418:6214 */
@@ -9363,6 +9364,11 @@ body.somvio-has-hero.page-booking .site-main > * {
 }
 
 @media (max-width: 767px) {
+	.booking-form__form,
+	.booking-form__card {
+		width: 100%;
+	}
+
 	.booking-form__card {
 		padding: 24px 16px;
 	}
@@ -9381,20 +9387,22 @@ body.somvio-has-hero.page-booking .site-main > * {
 	margin-right: 0.25em;
 }
 
-/* Figma 418:6214 — 4 equal columns, gap 20px */
+/* Figma 418:6214 — 4 equal 240px columns, gap 20px */
 .booking-form__services,
 .booking-form__addons {
 	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
+	grid-template-columns: repeat(4, 240px);
 	gap: 20px;
-	width: 100%;
+	width: max-content;
+	max-width: 100%;
 }
 
 .booking-form__card--step1 .booking-form__services {
 	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
+	grid-template-columns: repeat(4, 240px);
 	gap: 20px;
-	width: 100%;
+	width: max-content;
+	max-width: 100%;
 }
 
 .booking-form__service,
@@ -9402,7 +9410,8 @@ body.somvio-has-hero.page-booking .site-main > * {
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
-	width: 100%;
+	width: 240px;
+	max-width: 100%;
 	min-width: 0;
 	margin: 0;
 	padding: 0;
@@ -9417,15 +9426,31 @@ body.somvio-has-hero.page-booking .site-main > * {
 	transition: border-color 0.2s ease;
 }
 
-@media (max-width: 900px) {
+/* Keep 4-col until tablet; avoid Bathrooms dropping to row 2 */
+@media (max-width: 1100px) {
+	.booking-form__services,
+	.booking-form__addons,
+	.booking-form__card--step1 .booking-form__services {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		width: 100%;
+	}
+
+	.booking-form__service,
+	.booking-form__addon {
+		width: 100%;
+	}
+}
+
+@media (max-width: 720px) {
 	.booking-form__services,
 	.booking-form__addons,
 	.booking-form__card--step1 .booking-form__services {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
+		width: 100%;
 	}
 }
 
-@media (max-width: 560px) {
+@media (max-width: 480px) {
 	.booking-form__services,
 	.booking-form__addons,
 	.booking-form__card--step1 .booking-form__services {
@@ -9539,19 +9564,21 @@ body.somvio-has-hero.page-booking .site-main > * {
 	object-fit: contain;
 }
 
-/* Figma 418:6214 — 4 equal counter columns, single row */
+/* Figma 418:6214 — 4 equal 240px counters, single row (no wrap) */
 .booking-form__counters {
 	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
+	grid-template-columns: repeat(4, 240px);
 	gap: 20px;
-	width: 100%;
+	width: max-content;
+	max-width: 100%;
 }
 
 .booking-form__card--step1 .booking-form__counters {
 	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
+	grid-template-columns: repeat(4, 240px);
 	gap: 20px;
-	width: 100%;
+	width: max-content;
+	max-width: 100%;
 }
 
 .booking-form__counter {
@@ -9559,19 +9586,25 @@ body.somvio-has-hero.page-booking .site-main > * {
 	flex-direction: column;
 	align-items: flex-start;
 	gap: 5px;
-	width: 100%;
+	width: 240px;
+	max-width: 100%;
 	min-width: 0;
 	box-sizing: border-box;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
 	.booking-form__counters,
 	.booking-form__card--step1 .booking-form__counters {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		width: 100%;
+	}
+
+	.booking-form__counter {
+		width: 100%;
 	}
 }
 
-@media (max-width: 560px) {
+@media (max-width: 480px) {
 	.booking-form__counters,
 	.booking-form__card--step1 .booking-form__counters {
 		grid-template-columns: 1fr;
