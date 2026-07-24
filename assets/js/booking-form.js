@@ -92,7 +92,12 @@
 	}
 
 	function formatSlot(slot) {
-		return String(slot || '').replace('-', ' - ');
+		return String(slot || '')
+			.split('-')
+			.map(function (part) {
+				return String(part).replace(/^0(\d:)/, '$1');
+			})
+			.join(' - ');
 	}
 
 	/**
@@ -192,6 +197,7 @@
 				'phone',
 				'address',
 				'time',
+				'date',
 				'terms_accepted',
 			].forEach(function (name) {
 				setFieldError(name, '');
@@ -232,21 +238,27 @@
 
 		function updateNextAvailability() {
 			var hasService = !!state.service;
+			var hasDate = !!state.date;
+			var hasTime = !!state.time;
 			var onStep1 = state.step === 1;
-			var title = '';
+			var onStep3 = state.step === 3;
 
 			root.querySelectorAll('[data-booking-next]').forEach(function (nextBtn) {
 				var panel = nextBtn.closest('[data-booking-panel]');
 				var panelStep = panel ? parseInt(panel.getAttribute('data-booking-step'), 10) : 0;
 				var needsServiceGate = panelStep === 1 || onStep1;
-				var disabled = state.submitting || (needsServiceGate && !hasService);
+				var needsDateTimeGate = panelStep === 3 || onStep3;
+				var disabled = state.submitting;
+				var title = '';
 
 				if (state.submitting) {
 					title = i18n.submitting || 'Submitting…';
 				} else if (needsServiceGate && !hasService) {
+					disabled = true;
 					title = i18n.selectService || 'Select a service to continue';
-				} else {
-					title = '';
+				} else if (needsDateTimeGate && (!hasDate || !hasTime)) {
+					disabled = true;
+					title = i18n.selectDateTime || 'Select a date and time to continue';
 				}
 
 				nextBtn.disabled = disabled;
@@ -371,7 +383,9 @@
 						}
 						renderCalendar();
 						syncState();
+						setFieldError('date', '');
 						showError('');
+						updateNextAvailability();
 					});
 				}
 
@@ -525,7 +539,8 @@
 			if (state.step === 3) {
 				clearFieldErrors();
 				if (!state.date) {
-					showError(i18n.required || 'Please complete the required fields.');
+					setFieldError('date', i18n.selectDate || 'Please select a date.');
+					showError(i18n.selectDate || 'Please select a date.');
 					return false;
 				}
 				if (!state.time) {
@@ -736,6 +751,7 @@
 				syncState();
 				setFieldError('time', '');
 				showError('');
+				updateNextAvailability();
 			});
 		});
 

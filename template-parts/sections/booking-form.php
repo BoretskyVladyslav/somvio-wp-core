@@ -275,62 +275,65 @@ $somvio_bf_counters = array(
 				</div>
 			</div>
 
-			<?php /* —— Step 3: Get Your Date —— */ ?>
-			<div class="booking-form__card" data-booking-step="3" data-booking-panel hidden>
+			<?php /* —— Step 3: Get Your Date — Figma 418:6269 —— */ ?>
+			<div class="booking-form__card booking-form__card--step3" data-booking-step="3" data-booking-panel hidden>
 				<h2 class="booking-form__step-title">
 					<span class="booking-form__step-num" aria-hidden="true">3.</span>
 					<?php esc_html_e( 'Get Your Date', 'somvio' ); ?>
 				</h2>
 
-				<div class="booking-form__field">
-					<label class="booking-form__label" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-date-display">
-						<?php esc_html_e( 'Estimated move date:', 'somvio' ); ?>
-					</label>
-					<div class="booking-form__select-wrap">
-						<input
-							type="text"
-							class="booking-form__input"
-							id="<?php echo esc_attr( $somvio_bf_uid ); ?>-date-display"
-							data-booking-date-display
-							value=""
-							placeholder="<?php esc_attr_e( 'Select date', 'somvio' ); ?>"
-							readonly
-							aria-live="polite"
-						>
-						<input type="hidden" name="date" data-booking-field="date" value="">
-						<span class="booking-form__chevron" aria-hidden="true">
-							<?php echo somvio_get_icon( 'icon-chevron-down' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						</span>
+				<div class="booking-form__date-block">
+					<div class="booking-form__field booking-form__field--date">
+						<label class="booking-form__label" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-date-display">
+							<?php esc_html_e( 'Estimated move date:', 'somvio' ); ?>
+						</label>
+						<div class="booking-form__select-wrap">
+							<input
+								type="text"
+								class="booking-form__input booking-form__input--date"
+								id="<?php echo esc_attr( $somvio_bf_uid ); ?>-date-display"
+								data-booking-date-display
+								value=""
+								placeholder="<?php esc_attr_e( 'Select date', 'somvio' ); ?>"
+								readonly
+								aria-live="polite"
+								aria-required="true"
+							>
+							<input type="hidden" name="date" data-booking-field="date" value="" required>
+							<span class="booking-form__chevron" aria-hidden="true">
+								<?php echo somvio_get_icon( 'icon-chevron-down' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+							</span>
+						</div>
 					</div>
-				</div>
 
-				<div
-					class="booking-form__calendar"
-					data-booking-calendar
-					role="group"
-					aria-label="<?php esc_attr_e( 'Choose a date', 'somvio' ); ?>"
-				>
-					<div class="booking-form__cal-header">
-						<button
-							type="button"
-							class="booking-form__cal-nav"
-							data-booking-cal-prev
-							aria-label="<?php esc_attr_e( 'Previous month', 'somvio' ); ?>"
-						>
-							<span aria-hidden="true"><?php echo somvio_get_icon( 'icon-arrow-left' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-						</button>
-						<p class="booking-form__cal-month" data-booking-cal-label></p>
-						<button
-							type="button"
-							class="booking-form__cal-nav"
-							data-booking-cal-next
-							aria-label="<?php esc_attr_e( 'Next month', 'somvio' ); ?>"
-						>
-							<span class="booking-form__cal-nav-icon--next" aria-hidden="true"><?php echo somvio_get_icon( 'icon-arrow-left' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-						</button>
+					<div
+						class="booking-form__calendar"
+						data-booking-calendar
+						role="group"
+						aria-label="<?php esc_attr_e( 'Choose a date', 'somvio' ); ?>"
+					>
+						<div class="booking-form__cal-header">
+							<button
+								type="button"
+								class="booking-form__cal-nav"
+								data-booking-cal-prev
+								aria-label="<?php esc_attr_e( 'Previous month', 'somvio' ); ?>"
+							>
+								<span aria-hidden="true"><?php echo somvio_get_icon( 'icon-arrow-left' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+							</button>
+							<p class="booking-form__cal-month" data-booking-cal-label></p>
+							<button
+								type="button"
+								class="booking-form__cal-nav"
+								data-booking-cal-next
+								aria-label="<?php esc_attr_e( 'Next month', 'somvio' ); ?>"
+							>
+								<span class="booking-form__cal-nav-icon--next" aria-hidden="true"><?php echo somvio_get_icon( 'icon-arrow-left' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+							</button>
+						</div>
+						<div class="booking-form__cal-weekdays" data-booking-cal-weekdays aria-hidden="true"></div>
+						<div class="booking-form__cal-grid" data-booking-cal-grid role="listbox" aria-label="<?php esc_attr_e( 'Calendar days', 'somvio' ); ?>"></div>
 					</div>
-					<div class="booking-form__cal-weekdays" data-booking-cal-weekdays aria-hidden="true"></div>
-					<div class="booking-form__cal-grid" data-booking-cal-grid role="listbox"></div>
 				</div>
 
 				<div
@@ -338,8 +341,12 @@ $somvio_bf_counters = array(
 					data-booking-slots
 					role="radiogroup"
 					aria-label="<?php esc_attr_e( 'Preferred time', 'somvio' ); ?>"
+					aria-required="true"
 				>
 					<?php foreach ( $somvio_bf_slots as $somvio_bf_slot ) : ?>
+						<?php
+						$somvio_bf_slot_label = preg_replace( '/\b0(\d:)/', '$1', str_replace( '-', ' - ', (string) $somvio_bf_slot ) );
+						?>
 						<button
 							type="button"
 							class="booking-form__slot"
@@ -347,12 +354,13 @@ $somvio_bf_counters = array(
 							role="radio"
 							aria-checked="false"
 						>
-							<?php echo esc_html( str_replace( '-', ' - ', $somvio_bf_slot ) ); ?>
+							<?php echo esc_html( $somvio_bf_slot_label ); ?>
 						</button>
 					<?php endforeach; ?>
 				</div>
-				<input type="hidden" name="time" data-booking-field="time" value="">
+				<input type="hidden" name="time" data-booking-field="time" value="" required>
 				<p class="booking-form__field-error" data-booking-field-error="time" hidden role="alert"></p>
+				<p class="booking-form__field-error" data-booking-field-error="date" hidden role="alert"></p>
 
 				<div class="booking-form__footer">
 					<button type="button" class="booking-form__back btn btn--outline btn--has-icon" data-booking-back>
@@ -361,7 +369,7 @@ $somvio_bf_counters = array(
 						</span>
 						<span class="btn__label"><?php esc_html_e( 'Back', 'somvio' ); ?></span>
 					</button>
-					<button type="button" class="booking-form__next btn btn--primary btn--has-icon" data-booking-next>
+					<button type="button" class="booking-form__next btn btn--primary btn--has-icon" data-booking-next disabled aria-disabled="true" title="<?php esc_attr_e( 'Select a date and time to continue', 'somvio' ); ?>">
 						<span class="btn__label" data-booking-next-label><?php esc_html_e( 'Next Step', 'somvio' ); ?></span>
 						<span class="btn__icon" data-booking-next-icon aria-hidden="true">
 							<?php echo somvio_get_icon( 'icon-arrow-right' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
