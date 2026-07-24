@@ -34,6 +34,21 @@ function somvio_is_blog_page() {
 }
 
 /**
+ * Mark Blog so the transparent sticky header merges with the hero.
+ *
+ * @param string[] $classes Body classes.
+ * @return string[]
+ */
+function somvio_blog_body_class( $classes ) {
+	if ( somvio_is_blog_page() ) {
+		$classes[] = 'somvio-has-hero';
+	}
+
+	return $classes;
+}
+add_filter( 'body_class', 'somvio_blog_body_class' );
+
+/**
  * Load page-blog.php for the posts index (page_for_posts ignores page templates).
  *
  * @param string $template Path to template.

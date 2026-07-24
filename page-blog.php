@@ -14,6 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 get_header();
+
+get_template_part( 'template-parts/sections/blog', 'hero' );
 ?>
 
 	<div <?php generate_do_attr( 'content' ); ?>>
@@ -27,7 +29,7 @@ get_header();
 			do_action( 'generate_before_main_content' );
 
 			/**
-			 * Blog page body sections (hero, posts grid, etc.).
+			 * Blog page body sections (posts grid, etc.).
 			 *
 			 * @since 1.0.0
 			 */
