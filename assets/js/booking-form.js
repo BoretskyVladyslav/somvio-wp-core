@@ -783,6 +783,11 @@
 				if (state.step === SUCCESS_STEP) {
 					return;
 				}
+				/* Block 1 isolation: no later steps in DOM yet. */
+				if (root.getAttribute('data-booking-isolate') === '1') {
+					validateStep();
+					return;
+				}
 				if (!validateStep()) {
 					return;
 				}
