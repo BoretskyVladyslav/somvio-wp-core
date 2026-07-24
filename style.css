@@ -9855,11 +9855,14 @@ body.somvio-has-hero.page-booking .site-main > * {
 	padding: 10px;
 	border: 1px solid #c0c0c0;
 	border-radius: 4px;
-	background: transparent;
+	background-color: #091e2c;
 	font-family: var(--somvio-font-sans);
 	font-size: 1rem;
 	line-height: 1.4;
-	color: var(--somvio-color-text);
+	color: #ffffff;
+	-webkit-text-fill-color: #ffffff;
+	caret-color: #ffffff;
+	color-scheme: dark;
 	box-sizing: border-box;
 }
 
@@ -9888,7 +9891,9 @@ body.somvio-has-hero.page-booking .site-main > * {
 
 .booking-form__input::placeholder,
 .booking-form__textarea::placeholder {
-	color: #848e95;
+	color: #a0aec0;
+	-webkit-text-fill-color: #a0aec0;
+	opacity: 1;
 }
 
 .booking-form__input.is-invalid,
@@ -10243,13 +10248,13 @@ body.somvio-has-hero.page-booking .site-main > * {
 }
 
 .booking-form__textarea {
-	min-height: 140px;
+	min-height: 179px;
 	resize: vertical;
 }
 
 .booking-form__terms {
 	display: flex;
-	align-items: flex-start;
+	align-items: center;
 	gap: 10px;
 	cursor: pointer;
 }
@@ -10265,14 +10270,14 @@ body.somvio-has-hero.page-booking .site-main > * {
 	flex-shrink: 0;
 	width: 24px;
 	height: 24px;
-	border: 2px solid rgba(255, 255, 255, 0.5);
+	border: 2px solid var(--somvio-color-accent, #40d7d0);
 	border-radius: 2px;
 	box-sizing: border-box;
 }
 
 .booking-form__terms-input:checked + .booking-form__terms-box {
-	border-color: var(--somvio-color-accent);
-	background-color: var(--somvio-color-accent);
+	border-color: var(--somvio-color-accent, #40d7d0);
+	background-color: var(--somvio-color-accent, #40d7d0);
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300050e' stroke-width='3'%3E%3Cpath d='M5 12l5 5L20 7'/%3E%3C/svg%3E");
 	background-repeat: no-repeat;
 	background-position: center;
@@ -10286,8 +10291,13 @@ body.somvio-has-hero.page-booking .site-main > * {
 }
 
 .booking-form__terms-text a {
-	color: var(--somvio-color-accent);
+	color: var(--somvio-color-accent, #40d7d0);
 	text-decoration: underline;
+}
+
+.booking-form__terms-text a:hover,
+.booking-form__terms-text a:focus-visible {
+	color: #33aca6;
 }
 
 .booking-form__field-error,

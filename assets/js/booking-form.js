@@ -243,14 +243,17 @@
 			var hasService = !!state.service;
 			var hasDate = !!state.date;
 			var hasTime = !!state.time;
+			var contactReady = isContactReady();
 			var onStep1 = state.step === 1;
 			var onStep3 = state.step === 3;
+			var onStep4 = state.step === 4;
 
 			root.querySelectorAll('[data-booking-next]').forEach(function (nextBtn) {
 				var panel = nextBtn.closest('[data-booking-panel]');
 				var panelStep = panel ? parseInt(panel.getAttribute('data-booking-step'), 10) : 0;
 				var needsServiceGate = panelStep === 1 || onStep1;
 				var needsDateTimeGate = panelStep === 3 || onStep3;
+				var needsContactGate = panelStep === 4 || onStep4;
 				var disabled = state.submitting;
 				var title = '';
 
@@ -262,6 +265,9 @@
 				} else if (needsDateTimeGate && (!hasDate || !hasTime)) {
 					disabled = true;
 					title = i18n.selectDateTime || 'Select a date and time to continue';
+				} else if (needsContactGate && !contactReady) {
+					disabled = true;
+					title = i18n.completeContact || 'Complete required fields and accept the terms to continue';
 				}
 
 				nextBtn.disabled = disabled;
@@ -272,6 +278,17 @@
 					nextBtn.removeAttribute('title');
 				}
 			});
+		}
+
+		function isContactReady() {
+			return (
+				isValidName(state.first_name) &&
+				isValidName(state.last_name) &&
+				isValidEmail(state.email) &&
+				isValidPhone(state.phone) &&
+				trim(state.address).length >= 3 &&
+				!!state.terms_accepted
+			);
 		}
 
 		function renderAddons() {
@@ -963,6 +980,7 @@
 			el.addEventListener('input', function () {
 				state[key] = el.value;
 				syncState();
+				updateNextAvailability();
 			});
 		});
 
@@ -973,6 +991,7 @@
 				if (state.terms_accepted) {
 					setFieldError('terms_accepted', '');
 				}
+				updateNextAvailability();
 			});
 		}
 

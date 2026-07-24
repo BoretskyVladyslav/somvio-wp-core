@@ -101,6 +101,7 @@ function somvio_enqueue_booking_form_assets() {
 				'invalidName'    => __( 'Please enter your name.', 'somvio' ),
 				'invalidAddress' => __( 'Please enter your street address.', 'somvio' ),
 				'termsRequired'  => __( 'Please accept the Terms & Conditions and Privacy Policy.', 'somvio' ),
+				'completeContact'=> __( 'Complete required fields and accept the terms to continue', 'somvio' ),
 				'submitError'    => __( 'Something went wrong. Please try again.', 'somvio' ),
 				'estimatedTotal' => __( 'Estimated total', 'somvio' ),
 				'none'           => __( 'None', 'somvio' ),

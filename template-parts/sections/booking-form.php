@@ -27,12 +27,19 @@ $somvio_bf_icons_uri = get_stylesheet_directory_uri() . '/assets/icons/';
 $somvio_bf_privacy_url = function_exists( 'somvio_get_privacy_policy_page_id' )
 	? get_permalink( somvio_get_privacy_policy_page_id() )
 	: home_url( '/privacy-policy/' );
-$somvio_bf_terms_id    = function_exists( 'somvio_get_page_id_by_slug' )
-	? somvio_get_page_id_by_slug( 'terms-of-use' )
-	: 0;
-$somvio_bf_terms_url   = $somvio_bf_terms_id > 0
+if ( ! $somvio_bf_privacy_url ) {
+	$somvio_bf_privacy_url = home_url( '/privacy-policy/' );
+}
+$somvio_bf_terms_id = 0;
+if ( function_exists( 'somvio_get_page_id_by_slug' ) ) {
+	$somvio_bf_terms_id = (int) somvio_get_page_id_by_slug( 'terms-conditions' );
+	if ( $somvio_bf_terms_id <= 0 ) {
+		$somvio_bf_terms_id = (int) somvio_get_page_id_by_slug( 'terms-of-use' );
+	}
+}
+$somvio_bf_terms_url = $somvio_bf_terms_id > 0
 	? get_permalink( $somvio_bf_terms_id )
-	: home_url( '/terms-of-use/' );
+	: home_url( '/terms-conditions/' );
 
 $somvio_bf_counters = array(
 	'bedrooms'  => array(
@@ -401,6 +408,7 @@ $somvio_bf_counters = array(
 							name="first_name"
 							data-booking-field="first_name"
 							autocomplete="given-name"
+							placeholder="<?php esc_attr_e( 'John', 'somvio' ); ?>"
 							required
 						>
 						<p class="booking-form__field-error" data-booking-field-error="first_name" hidden role="alert"></p>
@@ -416,6 +424,7 @@ $somvio_bf_counters = array(
 							name="last_name"
 							data-booking-field="last_name"
 							autocomplete="family-name"
+							placeholder="<?php esc_attr_e( 'Smith', 'somvio' ); ?>"
 							required
 						>
 						<p class="booking-form__field-error" data-booking-field-error="last_name" hidden role="alert"></p>
@@ -432,6 +441,7 @@ $somvio_bf_counters = array(
 							data-booking-field="phone"
 							autocomplete="tel"
 							inputmode="tel"
+							placeholder="<?php esc_attr_e( '+44 7000 000000', 'somvio' ); ?>"
 							required
 						>
 						<p class="booking-form__field-error" data-booking-field-error="phone" hidden role="alert"></p>
@@ -448,6 +458,7 @@ $somvio_bf_counters = array(
 							data-booking-field="email"
 							autocomplete="email"
 							inputmode="email"
+							placeholder="<?php esc_attr_e( 'john@example.com', 'somvio' ); ?>"
 							required
 						>
 						<p class="booking-form__field-error" data-booking-field-error="email" hidden role="alert"></p>
@@ -463,6 +474,7 @@ $somvio_bf_counters = array(
 							name="address"
 							data-booking-field="address"
 							autocomplete="street-address"
+							placeholder="<?php esc_attr_e( '123 Main St, Postcode', 'somvio' ); ?>"
 							required
 						>
 						<p class="booking-form__field-error" data-booking-field-error="address" hidden role="alert"></p>
@@ -477,6 +489,7 @@ $somvio_bf_counters = array(
 							name="comment"
 							data-booking-field="comment"
 							rows="5"
+							placeholder="<?php esc_attr_e( 'Any special instructions for our team...', 'somvio' ); ?>"
 						></textarea>
 					</div>
 				</div>
@@ -496,9 +509,9 @@ $somvio_bf_counters = array(
 						echo wp_kses(
 							sprintf(
 								/* translators: 1: terms URL, 2: privacy URL */
-								__( 'I have read and accepted the <a href="%1$s">Terms &amp; Conditions</a> and <a href="%2$s">Privacy Policy</a>.', 'somvio' ),
-								esc_url( $somvio_bf_terms_url ? (string) $somvio_bf_terms_url : home_url( '/terms-of-use/' ) ),
-								esc_url( $somvio_bf_privacy_url ? (string) $somvio_bf_privacy_url : home_url( '/privacy-policy/' ) )
+								__( 'I have read and accepted the <a href="%1$s" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</a> and <a href="%2$s" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.', 'somvio' ),
+								esc_url( (string) $somvio_bf_terms_url ),
+								esc_url( (string) $somvio_bf_privacy_url )
 							),
 							array(
 								'a' => array(
@@ -514,7 +527,7 @@ $somvio_bf_counters = array(
 				<p class="booking-form__field-error" data-booking-field-error="terms_accepted" hidden role="alert"></p>
 
 				<div class="booking-form__footer">
-					<button type="button" class="booking-form__next btn btn--primary btn--has-icon" data-booking-next aria-busy="false">
+					<button type="button" class="booking-form__next btn btn--primary btn--has-icon" data-booking-next disabled aria-disabled="true" aria-busy="false" title="<?php esc_attr_e( 'Complete required fields and accept the terms to continue', 'somvio' ); ?>">
 						<span class="booking-form__spinner" data-booking-spinner hidden aria-hidden="true"></span>
 						<span class="btn__label" data-booking-next-label><?php esc_html_e( 'Complete Booking', 'somvio' ); ?></span>
 						<span class="btn__icon" data-booking-next-icon aria-hidden="true">
