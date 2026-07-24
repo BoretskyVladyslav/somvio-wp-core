@@ -7922,7 +7922,7 @@ body.somvio-has-hero.single-post .site-main > * {
 }
 
 .quote-calculator[data-step="1"] [data-quote-back],
-.quote-calculator[data-step="4"] [data-quote-back],
+.quote-calculator[data-step="5"] [data-quote-back],
 .quote-calculator--success [data-quote-back] {
 	display: none !important;
 }

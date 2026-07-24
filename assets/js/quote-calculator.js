@@ -5,8 +5,8 @@
 (function () {
 	'use strict';
 
-	var TOTAL_STEPS = 3;
-	var SUCCESS_STEP = 4;
+	var TOTAL_STEPS = 4;
+	var SUCCESS_STEP = 5;
 	var cfg = window.somvioQuoteCalc || {};
 	var rates = cfg.rates || {};
 	var i18n = cfg.i18n || {};
@@ -443,9 +443,11 @@
 
 			if (step === 2) {
 				renderCalendar();
-				renderSlots();
 			}
 			if (step === 3) {
+				renderSlots();
+			}
+			if (step === 4) {
 				readFields();
 				renderPrice();
 			}
@@ -525,6 +527,11 @@
 					showError(i18n.required || 'Please complete the required fields.');
 					return false;
 				}
+				return true;
+			}
+
+			if (state.step === 3) {
+				clearFieldErrors();
 				if (!state.time) {
 					setFieldError('time', i18n.selectTime || 'Please select a time slot.');
 					showError(i18n.selectTime || 'Please select a time slot.');
@@ -533,7 +540,7 @@
 				return true;
 			}
 
-			if (state.step === 3) {
+			if (state.step === 4) {
 				var result = validateContact();
 				if (!result.valid && result.firstInvalid) {
 					result.firstInvalid.focus();

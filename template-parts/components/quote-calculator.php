@@ -2,8 +2,8 @@
 /**
  * Multi-step Instant Quote calculator component.
  *
- * Figma: 300:1766 (step1), 300:1852 + time (step2), 300:1792 (step3),
- * 409:6039 (success).
+ * Figma: 300:1766 (step1), 300:1852 (step2 date), 300:1818 (step3 time),
+ * 300:1792 (step4 contact), 409:6039 (success).
  *
  * Args (via get_template_part 3rd param / $args):
  * - variant: 'glass'|'solid' (default glass)
@@ -225,34 +225,34 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 				<div class="quote-calculator__cal-weekdays" data-quote-cal-weekdays aria-hidden="true"></div>
 				<div class="quote-calculator__cal-grid" data-quote-cal-grid role="listbox"></div>
 			</div>
-
-			<div class="quote-card__field quote-card__field--full">
-				<p class="quote-card__label"><?php esc_html_e( 'Preferred time:', 'somvio' ); ?></p>
-				<div
-					class="quote-calculator__slots"
-					data-quote-slots
-					role="radiogroup"
-					aria-label="<?php esc_attr_e( 'Preferred time', 'somvio' ); ?>"
-				>
-					<?php foreach ( $somvio_qc_slots as $slot ) : ?>
-						<button
-							type="button"
-							class="quote-calculator__slot"
-							data-quote-slot="<?php echo esc_attr( $slot ); ?>"
-							role="radio"
-							aria-checked="false"
-						>
-							<?php echo esc_html( str_replace( '-', ' - ', $slot ) ); ?>
-						</button>
-					<?php endforeach; ?>
-				</div>
-				<input type="hidden" name="time" data-quote-field="time" value="">
-				<p class="quote-calculator__field-error" data-quote-field-error="time" hidden role="alert"></p>
-			</div>
 		</div>
 
-		<?php /* —— Step 3: Contact (Figma 300:1792) —— */ ?>
+		<?php /* —— Step 3: Time slots (Figma 300:1818) —— */ ?>
 		<div class="quote-calculator__step" data-quote-step="3" data-quote-panel hidden>
+			<div
+				class="quote-calculator__slots"
+				data-quote-slots
+				role="radiogroup"
+				aria-label="<?php esc_attr_e( 'Preferred time', 'somvio' ); ?>"
+			>
+				<?php foreach ( $somvio_qc_slots as $slot ) : ?>
+					<button
+						type="button"
+						class="quote-calculator__slot"
+						data-quote-slot="<?php echo esc_attr( $slot ); ?>"
+						role="radio"
+						aria-checked="false"
+					>
+						<?php echo esc_html( str_replace( '-', ' - ', $slot ) ); ?>
+					</button>
+				<?php endforeach; ?>
+			</div>
+			<input type="hidden" name="time" data-quote-field="time" value="">
+			<p class="quote-calculator__field-error" data-quote-field-error="time" hidden role="alert"></p>
+		</div>
+
+		<?php /* —— Step 4: Contact (Figma 300:1792) —— */ ?>
+		<div class="quote-calculator__step" data-quote-step="4" data-quote-panel hidden>
 			<div class="quote-card__field quote-card__field--full">
 				<label class="quote-card__label" for="<?php echo esc_attr( $somvio_qc_uid ); ?>-name">
 					<?php esc_html_e( 'Full name', 'somvio' ); ?>
@@ -325,7 +325,7 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 		</div>
 
 		<?php /* —— Success (Figma 409:6039) —— */ ?>
-		<div class="quote-calculator__step quote-calculator__step--success" data-quote-step="4" data-quote-panel hidden>
+		<div class="quote-calculator__step quote-calculator__step--success" data-quote-step="5" data-quote-panel hidden>
 			<div class="quote-calculator__success">
 				<span class="quote-calculator__success-icon" aria-hidden="true">
 					<?php echo somvio_get_icon( 'icon-check-circle' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -369,7 +369,7 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 			<p class="quote-card__step" data-quote-step-label>
 				<?php
 				/* translators: 1: current step, 2: total steps */
-				echo esc_html( sprintf( __( 'Step %1$d of %2$d', 'somvio' ), 1, 3 ) );
+				echo esc_html( sprintf( __( 'Step %1$d of %2$d', 'somvio' ), 1, 4 ) );
 				?>
 			</p>
 		</div>
