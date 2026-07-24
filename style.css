@@ -6770,6 +6770,231 @@ body.somvio-has-hero.page-terms-of-use .site-main > * {
 }
 
 /* -------------------------------------------------------------------------
+   Block: error-404-hero — Figma 420:6896
+   Full-bleed dark hero; photo @ 40% opacity; breadcrumbs + title + lead + CTAs.
+   ------------------------------------------------------------------------- */
+.error-404-hero {
+	display: block !important;
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	float: none !important;
+	clear: both;
+	flex: none !important;
+	width: 100% !important;
+	max-width: none;
+	margin: 0;
+	margin-top: 0 !important;
+	padding: 0;
+	padding-top: 0 !important;
+	min-height: 608px;
+	box-sizing: border-box;
+	color: var(--somvio-color-text);
+	background-color: var(--somvio-color-header-bg-alt);
+}
+
+body.somvio-has-hero.error404 .site-content,
+body.somvio-has-hero.somvio-404-page .site-content,
+body.somvio-has-hero.error404 .content-area,
+body.somvio-has-hero.somvio-404-page .content-area,
+body.somvio-has-hero.error404 .site-main,
+body.somvio-has-hero.somvio-404-page .site-main {
+	display: block !important;
+	float: none !important;
+	flex: none !important;
+	width: 100% !important;
+	max-width: none;
+}
+
+body.somvio-has-hero.error404 .site-main > *,
+body.somvio-has-hero.somvio-404-page .site-main > * {
+	display: block;
+	float: none !important;
+	flex: none !important;
+	width: 100% !important;
+	max-width: none;
+	margin-inline: 0;
+}
+
+.site-main > .error-404-hero,
+#primary > .error-404-hero,
+#main > .error-404-hero {
+	display: block !important;
+	float: none !important;
+	flex: none !important;
+	width: 100% !important;
+	max-width: none;
+	margin-inline: 0;
+}
+
+.somvio-header + .error-404-hero,
+#masthead + .error-404-hero,
+.site-header + .error-404-hero {
+	margin-top: 0 !important;
+}
+
+.error-404-hero__media {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	/* Figma 420:6896: header image opacity-40 over #00050e */
+	opacity: 0.4;
+	background-image: var(--error-404-hero-bg);
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: cover;
+}
+
+.error-404-hero__bg {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	/* Figma: gradient from rgba(0,5,14,0.7) → transparent @ ~33% */
+	background-image: linear-gradient(
+		180deg,
+		rgba(0, 5, 14, 0.7) 0%,
+		rgba(0, 5, 14, 0) 32.6%
+	);
+}
+
+.error-404-hero__inner {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 20px;
+	width: 100%;
+	max-width: 1170px;
+	margin-inline: auto;
+	padding: calc(var(--somvio-header-height) + 60px) var(--somvio-container-pad) 60px;
+	min-height: 608px;
+	box-sizing: border-box;
+}
+
+.error-404-hero__breadcrumbs {
+	width: 100%;
+}
+
+.error-404-hero__breadcrumb-list {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.error-404-hero__breadcrumb-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: var(--somvio-font-size-base); /* 16px */
+	font-weight: 400;
+	line-height: 1.4;
+}
+
+.error-404-hero__breadcrumb-link {
+	color: var(--somvio-color-text);
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+	transition: color var(--somvio-transition);
+}
+
+.error-404-hero__breadcrumb-link:hover,
+.error-404-hero__breadcrumb-link:focus-visible {
+	color: var(--somvio-color-accent);
+}
+
+.error-404-hero__breadcrumb-sep {
+	display: inline-flex;
+	flex-shrink: 0;
+	width: 18px;
+	height: 18px;
+	color: var(--somvio-color-text);
+}
+
+.error-404-hero__breadcrumb-sep svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.error-404-hero__breadcrumb-current {
+	color: var(--somvio-color-text);
+}
+
+.error-404-hero__title {
+	margin: 0;
+	max-width: 693px;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2.25rem, 1.2rem + 3vw, 4.5rem); /* → 72px */
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.error-404-hero__text {
+	margin: 0;
+	max-width: 518px;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem); /* → 20px */
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+}
+
+.error-404-hero__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	gap: 20px;
+}
+
+@media (max-width: 767px) {
+	.error-404-hero {
+		min-height: 0;
+	}
+
+	.error-404-hero__inner {
+		padding:
+			calc(var(--somvio-header-height) + 40px + env(safe-area-inset-top, 0px))
+			20px
+			48px;
+		min-height: 0;
+		gap: 16px;
+	}
+
+	.error-404-hero__title {
+		max-width: none;
+		font-size: 2.25rem; /* 36px */
+	}
+
+	.error-404-hero__text {
+		max-width: none;
+	}
+
+	.error-404-hero__actions {
+		width: 100%;
+		flex-direction: column;
+	}
+
+	.error-404-hero__actions .btn {
+		width: 100%;
+		justify-content: center;
+	}
+}
+
+/* -------------------------------------------------------------------------
    Block: legal-content — Figma 300:2222 / 300:2243
    Centered reading column; white H2s; soft body #a0aec0; section rules.
    ------------------------------------------------------------------------- */

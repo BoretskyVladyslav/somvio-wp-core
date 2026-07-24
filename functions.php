@@ -33,6 +33,7 @@ require_once get_stylesheet_directory() . '/inc/before-after.php';
 require_once get_stylesheet_directory() . '/inc/testimonials.php';
 require_once get_stylesheet_directory() . '/inc/faq.php';
 require_once get_stylesheet_directory() . '/inc/legal-page.php';
+require_once get_stylesheet_directory() . '/inc/error-404.php';
 require_once get_stylesheet_directory() . '/inc/footer.php';
 require_once get_stylesheet_directory() . '/inc/scroll-reveal.php';
 require_once get_stylesheet_directory() . '/inc/setup-pages.php';
