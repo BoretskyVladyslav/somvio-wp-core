@@ -88,6 +88,7 @@ function somvio_enqueue_booking_form_assets() {
 				'selectDate'     => __( 'Select date', 'somvio' ),
 				'selectTime'     => __( 'Please select a time slot.', 'somvio' ),
 				'selectService'  => __( 'Please select a service.', 'somvio' ),
+				'stepsComing'    => __( 'Steps 2–4 coming next', 'somvio' ),
 				'nextStep'       => __( 'Next Step', 'somvio' ),
 				'back'           => __( 'Back', 'somvio' ),
 				'complete'       => __( 'Complete Booking', 'somvio' ),

@@ -118,7 +118,7 @@
 
 		var state = {
 			step: 1,
-			service: 'regular-cleaning',
+			service: '',
 			property: 'house',
 			bedrooms: '1',
 			toilets: '1',
@@ -219,14 +219,39 @@
 		function renderServiceCards() {
 			root.querySelectorAll('[data-booking-service]').forEach(function (btn) {
 				var val = btn.getAttribute('data-booking-service');
-				var selected = state.service === val;
+				var selected = !!state.service && state.service === val;
 				btn.classList.toggle('is-selected', selected);
 				btn.setAttribute('aria-checked', selected ? 'true' : 'false');
 			});
 			var serviceField = field('service');
 			if (serviceField) {
-				serviceField.value = state.service;
+				serviceField.value = state.service || '';
 			}
+			updateNextAvailability();
+		}
+
+		function updateNextAvailability() {
+			var isolated = root.getAttribute('data-booking-isolate') === '1';
+			var hasService = !!state.service;
+			var disabled = state.submitting || !hasService || isolated;
+			var title = '';
+			if (state.submitting) {
+				title = i18n.submitting || 'Submitting…';
+			} else if (!hasService) {
+				title = i18n.selectService || 'Select a service to continue';
+			} else if (isolated) {
+				title = i18n.stepsComing || 'Steps 2–4 coming next';
+			}
+
+			root.querySelectorAll('[data-booking-next]').forEach(function (nextBtn) {
+				nextBtn.disabled = disabled;
+				nextBtn.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+				if (title) {
+					nextBtn.setAttribute('title', title);
+				} else {
+					nextBtn.removeAttribute('title');
+				}
+			});
 		}
 
 		function renderAddons() {
@@ -360,7 +385,6 @@
 
 		function setLoading(loading) {
 			root.querySelectorAll('[data-booking-next]').forEach(function (nextBtn) {
-				nextBtn.disabled = loading;
 				nextBtn.classList.toggle('is-loading', loading);
 				nextBtn.setAttribute('aria-busy', loading ? 'true' : 'false');
 				var spinner = nextBtn.querySelector('[data-booking-spinner]');
@@ -376,6 +400,7 @@
 					nextLabel.textContent = i18n.submitting || 'Submitting…';
 				}
 			});
+			updateNextAvailability();
 		}
 
 		function setStep(step) {
@@ -602,6 +627,7 @@
 		root.querySelectorAll('[data-booking-service]').forEach(function (btn) {
 			btn.addEventListener('click', function () {
 				state.service = btn.getAttribute('data-booking-service') || '';
+				showError('');
 				renderServiceCards();
 				syncState();
 			});

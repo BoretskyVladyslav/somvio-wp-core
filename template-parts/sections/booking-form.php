@@ -70,19 +70,15 @@ $somvio_bf_counters = array(
 					class="booking-form__services"
 					role="radiogroup"
 					aria-label="<?php esc_attr_e( 'Service type', 'somvio' ); ?>"
+					aria-required="true"
 				>
-					<?php
-					$somvio_bf_first = true;
-					foreach ( $somvio_bf_services as $somvio_bf_key => $somvio_bf_label ) :
-						$somvio_bf_active = $somvio_bf_first;
-						$somvio_bf_first  = false;
-						?>
+					<?php foreach ( $somvio_bf_services as $somvio_bf_key => $somvio_bf_label ) : ?>
 						<button
 							type="button"
-							class="booking-form__service<?php echo $somvio_bf_active ? ' is-selected' : ''; ?>"
+							class="booking-form__service"
 							data-booking-service="<?php echo esc_attr( $somvio_bf_key ); ?>"
 							role="radio"
-							aria-checked="<?php echo $somvio_bf_active ? 'true' : 'false'; ?>"
+							aria-checked="false"
 						>
 							<span class="booking-form__service-media">
 								<img
@@ -117,17 +113,12 @@ $somvio_bf_counters = array(
 						</button>
 					<?php endforeach; ?>
 				</div>
-				<input type="hidden" name="service" data-booking-field="service" value="regular-cleaning">
+				<input type="hidden" name="service" data-booking-field="service" value="">
 
 				<div class="booking-form__counters">
-					<?php
-					$somvio_bf_counter_i = 0;
-					foreach ( $somvio_bf_counters as $somvio_bf_ckey => $somvio_bf_counter ) :
-						$somvio_bf_counter_active = 0 === $somvio_bf_counter_i;
-						++$somvio_bf_counter_i;
-						?>
+					<?php foreach ( $somvio_bf_counters as $somvio_bf_ckey => $somvio_bf_counter ) : ?>
 						<div
-							class="booking-form__counter<?php echo $somvio_bf_counter_active ? ' is-active' : ''; ?>"
+							class="booking-form__counter"
 							data-booking-counter="<?php echo esc_attr( $somvio_bf_ckey ); ?>"
 						>
 							<label class="booking-form__label" for="<?php echo esc_attr( $somvio_bf_uid . '-' . $somvio_bf_ckey ); ?>">
@@ -168,7 +159,7 @@ $somvio_bf_counters = array(
 				</div>
 
 				<div class="booking-form__footer">
-					<button type="button" class="booking-form__next btn btn--primary btn--has-icon" data-booking-next disabled aria-disabled="true" title="<?php esc_attr_e( 'Steps 2–4 coming next', 'somvio' ); ?>">
+					<button type="button" class="booking-form__next btn btn--primary btn--has-icon" data-booking-next disabled aria-disabled="true" title="<?php esc_attr_e( 'Select a service to continue', 'somvio' ); ?>">
 						<span class="btn__label" data-booking-next-label><?php esc_html_e( 'Next Step', 'somvio' ); ?></span>
 						<span class="btn__icon" data-booking-next-icon aria-hidden="true">
 							<?php echo somvio_get_icon( 'icon-arrow-right' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
