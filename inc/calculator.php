@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return array<string, mixed>
  */
 function somvio_get_quote_rates() {
-	$cached = get_transient( 'somvio_quote_rates_v3' );
+	$cached = get_transient( 'somvio_quote_rates_v4' );
 	if ( false !== $cached && is_array( $cached ) ) {
 		return $cached;
 	}
@@ -39,7 +39,6 @@ function somvio_get_quote_rates() {
 			'end-of-tenancy'   => 1.5,
 			'airbnb-cleaning'  => 1.2,
 			'after-builders'   => 1.6,
-			'commercial'       => 1.3,
 		),
 		'property_mult'    => array(
 			'house'      => 1.0,
@@ -88,7 +87,7 @@ function somvio_get_quote_rates() {
 	 */
 	$rates = apply_filters( 'somvio_quote_rates', $rates );
 
-	set_transient( 'somvio_quote_rates_v3', $rates, HOUR_IN_SECONDS );
+	set_transient( 'somvio_quote_rates_v4', $rates, HOUR_IN_SECONDS );
 
 	return $rates;
 }
@@ -174,7 +173,6 @@ function somvio_get_quote_service_options() {
 		'end-of-tenancy'   => __( 'End of Tenancy', 'somvio' ),
 		'airbnb-cleaning'  => __( 'Airbnb Cleaning', 'somvio' ),
 		'after-builders'   => __( 'After Builders', 'somvio' ),
-		'commercial'       => __( 'Commercial / Office Cleaning', 'somvio' ),
 	);
 }
 
@@ -200,14 +198,11 @@ function somvio_get_quote_property_options() {
 function somvio_quote_service_key_from_title( $title ) {
 	$title = strtolower( trim( (string) $title ) );
 	$map   = array(
-		'regular cleaning'              => 'regular-cleaning',
-		'deep cleaning'                 => 'deep-cleaning',
-		'end of tenancy'                => 'end-of-tenancy',
-		'airbnb cleaning'               => 'airbnb-cleaning',
-		'after builders'                => 'after-builders',
-		'commercial / office cleaning'  => 'commercial',
-		'commercial'                    => 'commercial',
-		'office cleaning'               => 'commercial',
+		'regular cleaning' => 'regular-cleaning',
+		'deep cleaning'    => 'deep-cleaning',
+		'end of tenancy'   => 'end-of-tenancy',
+		'airbnb cleaning'  => 'airbnb-cleaning',
+		'after builders'   => 'after-builders',
 	);
 
 	return isset( $map[ $title ] ) ? $map[ $title ] : 'regular-cleaning';
