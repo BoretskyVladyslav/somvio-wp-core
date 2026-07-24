@@ -9743,6 +9743,23 @@ body.somvio-has-hero.page-booking .site-main > * {
 	-moz-appearance: textfield;
 }
 
+/* Force dark UA form controls inside booking (counters, comment, selects) */
+.booking-form input[type='number'],
+.booking-form textarea,
+.booking-form select {
+	color: var(--contrast, #ffffff) !important;
+	background-color: #091e2c !important;
+	border-color: #091e2c !important;
+	-webkit-text-fill-color: var(--contrast, #ffffff);
+	color-scheme: dark;
+}
+
+.booking-form input[type='number']::-webkit-outer-spin-button,
+.booking-form input[type='number']::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
 .booking-form__counter-value::-webkit-outer-spin-button,
 .booking-form__counter-value::-webkit-inner-spin-button {
 	-webkit-appearance: none;

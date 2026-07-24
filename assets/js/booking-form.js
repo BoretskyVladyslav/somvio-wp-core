@@ -1,5 +1,5 @@
 /**
- * Booking page form (Figma 418:6214 Block 1).
+ * Booking page form (Figma 418:6214 / 418:6213).
  * Client price is preview-only; server recalculates on submit.
  */
 (function () {
@@ -231,19 +231,24 @@
 		}
 
 		function updateNextAvailability() {
-			var isolated = root.getAttribute('data-booking-isolate') === '1';
 			var hasService = !!state.service;
-			var disabled = state.submitting || !hasService || isolated;
+			var onStep1 = state.step === 1;
 			var title = '';
-			if (state.submitting) {
-				title = i18n.submitting || 'Submitting…';
-			} else if (!hasService) {
-				title = i18n.selectService || 'Select a service to continue';
-			} else if (isolated) {
-				title = i18n.stepsComing || 'Steps 2–4 coming next';
-			}
 
 			root.querySelectorAll('[data-booking-next]').forEach(function (nextBtn) {
+				var panel = nextBtn.closest('[data-booking-panel]');
+				var panelStep = panel ? parseInt(panel.getAttribute('data-booking-step'), 10) : 0;
+				var needsServiceGate = panelStep === 1 || onStep1;
+				var disabled = state.submitting || (needsServiceGate && !hasService);
+
+				if (state.submitting) {
+					title = i18n.submitting || 'Submitting…';
+				} else if (needsServiceGate && !hasService) {
+					title = i18n.selectService || 'Select a service to continue';
+				} else {
+					title = '';
+				}
+
 				nextBtn.disabled = disabled;
 				nextBtn.setAttribute('aria-disabled', disabled ? 'true' : 'false');
 				if (title) {
@@ -406,14 +411,19 @@
 		function setStep(step) {
 			state.step = step;
 			root.setAttribute('data-step', String(step));
-			var isSuccess = step === SUCCESS_STEP;
+			var activePanel = null;
 
 			panels.forEach(function (panel) {
 				var n = parseInt(panel.getAttribute('data-booking-step'), 10);
-				panel.hidden = n !== step;
+				var show = n === step;
+				panel.hidden = !show;
+				if (show) {
+					activePanel = panel;
+				}
 			});
 
 			updateStepLabels(step);
+			updateNextAvailability();
 
 			if (step === 3) {
 				renderCalendar();
@@ -424,6 +434,10 @@
 			showError('');
 			setLoading(false);
 			syncState();
+
+			if (activePanel && typeof activePanel.scrollIntoView === 'function' && step !== 1) {
+				activePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
 
 			root.dispatchEvent(
 				new CustomEvent('somvio:booking-step', {
@@ -745,11 +759,6 @@
 		root.querySelectorAll('[data-booking-next]').forEach(function (btn) {
 			btn.addEventListener('click', function () {
 				if (state.step === SUCCESS_STEP) {
-					return;
-				}
-				/* Block 1 isolation: no later steps in DOM yet. */
-				if (root.getAttribute('data-booking-isolate') === '1') {
-					validateStep();
 					return;
 				}
 				if (!validateStep()) {
