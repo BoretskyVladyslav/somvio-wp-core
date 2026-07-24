@@ -43,9 +43,17 @@ $somvio_read_now     = __( 'Read now', 'somvio' );
 
 /**
  * Resolve a real published post permalink for demo card links (single.php).
- * Prefer hello-world, else the latest published post.
+ * Prefer seeded Figma demo post, else latest published post.
  */
-$somvio_demo_post = get_page_by_path( 'hello-world', OBJECT, 'post' );
+$somvio_demo_slug = 'how-often-should-you-schedule-professional-cleaning';
+$somvio_demo_post = get_page_by_path( $somvio_demo_slug, OBJECT, 'post' );
+
+if ( ! $somvio_demo_post instanceof WP_Post ) {
+	$somvio_demo_id = (int) get_option( 'somvio_demo_blog_post_id', 0 );
+	if ( $somvio_demo_id > 0 ) {
+		$somvio_demo_post = get_post( $somvio_demo_id );
+	}
+}
 
 if ( ! $somvio_demo_post instanceof WP_Post ) {
 	$somvio_demo_posts = get_posts(
@@ -61,7 +69,7 @@ if ( ! $somvio_demo_post instanceof WP_Post ) {
 
 $somvio_post_url = ( $somvio_demo_post instanceof WP_Post )
 	? (string) get_permalink( $somvio_demo_post )
-	: home_url( '/hello-world/' );
+	: home_url( '/' . $somvio_demo_slug . '/' );
 
 $somvio_featured = array(
 	array(

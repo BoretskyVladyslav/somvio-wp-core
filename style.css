@@ -7441,15 +7441,14 @@ button.faq__trigger:focus-visible .faq__icon {
 
 /* -------------------------------------------------------------------------
    Block: blog-single-hero — Figma 300:2415
-   Full-bleed dark hero on single posts; breadcrumbs + badge + title + meta.
-   Must stay a block-level section inside main (never a .site-content flex sibling).
+   Full-bleed dark hero; breadcrumbs + title (44–52px) + date.
+   Shell mirrors FAQ/About heroes (1170 content / header+60 pad).
    ------------------------------------------------------------------------- */
 .blog-single-hero {
 	display: block !important;
 	position: relative;
 	isolation: isolate;
-	overflow-x: clip;
-	overflow-y: visible;
+	overflow: hidden;
 	float: none !important;
 	clear: both;
 	flex: none !important;
@@ -7459,7 +7458,6 @@ button.faq__trigger:focus-visible .faq__icon {
 	margin-top: 0 !important;
 	padding: 0;
 	padding-top: 0 !important;
-	min-height: 420px;
 	box-sizing: border-box;
 	color: var(--somvio-color-text);
 	background-color: var(--somvio-color-header-bg-alt);
@@ -7509,7 +7507,7 @@ body.somvio-has-hero.single-post .site-main > * {
 	width: 100%;
 	height: 100%;
 	pointer-events: none;
-	/* Figma 300:2415: header image at 40% opacity over #00050e */
+	/* Figma 300:2415: header image opacity-40 over #00050e */
 	opacity: 0.4;
 	background-image: var(--blog-single-hero-bg);
 	background-repeat: no-repeat;
@@ -7524,12 +7522,11 @@ body.somvio-has-hero.single-post .site-main > * {
 	width: 100%;
 	height: 100%;
 	pointer-events: none;
-	background-color: rgba(0, 5, 14, 0.5);
+	/* Soft top shade — matches FAQ/About dark hero shell */
 	background-image: linear-gradient(
 		180deg,
-		rgba(0, 5, 14, 0.78) 0%,
-		rgba(0, 5, 14, 0.25) 45%,
-		rgba(0, 5, 14, 0.6) 100%
+		rgba(0, 5, 14, 0.55) 0%,
+		rgba(0, 5, 14, 0) 40%
 	);
 }
 
@@ -7543,9 +7540,8 @@ body.somvio-has-hero.single-post .site-main > * {
 	width: 100%;
 	max-width: 1170px;
 	margin-inline: auto;
-	/* Clear fixed header — Figma: px 375 / py 60 on 1920; task guard +40 */
-	padding: calc(var(--somvio-header-height) + 40px) var(--somvio-container-pad) 60px;
-	min-height: 420px;
+	/* Figma 300:2417: py 60px below fixed header; px → container pad */
+	padding: calc(var(--somvio-header-height) + 60px) var(--somvio-container-pad) 60px;
 	box-sizing: border-box;
 }
 
@@ -7602,44 +7598,26 @@ body.somvio-has-hero.single-post .site-main > * {
 
 .blog-single-hero__breadcrumb-current {
 	color: var(--somvio-color-text);
-	max-width: min(40ch, 100%);
+	max-width: min(48ch, 100%);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-}
-
-.blog-single-hero__badge {
-	display: inline-flex;
-	align-items: center;
-	margin: 0;
-	padding: 6px 12px;
-	border: 1px solid var(--somvio-color-accent-mid);
-	border-radius: var(--somvio-radius);
-	font-family: var(--somvio-font-sans);
-	font-size: var(--somvio-font-size-sm);
-	font-weight: 600;
-	line-height: 1.2;
-	letter-spacing: 0.02em;
-	color: var(--somvio-color-accent);
-	background-color: rgba(64, 215, 208, 0.08);
 }
 
 .blog-single-hero__title {
 	margin: 0;
 	max-width: 895px;
 	font-family: var(--somvio-font-sans);
-	font-size: clamp(1.75rem, 1.2rem + 1.8vw, 2.75rem); /* → 44px */
+	font-size: clamp(2rem, 1.4rem + 1.8vw, 3.25rem); /* 32 → 52px (Figma ~44–52) */
 	font-weight: 600;
 	line-height: 1.1;
+	letter-spacing: 0;
 	color: var(--somvio-color-text);
 }
 
-.blog-single-hero__meta {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 12px 16px;
-	max-width: 895px;
+.blog-single-hero__date {
+	margin: 0;
+	max-width: 518px;
 	font-family: var(--somvio-font-sans);
 	font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem); /* → 20px */
 	font-weight: 400;
@@ -7647,40 +7625,11 @@ body.somvio-has-hero.single-post .site-main > * {
 	color: var(--somvio-color-text);
 }
 
-.blog-single-hero__author {
-	display: inline-flex;
-	align-items: center;
-	gap: 10px;
-}
-
-.blog-single-hero__avatar {
-	display: block;
-	width: 40px;
-	height: 40px;
-	border-radius: 50%;
-	object-fit: cover;
-}
-
-.blog-single-hero__author-name,
-.blog-single-hero__date,
-.blog-single-hero__read-time {
-	margin: 0;
-}
-
-.blog-single-hero__meta-sep {
-	display: inline-block;
-	width: 4px;
-	height: 4px;
-	border-radius: 50%;
-	background-color: currentColor;
-	opacity: 0.55;
+.blog-single-hero__date time {
+	color: inherit;
 }
 
 @media (max-width: 767px) {
-	.blog-single-hero {
-		min-height: 0;
-	}
-
 	.blog-single-hero__media {
 		background-position: center top;
 	}
@@ -7690,7 +7639,6 @@ body.somvio-has-hero.single-post .site-main > * {
 			calc(var(--somvio-header-height) + 40px + env(safe-area-inset-top, 0px))
 			20px
 			40px;
-		min-height: 0;
 		gap: 16px;
 	}
 
@@ -7703,14 +7651,8 @@ body.somvio-has-hero.single-post .site-main > * {
 		max-width: min(28ch, 55vw);
 	}
 
-	.blog-single-hero__meta {
+	.blog-single-hero__date {
 		max-width: none;
 		font-size: 1rem;
-		gap: 10px 12px;
-	}
-
-	.blog-single-hero__avatar {
-		width: 32px;
-		height: 32px;
 	}
 }
