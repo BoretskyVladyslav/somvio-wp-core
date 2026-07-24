@@ -111,6 +111,9 @@
 
 		var panels = Array.prototype.slice.call(root.querySelectorAll('[data-booking-panel]'));
 		var dateDisplay = root.querySelector('[data-booking-date-display]');
+		var dateToggle = root.querySelector('[data-booking-date-toggle]');
+		var dateBlock = root.querySelector('[data-booking-date-block]');
+		var calendarEl = root.querySelector('[data-booking-calendar]');
 		var calLabel = root.querySelector('[data-booking-cal-label]');
 		var calGrid = root.querySelector('[data-booking-cal-grid]');
 		var calWeekdays = root.querySelector('[data-booking-cal-weekdays]');
@@ -347,6 +350,8 @@
 				});
 			}
 
+			var frag = document.createDocumentFragment();
+
 			cells.forEach(function (cell) {
 				var iso = toISODate(cell.date);
 				var btn = document.createElement('button');
@@ -355,8 +360,12 @@
 				btn.textContent = String(cell.day);
 				btn.setAttribute('role', 'option');
 				btn.setAttribute('data-date', iso);
+				btn.style.visibility = 'visible';
+				btn.style.opacity = '1';
+				btn.style.display = 'flex';
 
-				var past = cell.date < today;
+				var cellDay = new Date(cell.date.getFullYear(), cell.date.getMonth(), cell.date.getDate());
+				var past = cellDay < today;
 				if (cell.outside) {
 					btn.classList.add('is-outside');
 				}
@@ -389,8 +398,48 @@
 					});
 				}
 
-				calGrid.appendChild(btn);
+				frag.appendChild(btn);
 			});
+
+			calGrid.appendChild(frag);
+		}
+
+		/**
+		 * Re-paint calendar after Step 3 becomes visible (fixes 0-dimension init).
+		 */
+		function refreshCalendarPaint() {
+			if (!calendarEl || calendarEl.hidden) {
+				return;
+			}
+			renderWeekdays();
+			renderCalendar();
+			renderSlots();
+			/* Force layout + browser repaint. */
+			void calendarEl.offsetWidth;
+			void (calGrid && calGrid.offsetHeight);
+			window.dispatchEvent(new Event('resize'));
+		}
+
+		function setCalendarOpen(open) {
+			if (!calendarEl) {
+				return;
+			}
+			calendarEl.hidden = !open;
+			if (dateBlock) {
+				dateBlock.classList.toggle('is-calendar-open', !!open);
+			}
+			if (dateDisplay) {
+				dateDisplay.setAttribute('aria-expanded', open ? 'true' : 'false');
+			}
+			if (dateToggle) {
+				dateToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+			}
+			if (open) {
+				requestAnimationFrame(function () {
+					refreshCalendarPaint();
+					requestAnimationFrame(refreshCalendarPaint);
+				});
+			}
 		}
 
 		function updateStepLabels(step) {
@@ -443,15 +492,22 @@
 			updateStepLabels(step);
 			updateNextAvailability();
 
-			if (step === 3) {
-				renderCalendar();
-				renderSlots();
-			}
-
 			clearFieldErrors();
 			showError('');
 			setLoading(false);
 			syncState();
+
+			if (step === 3) {
+				setCalendarOpen(true);
+				/* Panel just un-hidden — paint after layout settles. */
+				requestAnimationFrame(function () {
+					refreshCalendarPaint();
+					requestAnimationFrame(function () {
+						refreshCalendarPaint();
+						window.dispatchEvent(new Event('resize'));
+					});
+				});
+			}
 
 			if (activePanel && typeof activePanel.scrollIntoView === 'function' && step !== 1) {
 				activePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -755,6 +811,21 @@
 			});
 		});
 
+		if (dateToggle) {
+			dateToggle.addEventListener('click', function (event) {
+				event.preventDefault();
+				var willOpen = !calendarEl || calendarEl.hidden;
+				setCalendarOpen(willOpen);
+			});
+			dateToggle.addEventListener('keydown', function (event) {
+				if (event.key === 'Enter' || event.key === ' ') {
+					event.preventDefault();
+					var willOpen = !calendarEl || calendarEl.hidden;
+					setCalendarOpen(willOpen);
+				}
+			});
+		}
+
 		if (calPrev) {
 			calPrev.addEventListener('click', function () {
 				state.calMonth -= 1;
@@ -762,7 +833,7 @@
 					state.calMonth = 11;
 					state.calYear -= 1;
 				}
-				renderCalendar();
+				refreshCalendarPaint();
 			});
 		}
 		if (calNext) {
@@ -772,7 +843,7 @@
 					state.calMonth = 0;
 					state.calYear += 1;
 				}
-				renderCalendar();
+				refreshCalendarPaint();
 			});
 		}
 
@@ -789,14 +860,6 @@
 					return;
 				}
 				setStep(state.step + 1);
-			});
-		});
-
-		root.querySelectorAll('[data-booking-back]').forEach(function (btn) {
-			btn.addEventListener('click', function () {
-				if (state.step > 1 && state.step <= TOTAL_STEPS) {
-					setStep(state.step - 1);
-				}
 			});
 		});
 

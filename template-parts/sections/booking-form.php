@@ -257,12 +257,6 @@ $somvio_bf_counters = array(
 				<input type="hidden" name="addons" data-booking-field="addons" value="">
 
 				<div class="booking-form__footer">
-					<button type="button" class="booking-form__back btn btn--outline btn--has-icon" data-booking-back>
-						<span class="btn__icon" aria-hidden="true">
-							<?php echo somvio_get_icon( 'icon-arrow-left' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						</span>
-						<span class="btn__label"><?php esc_html_e( 'Back', 'somvio' ); ?></span>
-					</button>
 					<button type="button" class="booking-form__next btn btn--primary btn--has-icon" data-booking-next>
 						<span class="btn__label" data-booking-next-label><?php esc_html_e( 'Next Step', 'somvio' ); ?></span>
 						<span class="btn__icon" data-booking-next-icon aria-hidden="true">
@@ -282,12 +276,12 @@ $somvio_bf_counters = array(
 					<?php esc_html_e( 'Get Your Date', 'somvio' ); ?>
 				</h2>
 
-				<div class="booking-form__date-block">
+				<div class="booking-form__date-block is-calendar-open" data-booking-date-block>
 					<div class="booking-form__field booking-form__field--date">
 						<label class="booking-form__label" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-date-display">
 							<?php esc_html_e( 'Estimated move date:', 'somvio' ); ?>
 						</label>
-						<div class="booking-form__select-wrap">
+						<div class="booking-form__select-wrap" data-booking-date-toggle role="button" tabindex="0" aria-controls="<?php echo esc_attr( $somvio_bf_uid ); ?>-calendar">
 							<input
 								type="text"
 								class="booking-form__input booking-form__input--date"
@@ -298,6 +292,9 @@ $somvio_bf_counters = array(
 								readonly
 								aria-live="polite"
 								aria-required="true"
+								aria-haspopup="dialog"
+								aria-expanded="true"
+								aria-controls="<?php echo esc_attr( $somvio_bf_uid ); ?>-calendar"
 							>
 							<input type="hidden" name="date" data-booking-field="date" value="" required>
 							<span class="booking-form__chevron" aria-hidden="true">
@@ -308,8 +305,9 @@ $somvio_bf_counters = array(
 
 					<div
 						class="booking-form__calendar"
+						id="<?php echo esc_attr( $somvio_bf_uid ); ?>-calendar"
 						data-booking-calendar
-						role="group"
+						role="dialog"
 						aria-label="<?php esc_attr_e( 'Choose a date', 'somvio' ); ?>"
 					>
 						<div class="booking-form__cal-header">
@@ -363,12 +361,6 @@ $somvio_bf_counters = array(
 				<p class="booking-form__field-error" data-booking-field-error="date" hidden role="alert"></p>
 
 				<div class="booking-form__footer">
-					<button type="button" class="booking-form__back btn btn--outline btn--has-icon" data-booking-back>
-						<span class="btn__icon" aria-hidden="true">
-							<?php echo somvio_get_icon( 'icon-arrow-left' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						</span>
-						<span class="btn__label"><?php esc_html_e( 'Back', 'somvio' ); ?></span>
-					</button>
 					<button type="button" class="booking-form__next btn btn--primary btn--has-icon" data-booking-next disabled aria-disabled="true" title="<?php esc_attr_e( 'Select a date and time to continue', 'somvio' ); ?>">
 						<span class="btn__label" data-booking-next-label><?php esc_html_e( 'Next Step', 'somvio' ); ?></span>
 						<span class="btn__icon" data-booking-next-icon aria-hidden="true">
@@ -513,12 +505,6 @@ $somvio_bf_counters = array(
 				<p class="booking-form__field-error" data-booking-field-error="terms_accepted" hidden role="alert"></p>
 
 				<div class="booking-form__footer">
-					<button type="button" class="booking-form__back btn btn--outline btn--has-icon" data-booking-back>
-						<span class="btn__icon" aria-hidden="true">
-							<?php echo somvio_get_icon( 'icon-arrow-left' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						</span>
-						<span class="btn__label"><?php esc_html_e( 'Back', 'somvio' ); ?></span>
-					</button>
 					<button type="button" class="booking-form__next btn btn--primary btn--has-icon" data-booking-next aria-busy="false">
 						<span class="booking-form__spinner" data-booking-spinner hidden aria-hidden="true"></span>
 						<span class="btn__label" data-booking-next-label><?php esc_html_e( 'Complete Booking', 'somvio' ); ?></span>

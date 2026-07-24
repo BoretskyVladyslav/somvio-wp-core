@@ -9840,6 +9840,13 @@ body.somvio-has-hero.page-booking .site-main > * {
 	display: flex;
 	align-items: center;
 	width: 100%;
+	cursor: pointer;
+}
+
+.booking-form__select-wrap:focus-visible {
+	outline: 2px solid #33aca6;
+	outline-offset: 2px;
+	border-radius: 4px;
 }
 
 .booking-form__input,
@@ -9864,6 +9871,8 @@ body.somvio-has-hero.page-booking .site-main > * {
 	-webkit-text-fill-color: #ffffff;
 	caret-color: #ffffff;
 	color-scheme: dark;
+	cursor: pointer;
+	pointer-events: none; /* clicks go to toggle wrap */
 }
 
 .booking-form__input--date::placeholder {
@@ -9896,6 +9905,7 @@ body.somvio-has-hero.page-booking .site-main > * {
 	height: 20px;
 	pointer-events: none;
 	color: #ffffff;
+	transition: transform 0.2s ease;
 }
 
 .booking-form__chevron svg {
@@ -9931,6 +9941,10 @@ body.somvio-has-hero.page-booking .site-main > * {
 	width: 100%;
 }
 
+.booking-form__date-block.is-calendar-open .booking-form__chevron {
+	transform: translateY(-50%) rotate(180deg);
+}
+
 .booking-form__calendar {
 	display: flex;
 	flex-direction: column;
@@ -9941,6 +9955,10 @@ body.somvio-has-hero.page-booking .site-main > * {
 	border-radius: 4px;
 	background-color: #091e2c;
 	box-sizing: border-box;
+}
+
+.booking-form__calendar[hidden] {
+	display: none !important;
 }
 
 .booking-form__cal-header {
@@ -10030,7 +10048,9 @@ body.somvio-has-hero.page-booking .site-main > * {
 }
 
 .booking-form__cal-day {
-	display: inline-flex;
+	display: flex !important;
+	visibility: visible !important;
+	opacity: 1 !important;
 	align-items: center;
 	justify-content: center;
 	width: 36px;
@@ -10045,8 +10065,7 @@ body.somvio-has-hero.page-booking .site-main > * {
 	font-weight: 700;
 	line-height: 1;
 	color: #ffffff !important;
-	opacity: 1 !important;
-	-webkit-text-fill-color: #ffffff;
+	-webkit-text-fill-color: #ffffff !important;
 	cursor: pointer;
 	transition:
 		background-color 0.2s ease,
@@ -10250,11 +10269,6 @@ body.somvio-has-hero.page-booking .site-main > * {
 	justify-content: space-between;
 	gap: 16px;
 	width: 100%;
-}
-
-.booking-form__footer .booking-form__back + .booking-form__next {
-	margin-right: auto;
-	margin-left: 10px;
 }
 
 .booking-form__step-label {
