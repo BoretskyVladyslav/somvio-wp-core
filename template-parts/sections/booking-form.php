@@ -1,7 +1,7 @@
 <?php
 /**
  * Booking form — Block 1 isolation (Figma 418:6214).
- * Single-column full-width step card. Steps 2–5 temporarily omitted.
+ * Pixel-aligned Choose service card. Steps 2–5 temporarily omitted.
  *
  * @package Somvio_Child
  */
@@ -20,15 +20,6 @@ if ( file_exists( $somvio_bf_img_path ) ) {
 }
 
 $somvio_bf_icons_uri = get_stylesheet_directory_uri() . '/assets/icons/';
-
-$somvio_bf_service_blurb = array(
-	'regular-cleaning' => __( 'Weekly or fortnightly keep-clean for lived-in homes.', 'somvio' ),
-	'deep-cleaning'    => __( 'Thorough top-to-bottom clean for a fresh reset.', 'somvio' ),
-	'end-of-tenancy'   => __( 'Move-out ready clean to meet landlord standards.', 'somvio' ),
-	'airbnb-cleaning'  => __( 'Turnover cleans between guest stays.', 'somvio' ),
-	'after-builders'   => __( 'Dust and debris removal after renovation work.', 'somvio' ),
-	'commercial'       => __( 'Offices and commercial spaces kept presentation-ready.', 'somvio' ),
-);
 
 $somvio_bf_counters = array(
 	'bedrooms'  => array(
@@ -68,7 +59,7 @@ $somvio_bf_counters = array(
 		<form class="booking-form__form" data-booking-form-el novalidate>
 			<p class="booking-form__error" data-booking-error hidden role="alert"></p>
 
-			<?php /* —— Step 1: Choose service (Figma 418:6214) —— */ ?>
+			<?php /* —— Step 1: Choose service — Figma 418:6214 —— */ ?>
 			<div class="booking-form__card booking-form__card--step1" data-booking-step="1" data-booking-panel>
 				<h2 class="booking-form__step-title">
 					<span class="booking-form__step-num" aria-hidden="true">1.</span>
@@ -76,7 +67,7 @@ $somvio_bf_counters = array(
 				</h2>
 
 				<div
-					class="booking-form__services booking-form__services--rows"
+					class="booking-form__services"
 					role="radiogroup"
 					aria-label="<?php esc_attr_e( 'Service type', 'somvio' ); ?>"
 				>
@@ -85,13 +76,10 @@ $somvio_bf_counters = array(
 					foreach ( $somvio_bf_services as $somvio_bf_key => $somvio_bf_label ) :
 						$somvio_bf_active = $somvio_bf_first;
 						$somvio_bf_first  = false;
-						$somvio_bf_blurb  = isset( $somvio_bf_service_blurb[ $somvio_bf_key ] )
-							? $somvio_bf_service_blurb[ $somvio_bf_key ]
-							: '';
 						?>
 						<button
 							type="button"
-							class="booking-form__service booking-form__service--row<?php echo $somvio_bf_active ? ' is-selected' : ''; ?>"
+							class="booking-form__service<?php echo $somvio_bf_active ? ' is-selected' : ''; ?>"
 							data-booking-service="<?php echo esc_attr( $somvio_bf_key ); ?>"
 							role="radio"
 							aria-checked="<?php echo $somvio_bf_active ? 'true' : 'false'; ?>"
@@ -101,33 +89,30 @@ $somvio_bf_counters = array(
 									class="booking-form__service-img"
 									src="<?php echo esc_url( $somvio_bf_img_uri ); ?>"
 									alt=""
-									width="140"
-									height="100"
+									width="240"
+									height="200"
 									loading="lazy"
 									decoding="async"
 								>
 							</span>
-							<span class="booking-form__service-body">
+							<span class="booking-form__service-footer">
+								<span class="booking-form__service-check" aria-hidden="true">
+									<img
+										class="booking-form__service-check-img booking-form__service-check-img--off"
+										src="<?php echo esc_url( $somvio_bf_icons_uri . 'icon-check-circle-outline.svg' ); ?>"
+										alt=""
+										width="24"
+										height="24"
+									>
+									<img
+										class="booking-form__service-check-img booking-form__service-check-img--on"
+										src="<?php echo esc_url( $somvio_bf_icons_uri . 'icon-check-circle-filled.svg' ); ?>"
+										alt=""
+										width="24"
+										height="24"
+									>
+								</span>
 								<span class="booking-form__service-label"><?php echo esc_html( $somvio_bf_label ); ?></span>
-								<?php if ( '' !== $somvio_bf_blurb ) : ?>
-									<span class="booking-form__service-desc"><?php echo esc_html( $somvio_bf_blurb ); ?></span>
-								<?php endif; ?>
-							</span>
-							<span class="booking-form__service-check" aria-hidden="true">
-								<img
-									class="booking-form__service-check-img booking-form__service-check-img--off"
-									src="<?php echo esc_url( $somvio_bf_icons_uri . 'icon-check-circle-outline.png' ); ?>"
-									alt=""
-									width="24"
-									height="24"
-								>
-								<img
-									class="booking-form__service-check-img booking-form__service-check-img--on"
-									src="<?php echo esc_url( $somvio_bf_icons_uri . 'icon-check-circle-filled.png' ); ?>"
-									alt=""
-									width="24"
-									height="24"
-								>
 							</span>
 						</button>
 					<?php endforeach; ?>
