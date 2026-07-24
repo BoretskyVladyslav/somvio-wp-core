@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return array<string, mixed>
  */
 function somvio_get_quote_rates() {
-	$cached = get_transient( 'somvio_quote_rates_v1' );
+	$cached = get_transient( 'somvio_quote_rates_v2' );
 	if ( false !== $cached && is_array( $cached ) ) {
 		return $cached;
 	}
@@ -56,6 +56,38 @@ function somvio_get_quote_rates() {
 			'09:00-11:00',
 			'13:00-15:00',
 		),
+		'addons'           => array(
+			'inside-fridge'     => array(
+				'label' => __( 'Inside Fridge', 'somvio' ),
+				'price' => 15,
+				'icon'  => 'icon-room-kitchen',
+			),
+			'oven-cleaning'     => array(
+				'label' => __( 'Oven Cleaning', 'somvio' ),
+				'price' => 20,
+				'icon'  => 'icon-sparkle',
+			),
+			'interior-windows'  => array(
+				'label' => __( 'Interior Windows', 'somvio' ),
+				'price' => 25,
+				'icon'  => 'icon-leaf',
+			),
+			'balcony'           => array(
+				'label' => __( 'Balcony', 'somvio' ),
+				'price' => 18,
+				'icon'  => 'icon-sofa',
+			),
+			'ironing'           => array(
+				'label' => __( 'Ironing', 'somvio' ),
+				'price' => 30,
+				'icon'  => 'icon-shield',
+			),
+			'fridge-and-freezer' => array(
+				'label' => __( 'Fridge & Freezer', 'somvio' ),
+				'price' => 25,
+				'icon'  => 'icon-room-kitchen',
+			),
+		),
 	);
 
 	/**
@@ -65,7 +97,7 @@ function somvio_get_quote_rates() {
 	 */
 	$rates = apply_filters( 'somvio_quote_rates', $rates );
 
-	set_transient( 'somvio_quote_rates_v1', $rates, HOUR_IN_SECONDS );
+	set_transient( 'somvio_quote_rates_v2', $rates, HOUR_IN_SECONDS );
 
 	return $rates;
 }
@@ -73,13 +105,14 @@ function somvio_get_quote_rates() {
 /**
  * Recalculate quote total from trusted inputs (server authority).
  *
- * @param string $service  Service key.
- * @param string $property Property key.
- * @param int    $bedrooms Bedroom count.
- * @param int    $bathrooms Bathroom count.
+ * @param string   $service  Service key.
+ * @param string   $property Property key.
+ * @param int      $bedrooms Bedroom count.
+ * @param int      $bathrooms Bathroom count.
+ * @param string[] $addons   Selected add-on keys.
  * @return float
  */
-function somvio_calculate_quote_price( $service, $property, $bedrooms, $bathrooms ) {
+function somvio_calculate_quote_price( $service, $property, $bedrooms, $bathrooms, $addons = array() ) {
 	$rates = somvio_get_quote_rates();
 
 	$bed_key = (string) max( 1, min( 5, absint( $bedrooms ) ) );
@@ -95,7 +128,47 @@ function somvio_calculate_quote_price( $service, $property, $bedrooms, $bathroom
 		? (float) $rates['property_mult'][ $property ]
 		: 1.0;
 
-	return round( ( $base + $bath_extra ) * $svc_mult * $prop_mult, 2 );
+	$addon_total = 0.0;
+	$addon_defs  = isset( $rates['addons'] ) && is_array( $rates['addons'] ) ? $rates['addons'] : array();
+
+	foreach ( (array) $addons as $addon_key ) {
+		$addon_key = sanitize_key( (string) $addon_key );
+		if ( isset( $addon_defs[ $addon_key ]['price'] ) ) {
+			$addon_total += (float) $addon_defs[ $addon_key ]['price'];
+		}
+	}
+
+	return round( ( ( $base + $bath_extra ) * $svc_mult * $prop_mult ) + $addon_total, 2 );
+}
+
+/**
+ * Validate quote phone (UK / international digits).
+ *
+ * @param string $phone Raw phone input.
+ * @return bool
+ */
+function somvio_is_valid_quote_phone( $phone ) {
+	$phone = preg_replace( '/\s+/', '', (string) $phone );
+	if ( '' === $phone ) {
+		return false;
+	}
+
+	return (bool) preg_match( '/^(\+?[1-9]\d{9,14}|0[1-9]\d{9,10})$/', $phone );
+}
+
+/**
+ * Validate quote email with stricter pattern than is_email alone.
+ *
+ * @param string $email Email address.
+ * @return bool
+ */
+function somvio_is_valid_quote_email( $email ) {
+	$email = trim( (string) $email );
+	if ( ! is_email( $email ) ) {
+		return false;
+	}
+
+	return (bool) preg_match( '/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/', $email );
 }
 
 /**
@@ -216,13 +289,18 @@ function somvio_enqueue_quote_calculator_assets() {
 				'stepOf'           => __( 'Step %1$d of %2$d', 'somvio' ),
 				'titleDefault'     => __( 'Get Your Instant Quote', 'somvio' ),
 				'titleDate'        => __( 'Get Your Date', 'somvio' ),
+				'titleAddons'      => __( 'Add-ons & Extras', 'somvio' ),
 				'selectDate'       => __( 'Select date', 'somvio' ),
+				'selectTime'       => __( 'Please select a time slot.', 'somvio' ),
 				'nextStep'         => __( 'Next Step', 'somvio' ),
 				'back'             => __( 'Back', 'somvio' ),
 				'submitQuote'      => __( 'Submit Quote', 'somvio' ),
+				'submitting'       => __( 'Submitting…', 'somvio' ),
 				'close'            => __( 'Close', 'somvio' ),
 				'required'         => __( 'Please complete the required fields.', 'somvio' ),
 				'invalidEmail'     => __( 'Please enter a valid email address.', 'somvio' ),
+				'invalidPhone'     => __( 'Please enter a valid phone number.', 'somvio' ),
+				'invalidName'      => __( 'Please enter your full name.', 'somvio' ),
 				'submitError'      => __( 'Something went wrong. Please try again.', 'somvio' ),
 				'estimatedTotal'   => __( 'Estimated total', 'somvio' ),
 				'previewNote'      => __( 'Preview only — final price confirmed after review.', 'somvio' ),
@@ -305,10 +383,12 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	$email     = sanitize_email( (string) $request['email'] );
 	$phone     = sanitize_text_field( (string) $request['phone'] );
 	$comment   = sanitize_textarea_field( (string) $request['comment'] );
+	$addons    = somvio_rest_sanitize_string_list( $request['addons'] ?? array() );
 
 	$services  = somvio_get_quote_service_options();
 	$props     = somvio_get_quote_property_options();
 	$rates     = somvio_get_quote_rates();
+	$addon_defs = isset( $rates['addons'] ) && is_array( $rates['addons'] ) ? $rates['addons'] : array();
 
 	if ( ! isset( $services[ $service ] ) ) {
 		return new WP_Error( 'invalid_service', __( 'Invalid service type.', 'somvio' ), array( 'status' => 400 ) );
@@ -325,11 +405,25 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	if ( ! in_array( $time, $rates['time_slots'], true ) ) {
 		return new WP_Error( 'invalid_time', __( 'Invalid time slot.', 'somvio' ), array( 'status' => 400 ) );
 	}
-	if ( '' === $name || ! is_email( $email ) || '' === $phone ) {
-		return new WP_Error( 'invalid_contact', __( 'Please provide valid contact details.', 'somvio' ), array( 'status' => 400 ) );
+
+	$name = trim( $name );
+	if ( strlen( $name ) < 2 ) {
+		return new WP_Error( 'invalid_name', __( 'Please enter your full name.', 'somvio' ), array( 'status' => 400 ) );
+	}
+	if ( ! somvio_is_valid_quote_email( $email ) ) {
+		return new WP_Error( 'invalid_email', __( 'Please enter a valid email address.', 'somvio' ), array( 'status' => 400 ) );
+	}
+	if ( ! somvio_is_valid_quote_phone( $phone ) ) {
+		return new WP_Error( 'invalid_phone', __( 'Please enter a valid phone number.', 'somvio' ), array( 'status' => 400 ) );
 	}
 
-	$server_total = somvio_calculate_quote_price( $service, $property, $bedrooms, $bathrooms );
+	foreach ( $addons as $addon_key ) {
+		if ( ! isset( $addon_defs[ $addon_key ] ) ) {
+			return new WP_Error( 'invalid_addon', __( 'Invalid add-on selection.', 'somvio' ), array( 'status' => 400 ) );
+		}
+	}
+
+	$server_total = somvio_calculate_quote_price( $service, $property, $bedrooms, $bathrooms, $addons );
 	$client_total = isset( $request['client_total'] ) ? (float) $request['client_total'] : null;
 
 	if ( null !== $client_total && abs( $client_total - $server_total ) > 0.01 ) {
@@ -354,6 +448,7 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 		'email'     => $email,
 		'phone'     => $phone,
 		'comment'   => $comment,
+		'addons'    => $addons,
 		'total'     => $server_total,
 	);
 
@@ -438,6 +533,12 @@ function somvio_register_quote_rest_routes() {
 					'type'              => 'string',
 					'default'           => '',
 					'sanitize_callback' => 'sanitize_textarea_field',
+				),
+				'addons'       => array(
+					'required'          => false,
+					'type'              => 'array',
+					'default'           => array(),
+					'sanitize_callback' => 'somvio_rest_sanitize_string_list',
 				),
 				'client_total' => array(
 					'required' => false,

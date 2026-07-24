@@ -10,6 +10,9 @@
 	var rates = cfg.rates || {};
 	var i18n = cfg.i18n || {};
 
+	var EMAIL_RE = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+	var PHONE_RE = /^(\+?[1-9]\d{9,14}|0[1-9]\d{9,10})$/;
+
 	/**
 	 * @param {number} n
 	 * @returns {string}
@@ -20,8 +23,70 @@
 	}
 
 	/**
-	 * Preview total from raw inputs (UI feedback only).
-	 *
+	 * @param {string} value
+	 * @returns {string}
+	 */
+	function trim(value) {
+		return String(value || '').trim();
+	}
+
+	/**
+	 * @param {string} phone
+	 * @returns {string}
+	 */
+	function normalizePhone(phone) {
+		var raw = String(phone || '');
+		var hasPlus = raw.charAt(0) === '+';
+		var digits = raw.replace(/[^\d]/g, '');
+		return hasPlus ? '+' + digits : digits;
+	}
+
+	/**
+	 * @param {string} phone
+	 * @returns {string}
+	 */
+	function formatPhoneDisplay(phone) {
+		var normalized = normalizePhone(phone);
+		if (!normalized) {
+			return '';
+		}
+		if (normalized.charAt(0) === '+') {
+			return normalized;
+		}
+		if (normalized.length <= 5) {
+			return normalized;
+		}
+		if (normalized.length <= 10) {
+			return normalized.replace(/(\d{4,5})(\d{3,6})/, '$1 $2').trim();
+		}
+		return normalized.replace(/(\d{5})(\d{6})/, '$1 $2');
+	}
+
+	/**
+	 * @param {string} email
+	 * @returns {boolean}
+	 */
+	function isValidEmail(email) {
+		return EMAIL_RE.test(trim(email));
+	}
+
+	/**
+	 * @param {string} phone
+	 * @returns {boolean}
+	 */
+	function isValidPhone(phone) {
+		return PHONE_RE.test(normalizePhone(phone));
+	}
+
+	/**
+	 * @param {string} name
+	 * @returns {boolean}
+	 */
+	function isValidName(name) {
+		return trim(name).length >= 2;
+	}
+
+	/**
 	 * @param {object} state
 	 * @returns {number}
 	 */
@@ -42,12 +107,20 @@
 				? Number(rates.property_mult[state.property])
 				: 1;
 
-		return Math.round((base + bathExtra) * svcMult * propMult * 100) / 100;
+		var addonTotal = 0;
+		var addonDefs = rates.addons || {};
+		(state.addons || []).forEach(function (key) {
+			if (addonDefs[key] && addonDefs[key].price != null) {
+				addonTotal += Number(addonDefs[key].price);
+			}
+		});
+
+		return Math.round(((base + bathExtra) * svcMult * propMult + addonTotal) * 100) / 100;
 	}
 
 	/**
 	 * @param {Date} d
-	 * @returns {string} YYYY-MM-DD
+	 * @returns {string}
 	 */
 	function toISODate(d) {
 		var y = d.getFullYear();
@@ -89,6 +162,8 @@
 		var stepLabel = root.querySelector('[data-quote-step-label]');
 		var nextBtn = root.querySelector('[data-quote-next]');
 		var nextLabel = root.querySelector('[data-quote-next-label]');
+		var nextIcon = root.querySelector('[data-quote-next-icon]');
+		var spinner = root.querySelector('[data-quote-spinner]');
 		var backBtn = root.querySelector('[data-quote-back]');
 		var errorEl = root.querySelector('[data-quote-error]');
 		var footer = root.querySelector('[data-quote-footer]');
@@ -112,6 +187,7 @@
 			bathrooms: '2',
 			date: '',
 			time: '',
+			addons: [],
 			name: '',
 			email: '',
 			phone: '',
@@ -126,14 +202,30 @@
 			return root.querySelector('[data-quote-field="' + name + '"]');
 		}
 
-		function readFields() {
-			var map = ['service', 'property', 'bedrooms', 'bathrooms', 'date', 'time', 'name', 'email', 'phone', 'comment'];
-			map.forEach(function (key) {
-				var el = field(key);
-				if (el) {
-					state[key] = el.value;
+		function fieldError(name) {
+			return root.querySelector('[data-quote-field-error="' + name + '"]');
+		}
+
+		function readAddons() {
+			var selected = [];
+			root.querySelectorAll('[data-quote-addon]').forEach(function (input) {
+				if (input.checked) {
+					selected.push(input.getAttribute('data-quote-addon') || input.value);
 				}
 			});
+			state.addons = selected;
+		}
+
+		function readFields() {
+			['service', 'property', 'bedrooms', 'bathrooms', 'date', 'time', 'name', 'email', 'phone', 'comment'].forEach(
+				function (key) {
+					var el = field(key);
+					if (el) {
+						state[key] = el.value;
+					}
+				}
+			);
+			readAddons();
 			state.previewTotal = getPreviewTotal(state);
 		}
 
@@ -148,6 +240,53 @@
 			}
 			errorEl.hidden = false;
 			errorEl.textContent = msg;
+		}
+
+		function setFieldError(name, msg) {
+			var errEl = fieldError(name);
+			var inputEl = field(name);
+			if (errEl) {
+				if (msg) {
+					errEl.hidden = false;
+					errEl.textContent = msg;
+				} else {
+					errEl.hidden = true;
+					errEl.textContent = '';
+				}
+			}
+			if (inputEl) {
+				if (msg) {
+					inputEl.setAttribute('aria-invalid', 'true');
+					inputEl.classList.add('is-invalid');
+				} else {
+					inputEl.removeAttribute('aria-invalid');
+					inputEl.classList.remove('is-invalid');
+				}
+			}
+		}
+
+		function clearFieldErrors() {
+			['name', 'email', 'phone', 'time'].forEach(function (name) {
+				setFieldError(name, '');
+			});
+		}
+
+		function setLoading(loading) {
+			if (!nextBtn) {
+				return;
+			}
+			nextBtn.disabled = loading;
+			nextBtn.classList.toggle('is-loading', loading);
+			nextBtn.setAttribute('aria-busy', loading ? 'true' : 'false');
+			if (spinner) {
+				spinner.hidden = !loading;
+			}
+			if (nextIcon) {
+				nextIcon.hidden = loading;
+			}
+			if (nextLabel && loading && state.step === TOTAL_STEPS) {
+				nextLabel.textContent = i18n.submitting || 'Submitting…';
+			}
 		}
 
 		function renderPrice() {
@@ -258,8 +397,7 @@
 		}
 
 		function renderSlots() {
-			var slots = root.querySelectorAll('[data-quote-slot]');
-			slots.forEach(function (btn) {
+			root.querySelectorAll('[data-quote-slot]').forEach(function (btn) {
 				var val = btn.getAttribute('data-quote-slot');
 				var selected = state.time === val;
 				btn.classList.toggle('is-selected', selected);
@@ -267,9 +405,21 @@
 			});
 		}
 
+		function renderAddons() {
+			root.querySelectorAll('[data-quote-addon]').forEach(function (input) {
+				var card = input.closest('.quote-calculator__addon');
+				if (card) {
+					card.classList.toggle('is-selected', input.checked);
+				}
+			});
+		}
+
 		function setStep(step) {
 			state.step = step;
+			root.setAttribute('data-step', String(step));
 			var isSuccess = step === 5;
+
+			root.classList.toggle('quote-calculator--success', isSuccess);
 
 			panels.forEach(function (panel) {
 				var n = parseInt(panel.getAttribute('data-quote-step'), 10);
@@ -279,10 +429,13 @@
 			if (titleEl) {
 				titleEl.hidden = isSuccess;
 				if (!isSuccess) {
-					titleEl.textContent =
-						step === 2
-							? i18n.titleDate || 'Get Your Date'
-							: i18n.titleDefault || 'Get Your Instant Quote';
+					if (step === 2) {
+						titleEl.textContent = i18n.titleDate || 'Get Your Date';
+					} else if (step === 3) {
+						titleEl.textContent = i18n.titleAddons || 'Add-ons & Extras';
+					} else {
+						titleEl.textContent = i18n.titleDefault || 'Get Your Instant Quote';
+					}
 				}
 			}
 
@@ -298,6 +451,7 @@
 
 			if (backBtn) {
 				backBtn.hidden = isSuccess || step <= 1;
+				backBtn.setAttribute('aria-hidden', step <= 1 ? 'true' : 'false');
 			}
 
 			if (nextBtn && nextLabel) {
@@ -319,22 +473,69 @@
 
 			if (step === 2) {
 				renderCalendar();
+				renderSlots();
 			}
 			if (step === 3) {
-				renderSlots();
+				renderAddons();
 			}
 			if (step === 4) {
 				readFields();
 				renderPrice();
 			}
 
+			clearFieldErrors();
 			showError('');
+			setLoading(false);
+
 			root.dispatchEvent(
 				new CustomEvent('somvio:quote-step', {
 					bubbles: true,
 					detail: { step: step, root: root },
 				})
 			);
+		}
+
+		/**
+		 * @returns {{ valid: boolean, firstInvalid: HTMLElement|null }}
+		 */
+		function validateStep4() {
+			readFields();
+			clearFieldErrors();
+			showError('');
+
+			var nameVal = trim(state.name);
+			var emailVal = trim(state.email);
+			var phoneVal = normalizePhone(state.phone);
+			var firstInvalid = null;
+			var hasError = false;
+
+			if (!isValidName(nameVal)) {
+				setFieldError('name', i18n.invalidName || 'Please enter your full name.');
+				firstInvalid = field('name');
+				hasError = true;
+			}
+
+			if (!isValidEmail(emailVal)) {
+				setFieldError('email', i18n.invalidEmail || 'Please enter a valid email address.');
+				if (!firstInvalid) {
+					firstInvalid = field('email');
+				}
+				hasError = true;
+			}
+
+			if (!isValidPhone(phoneVal)) {
+				setFieldError('phone', i18n.invalidPhone || 'Please enter a valid phone number.');
+				if (!firstInvalid) {
+					firstInvalid = field('phone');
+				}
+				hasError = true;
+			}
+
+			if (hasError) {
+				showError(i18n.required || 'Please complete the required fields.');
+			}
+
+			return { valid: !hasError, firstInvalid: firstInvalid };
 		}
 
 		/**
@@ -352,31 +553,29 @@
 			}
 
 			if (state.step === 2) {
+				clearFieldErrors();
 				if (!state.date) {
 					showError(i18n.required || 'Please complete the required fields.');
+					return false;
+				}
+				if (!state.time) {
+					setFieldError('time', i18n.selectTime || 'Please select a time slot.');
+					showError(i18n.selectTime || 'Please select a time slot.');
 					return false;
 				}
 				return true;
 			}
 
 			if (state.step === 3) {
-				if (!state.time) {
-					showError(i18n.required || 'Please complete the required fields.');
-					return false;
-				}
 				return true;
 			}
 
 			if (state.step === 4) {
-				if (!state.name || !state.email || !state.phone) {
-					showError(i18n.required || 'Please complete the required fields.');
-					return false;
+				var result = validateStep4();
+				if (!result.valid && result.firstInvalid) {
+					result.firstInvalid.focus();
 				}
-				if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.email)) {
-					showError(i18n.invalidEmail || 'Please enter a valid email address.');
-					return false;
-				}
-				return true;
+				return result.valid;
 			}
 
 			return true;
@@ -389,10 +588,17 @@
 			if (state.submitting) {
 				return Promise.resolve();
 			}
-			state.submitting = true;
-			if (nextBtn) {
-				nextBtn.disabled = true;
+
+			var validation = validateStep4();
+			if (!validation.valid) {
+				if (validation.firstInvalid) {
+					validation.firstInvalid.focus();
+				}
+				return Promise.resolve();
 			}
+
+			state.submitting = true;
+			setLoading(true);
 			readFields();
 			renderPrice();
 
@@ -403,10 +609,11 @@
 				bathrooms: parseInt(state.bathrooms, 10),
 				date: state.date,
 				time: state.time,
-				name: state.name,
-				email: state.email,
-				phone: state.phone,
-				comment: state.comment,
+				addons: state.addons.slice(),
+				name: trim(state.name),
+				email: trim(state.email),
+				phone: normalizePhone(state.phone),
+				comment: trim(state.comment),
 				client_total: state.previewTotal,
 			};
 
@@ -456,9 +663,7 @@
 				})
 				.finally(function () {
 					state.submitting = false;
-					if (nextBtn) {
-						nextBtn.disabled = false;
-					}
+					setLoading(false);
 				});
 		}
 
@@ -467,6 +672,7 @@
 			state.step = 1;
 			state.date = '';
 			state.time = '';
+			state.addons = [];
 			state.name = '';
 			state.email = '';
 			state.phone = '';
@@ -484,7 +690,13 @@
 				dateDisplay.value = '';
 			}
 
+			root.querySelectorAll('[data-quote-addon]').forEach(function (input) {
+				input.checked = false;
+			});
+
 			renderSlots();
+			renderAddons();
+			clearFieldErrors();
 			setStep(1);
 			readFields();
 			renderPrice();
@@ -499,7 +711,6 @@
 			}
 		}
 
-		// Bind selects / inputs that affect price.
 		['service', 'property', 'bedrooms', 'bathrooms'].forEach(function (key) {
 			var el = field(key);
 			if (!el) {
@@ -519,7 +730,43 @@
 					timeField.value = state.time;
 				}
 				renderSlots();
+				setFieldError('time', '');
 				showError('');
+			});
+		});
+
+		root.querySelectorAll('[data-quote-addon]').forEach(function (input) {
+			input.addEventListener('change', function () {
+				readAddons();
+				renderAddons();
+				renderPrice();
+			});
+		});
+
+		var phoneEl = field('phone');
+		if (phoneEl) {
+			phoneEl.addEventListener('input', function () {
+				var cleaned = phoneEl.value.replace(/[^\d+\s]/g, '');
+				if (cleaned.charAt(0) === '+') {
+					cleaned = '+' + cleaned.slice(1).replace(/[^\d\s]/g, '');
+				} else {
+					cleaned = cleaned.replace(/[^\d\s]/g, '');
+				}
+				phoneEl.value = cleaned;
+				setFieldError('phone', '');
+			});
+			phoneEl.addEventListener('blur', function () {
+				phoneEl.value = formatPhoneDisplay(phoneEl.value);
+			});
+		}
+
+		['name', 'email'].forEach(function (key) {
+			var el = field(key);
+			if (!el) {
+				return;
+			}
+			el.addEventListener('input', function () {
+				setFieldError(key, '');
 			});
 		});
 
@@ -547,6 +794,9 @@
 
 		if (nextBtn) {
 			nextBtn.addEventListener('click', function () {
+				if (state.submitting) {
+					return;
+				}
 				if (state.step === 5) {
 					resetCalculator();
 					return;
@@ -589,7 +839,6 @@
 		document.querySelectorAll('[data-quote-calculator]').forEach(initCalculator);
 	}
 
-	// Re-init for dynamically injected modals.
 	document.addEventListener('somvio:quote-mount', function (e) {
 		var target = e.target;
 		if (target && target.matches && target.matches('[data-quote-calculator]')) {
@@ -599,9 +848,6 @@
 		}
 	});
 
-	/**
-	 * Floating quote modal open/close.
-	 */
 	function initQuoteModal() {
 		var modal = document.querySelector('[data-quote-modal]');
 		if (!modal) {
