@@ -26,8 +26,10 @@ get_header();
 			 */
 			do_action( 'generate_before_main_content' );
 
+			get_template_part( 'template-parts/sections/blog', 'single-hero' );
+
 			/**
-			 * Single post sections (Hero, Article Body, Author / Related).
+			 * Single post sections (Article Body, Author / Related).
 			 *
 			 * @since 1.0.0
 			 */
