@@ -40,7 +40,28 @@ $somvio_post_title   = __( 'How Often Should You Schedule Professional Cleaning?
 $somvio_post_excerpt = __( 'Regular professional cleaning helps maintain a healthier living environment and extends the life of your furniture and flooring.', 'somvio' );
 $somvio_post_date    = __( 'December 16, 2024', 'somvio' );
 $somvio_read_now     = __( 'Read now', 'somvio' );
-$somvio_post_url     = '#';
+
+/**
+ * Resolve a real published post permalink for demo card links (single.php).
+ * Prefer hello-world, else the latest published post.
+ */
+$somvio_demo_post = get_page_by_path( 'hello-world', OBJECT, 'post' );
+
+if ( ! $somvio_demo_post instanceof WP_Post ) {
+	$somvio_demo_posts = get_posts(
+		array(
+			'numberposts'      => 1,
+			'post_status'      => 'publish',
+			'post_type'        => 'post',
+			'suppress_filters' => true,
+		)
+	);
+	$somvio_demo_post = ! empty( $somvio_demo_posts[0] ) ? $somvio_demo_posts[0] : null;
+}
+
+$somvio_post_url = ( $somvio_demo_post instanceof WP_Post )
+	? (string) get_permalink( $somvio_demo_post )
+	: home_url( '/hello-world/' );
 
 $somvio_featured = array(
 	array(
