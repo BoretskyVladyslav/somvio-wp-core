@@ -73,7 +73,11 @@ $somvio_whatsapp  = function_exists( 'somvio_get_whatsapp_url' ) ? somvio_get_wh
 							<?php esc_html_e( 'Prefer to text us for a quick response.', 'somvio' ); ?>
 						</p>
 
-						<a class="btn btn--outline btn--sm btn--has-icon somvio-header__cta somvio-header__cta--drawer" href="<?php echo $somvio_book_url; ?>">
+						<a
+							class="btn btn--outline btn--sm btn--has-icon somvio-header__cta somvio-header__cta--drawer"
+							href="<?php echo $somvio_book_url; ?>"
+							data-quote-modal-open
+						>
 							<span class="btn__label"><?php esc_html_e( 'Book Now', 'somvio' ); ?></span>
 							<span class="btn__icon" aria-hidden="true">
 								<?php
@@ -107,7 +111,11 @@ $somvio_whatsapp  = function_exists( 'somvio_get_whatsapp_url' ) ? somvio_get_wh
 					</span>
 				</a>
 
-				<a class="btn btn--outline btn--sm btn--has-icon somvio-header__cta somvio-header__cta--desktop" href="<?php echo $somvio_book_url; ?>">
+				<a
+					class="btn btn--outline btn--sm btn--has-icon somvio-header__cta somvio-header__cta--desktop"
+					href="<?php echo $somvio_book_url; ?>"
+					data-quote-modal-open
+				>
 					<span class="btn__label"><?php esc_html_e( 'Book Now', 'somvio' ); ?></span>
 					<span class="btn__icon" aria-hidden="true">
 						<?php

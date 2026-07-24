@@ -7863,3 +7863,513 @@ body.somvio-has-hero.single-post .site-main > * {
 		flex-direction: column;
 	}
 }
+
+/* —— Quote calculator multi-step (Figma 300:1766 → 409:6039) —— */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.quote-calculator {
+	position: relative;
+}
+
+.quote-calculator .quote-card__select,
+.quote-calculator__input,
+.quote-calculator__textarea,
+.quote-calculator__date-input {
+	cursor: pointer;
+}
+
+.quote-calculator__input,
+.quote-calculator__date-input {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 100%;
+	min-height: var(--somvio-touch-min);
+	padding: 10px;
+	border: 1px solid #c0c0c0;
+	border-radius: var(--somvio-radius);
+	background-color: transparent;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+	box-sizing: border-box;
+}
+
+.quote-calculator__date-input {
+	padding-right: 40px;
+	cursor: default;
+}
+
+.quote-calculator__input:focus,
+.quote-calculator__textarea:focus,
+.quote-calculator .quote-card__select:focus {
+	outline: 2px solid var(--somvio-color-accent);
+	outline-offset: 1px;
+}
+
+.quote-calculator__textarea {
+	display: block;
+	width: 100%;
+	min-height: 140px;
+	padding: 10px;
+	border: 1px solid #c0c0c0;
+	border-radius: var(--somvio-radius);
+	background-color: transparent;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+	resize: vertical;
+	box-sizing: border-box;
+}
+
+.quote-calculator__step {
+	display: flex;
+	flex-direction: column;
+	gap: 19px;
+	width: 100%;
+}
+
+.quote-calculator__step[hidden] {
+	display: none !important;
+}
+
+.quote-calculator__step--success {
+	align-items: center;
+	text-align: center;
+	padding-block: 12px;
+}
+
+.quote-calculator__calendar {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	min-height: 280px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: var(--somvio-radius);
+	background: transparent;
+	overflow: hidden;
+}
+
+.quote-calculator__cal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px 20px;
+	gap: 12px;
+}
+
+.quote-calculator__cal-month {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+	white-space: nowrap;
+}
+
+.quote-calculator__cal-nav {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	border: none;
+	border-radius: 18px;
+	background: rgba(255, 255, 255, 0.2);
+	color: var(--somvio-color-text);
+	cursor: pointer;
+}
+
+.quote-calculator__cal-nav:hover,
+.quote-calculator__cal-nav:focus-visible {
+	background: rgba(255, 255, 255, 0.3);
+}
+
+.quote-calculator__cal-nav-icon {
+	display: inline-flex;
+	width: 24px;
+	height: 24px;
+}
+
+.quote-calculator__cal-nav-icon svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.quote-calculator__cal-nav-icon--next {
+	transform: rotate(180deg);
+}
+
+.quote-calculator__cal-weekdays,
+.quote-calculator__cal-grid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 4px;
+	padding: 0 16px 8px;
+	justify-items: center;
+}
+
+.quote-calculator__cal-weekday {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	font-family: var(--somvio-font-sans);
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--somvio-color-text);
+}
+
+.quote-calculator__cal-day {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	border: none;
+	border-radius: 18px;
+	background: rgba(255, 255, 255, 0.2);
+	font-family: var(--somvio-font-sans);
+	font-size: 14px;
+	font-weight: 400;
+	color: var(--somvio-color-text);
+	cursor: pointer;
+}
+
+.quote-calculator__cal-day.is-outside {
+	color: rgba(255, 255, 255, 0.35);
+}
+
+.quote-calculator__cal-day.is-disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.quote-calculator__cal-day.is-selected,
+.quote-calculator__cal-day:not(.is-disabled):hover {
+	background: var(--somvio-color-accent-mid);
+	color: var(--somvio-color-text);
+}
+
+.quote-calculator__cal-day:focus-visible {
+	outline: 2px solid var(--somvio-color-accent);
+	outline-offset: 1px;
+}
+
+.quote-calculator__slots {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 20px;
+	width: 100%;
+}
+
+.quote-calculator__slot {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: var(--somvio-touch-min);
+	padding: 10px;
+	border: 1px solid #c0c0c0;
+	border-radius: var(--somvio-radius);
+	background: transparent;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+	cursor: pointer;
+	box-sizing: border-box;
+}
+
+.quote-calculator__slot.is-selected,
+.quote-calculator__slot[aria-checked="true"] {
+	border-color: transparent;
+	background: var(--somvio-color-accent-mid);
+}
+
+.quote-calculator__slot:focus-visible {
+	outline: 2px solid var(--somvio-color-accent);
+	outline-offset: 1px;
+}
+
+.quote-calculator__summary {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding-top: 4px;
+}
+
+.quote-calculator__summary-label {
+	margin: 0;
+	font-size: 14px;
+	line-height: 1.4;
+	color: rgba(255, 255, 255, 0.7);
+}
+
+.quote-calculator__summary-total {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 24px;
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-accent);
+}
+
+.quote-calculator__summary-note {
+	margin: 0;
+	font-size: 12px;
+	line-height: 1.4;
+	color: rgba(255, 255, 255, 0.5);
+}
+
+.quote-calculator__success {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	width: 100%;
+}
+
+.quote-calculator__success-title {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 24px;
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.quote-calculator__success-subtitle {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 24px;
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.quote-calculator__success-text {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+	text-align: center;
+}
+
+.quote-calculator__error {
+	margin: 0;
+	font-size: 14px;
+	line-height: 1.4;
+	color: #ff8a8a;
+}
+
+.quote-calculator__error[hidden] {
+	display: none !important;
+}
+
+.quote-calculator__footer {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 16px;
+	width: 100%;
+	margin-top: auto;
+	padding-top: 8px;
+}
+
+.quote-calculator__footer--center {
+	justify-content: center;
+}
+
+.quote-calculator__footer--center .quote-card__step {
+	display: none;
+}
+
+.quote-calculator__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+}
+
+.quote-calculator__back .btn__icon svg path {
+	fill: currentColor;
+}
+
+.quote-calculator--solid,
+.quote-card--solid.quote-calculator {
+	background-color: var(--somvio-color-surface-dark); /* #091e2c */
+	-webkit-backdrop-filter: none;
+	backdrop-filter: none;
+	border: none;
+	box-shadow: none;
+}
+
+/* Booking page shell */
+.booking-quote {
+	width: 100%;
+	background: var(--somvio-color-bg);
+	padding: 80px 0 100px;
+}
+
+.booking-quote__inner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 32px;
+	width: 100%;
+	max-width: 1170px;
+	margin-inline: auto;
+	padding-inline: var(--somvio-container-pad);
+	box-sizing: border-box;
+}
+
+.booking-quote__header {
+	text-align: center;
+	max-width: 560px;
+}
+
+.booking-quote__title {
+	margin: 0 0 12px;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(28px, 4vw, 40px);
+	font-weight: 600;
+	line-height: 1.15;
+	color: var(--somvio-color-text);
+}
+
+.booking-quote__subtitle {
+	margin: 0;
+	font-size: 16px;
+	line-height: 1.5;
+	color: var(--somvio-color-text-body);
+}
+
+.booking-quote__card {
+	width: 100%;
+	max-width: 470px;
+}
+
+@media (max-width: 767px) {
+	.quote-calculator__slots {
+		grid-template-columns: 1fr;
+		gap: 12px;
+	}
+
+	.quote-calculator__cal-weekdays,
+	.quote-calculator__cal-grid {
+		padding-inline: 8px;
+	}
+
+	.quote-calculator__cal-day,
+	.quote-calculator__cal-weekday {
+		width: 32px;
+		height: 32px;
+	}
+
+	.quote-calculator__actions {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.quote-calculator__actions .btn {
+		width: 100%;
+		justify-content: center;
+	}
+
+	.quote-calculator__footer {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.quote-card__step {
+		text-align: right;
+	}
+}
+
+/* Floating quote modal */
+.quote-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 10000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	box-sizing: border-box;
+}
+
+.quote-modal[hidden] {
+	display: none !important;
+}
+
+.quote-modal__backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 5, 14, 0.72);
+	cursor: pointer;
+}
+
+.quote-modal__dialog {
+	position: relative;
+	z-index: 1;
+	width: 100%;
+	max-width: 510px;
+	max-height: calc(100vh - 48px);
+	overflow: auto;
+}
+
+.quote-modal__dismiss {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	border: none;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.12);
+	color: var(--somvio-color-text);
+	font-size: 24px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.quote-modal__dismiss:hover,
+.quote-modal__dismiss:focus-visible {
+	background: rgba(255, 255, 255, 0.22);
+}
+
+.quote-modal__card {
+	max-width: none;
+	margin: 0;
+}
+
+html.has-quote-modal {
+	overflow: hidden;
+}

@@ -35,6 +35,7 @@ require_once get_stylesheet_directory() . '/inc/faq.php';
 require_once get_stylesheet_directory() . '/inc/footer.php';
 require_once get_stylesheet_directory() . '/inc/scroll-reveal.php';
 require_once get_stylesheet_directory() . '/inc/setup-pages.php';
+require_once get_stylesheet_directory() . '/inc/calculator.php';
 require_once get_stylesheet_directory() . '/inc/layout.php';
 
 /**

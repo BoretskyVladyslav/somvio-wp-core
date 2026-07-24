@@ -15,7 +15,6 @@ if ( ! $somvio_post_id || 'post' !== get_post_type( $somvio_post_id ) ) {
 	return;
 }
 
-$somvio_booking_url = esc_url( home_url( '/booking/' ) );
 $somvio_blog_url    = (int) get_option( 'page_for_posts' )
 	? esc_url( (string) get_permalink( (int) get_option( 'page_for_posts' ) ) )
 	: esc_url( home_url( '/blog/' ) );
@@ -51,106 +50,17 @@ $somvio_post = get_post( $somvio_post_id );
 	aria-label="<?php esc_attr_e( 'Article content', 'somvio' ); ?>"
 >
 	<div class="blog-single-content__inner">
-		<aside
-			id="somvio-instant-quote"
-			class="blog-single-content__quote quote-card quote-card--solid reveal-on-scroll"
-			aria-label="<?php esc_attr_e( 'Get Your Instant Quote', 'somvio' ); ?>"
-		>
-			<h2 class="quote-card__title"><?php esc_html_e( 'Get Your Instant Quote', 'somvio' ); ?></h2>
-
-			<form class="quote-card__form" action="<?php echo $somvio_booking_url; ?>" method="get" novalidate>
-				<div class="quote-card__field quote-card__field--full">
-					<label class="quote-card__label" for="somvio-blog-quote-service">
-						<?php esc_html_e( 'Service Type', 'somvio' ); ?>
-					</label>
-					<div class="quote-card__select-wrap">
-						<select class="quote-card__select" id="somvio-blog-quote-service" name="service_type">
-							<option value="regular-cleaning" selected><?php esc_html_e( 'Regular Cleaning', 'somvio' ); ?></option>
-							<option value="deep-cleaning"><?php esc_html_e( 'Deep Cleaning', 'somvio' ); ?></option>
-							<option value="end-of-tenancy"><?php esc_html_e( 'End of Tenancy', 'somvio' ); ?></option>
-							<option value="airbnb-cleaning"><?php esc_html_e( 'Airbnb Cleaning', 'somvio' ); ?></option>
-							<option value="after-builders"><?php esc_html_e( 'After Builders', 'somvio' ); ?></option>
-						</select>
-						<span class="quote-card__chevron" aria-hidden="true">
-							<?php
-							echo somvio_get_icon( 'icon-chevron-down' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							?>
-						</span>
-					</div>
-				</div>
-
-				<div class="quote-card__field quote-card__field--full">
-					<label class="quote-card__label" for="somvio-blog-quote-property">
-						<?php esc_html_e( 'Property Type:', 'somvio' ); ?>
-					</label>
-					<div class="quote-card__select-wrap">
-						<select class="quote-card__select" id="somvio-blog-quote-property" name="property_type">
-							<option value="house" selected><?php esc_html_e( 'House', 'somvio' ); ?></option>
-							<option value="apartment"><?php esc_html_e( 'Apartment', 'somvio' ); ?></option>
-							<option value="office"><?php esc_html_e( 'Office', 'somvio' ); ?></option>
-						</select>
-						<span class="quote-card__chevron" aria-hidden="true">
-							<?php
-							echo somvio_get_icon( 'icon-chevron-down' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							?>
-						</span>
-					</div>
-				</div>
-
-				<div class="quote-card__row">
-					<div class="quote-card__field">
-						<label class="quote-card__label" for="somvio-blog-quote-bedrooms">
-							<?php esc_html_e( 'Bedrooms', 'somvio' ); ?>
-						</label>
-						<div class="quote-card__select-wrap">
-							<select class="quote-card__select" id="somvio-blog-quote-bedrooms" name="bedrooms">
-								<option value="1" selected>1</option>
-								<option value="2">2</option>
-								<option value="3">3</option>
-								<option value="4">4</option>
-								<option value="5">5+</option>
-							</select>
-							<span class="quote-card__chevron" aria-hidden="true">
-								<?php
-								echo somvio_get_icon( 'icon-chevron-down' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								?>
-							</span>
-						</div>
-					</div>
-
-					<div class="quote-card__field">
-						<label class="quote-card__label" for="somvio-blog-quote-bathrooms">
-							<?php esc_html_e( 'Bathrooms', 'somvio' ); ?>
-						</label>
-						<div class="quote-card__select-wrap">
-							<select class="quote-card__select" id="somvio-blog-quote-bathrooms" name="bathrooms">
-								<option value="1">1</option>
-								<option value="2" selected>2</option>
-								<option value="3">3</option>
-								<option value="4">4+</option>
-							</select>
-							<span class="quote-card__chevron" aria-hidden="true">
-								<?php
-								echo somvio_get_icon( 'icon-chevron-down' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								?>
-							</span>
-						</div>
-					</div>
-				</div>
-
-				<div class="quote-card__footer">
-					<a class="btn btn--primary btn--sm btn--has-icon" href="<?php echo $somvio_booking_url; ?>">
-						<span class="btn__label"><?php esc_html_e( 'Next Step', 'somvio' ); ?></span>
-						<span class="btn__icon" aria-hidden="true">
-							<?php
-							echo somvio_get_icon( 'icon-arrow-right' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							?>
-						</span>
-					</a>
-					<p class="quote-card__step"><?php esc_html_e( 'Step 1 of 4', 'somvio' ); ?></p>
-				</div>
-			</form>
-		</aside>
+		<?php
+		get_template_part(
+			'template-parts/components/quote',
+			'calculator',
+			array(
+				'variant' => 'solid',
+				'id'      => 'somvio-instant-quote',
+				'class'   => 'blog-single-content__quote reveal-on-scroll',
+			)
+		);
+		?>
 
 		<article class="blog-single-content__article reveal-on-scroll" style="--reveal-delay: 0.05s;">
 			<?php if ( $somvio_img_uri ) : ?>
