@@ -13,7 +13,8 @@
 	var i18n = cfg.i18n || {};
 
 	var EMAIL_RE = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
-	var PHONE_RE = /^(\+?[1-9]\d{9,14}|0[1-9]\d{9,10})$/;
+	/* E.164-ish or UK national: +44… / 07… after digit normalize */
+	var PHONE_RE = /^(\+[1-9]\d{9,14}|0[1-9]\d{8,10})$/;
 
 	function formatMoney(n) {
 		return (rates.symbol || '£') + Number(n).toFixed(2);
@@ -25,7 +26,7 @@
 
 	function normalizePhone(phone) {
 		var raw = String(phone || '');
-		var hasPlus = raw.charAt(0) === '+';
+		var hasPlus = raw.indexOf('+') !== -1;
 		var digits = raw.replace(/[^\d]/g, '');
 		return hasPlus ? '+' + digits : digits;
 	}
@@ -35,11 +36,21 @@
 	}
 
 	function isValidPhone(phone) {
-		return PHONE_RE.test(normalizePhone(phone));
+		var normalized = normalizePhone(phone);
+		if (!PHONE_RE.test(normalized)) {
+			return false;
+		}
+		var digits = normalized.replace(/[^\d]/g, '');
+		return digits.length >= 10 && digits.length <= 15;
 	}
 
 	function isValidName(name) {
-		return trim(name).length >= 2;
+		var value = trim(name);
+		return value.length >= 2 && /[A-Za-z\u00C0-\u024F]/.test(value);
+	}
+
+	function isValidAddress(address) {
+		return trim(address).length >= 3;
 	}
 
 	function getPreviewTotal(state) {
@@ -189,6 +200,12 @@
 					inputEl.removeAttribute('aria-invalid');
 					inputEl.classList.remove('is-invalid');
 				}
+				if (name === 'terms_accepted') {
+					var termsLabel = inputEl.closest('.booking-form__terms');
+					if (termsLabel) {
+						termsLabel.classList.toggle('is-invalid', !!msg);
+					}
+				}
 			}
 		}
 
@@ -286,9 +303,85 @@
 				isValidName(state.last_name) &&
 				isValidEmail(state.email) &&
 				isValidPhone(state.phone) &&
-				trim(state.address).length >= 3 &&
+				isValidAddress(state.address) &&
 				!!state.terms_accepted
 			);
+		}
+
+		function getContactFieldError(key) {
+			var value = state[key];
+			if (key === 'first_name' || key === 'last_name') {
+				if (!trim(value)) {
+					return i18n.requiredField || i18n.invalidName || 'Please enter your name.';
+				}
+				if (!isValidName(value)) {
+					return i18n.invalidName || 'Please enter your name.';
+				}
+				return '';
+			}
+			if (key === 'email') {
+				if (!trim(value)) {
+					return i18n.requiredField || i18n.invalidEmail || 'Please enter a valid email address.';
+				}
+				if (!isValidEmail(value)) {
+					return i18n.invalidEmail || 'Please enter a valid email address.';
+				}
+				return '';
+			}
+			if (key === 'phone') {
+				if (!trim(value)) {
+					return i18n.requiredField || i18n.invalidPhone || 'Please enter a valid phone number.';
+				}
+				if (!isValidPhone(value)) {
+					return i18n.invalidPhone || 'Please enter a valid phone number.';
+				}
+				return '';
+			}
+			if (key === 'address') {
+				if (!isValidAddress(value)) {
+					return i18n.invalidAddress || 'Please enter your street address.';
+				}
+				return '';
+			}
+			if (key === 'terms_accepted') {
+				return state.terms_accepted
+					? ''
+					: i18n.termsRequired || 'Please accept the Terms & Conditions and Privacy Policy.';
+			}
+			return '';
+		}
+
+		function validateContactField(key, opts) {
+			var options = opts || {};
+			var allowEmpty = !!options.allowEmpty;
+			var value = key === 'terms_accepted' ? state.terms_accepted : state[key];
+			if (allowEmpty && key !== 'terms_accepted' && !trim(value)) {
+				setFieldError(key, '');
+				return true;
+			}
+			var msg = getContactFieldError(key);
+			setFieldError(key, msg);
+			return !msg;
+		}
+
+		function renderSuccessRecap() {
+			var serviceLabel = (services && services[state.service]) || state.service || '';
+			var map = {
+				service: serviceLabel,
+				date: formatDisplayDate(state.date),
+				time: formatSlot(state.time),
+				name: trim(state.first_name) + ' ' + trim(state.last_name),
+				phone: trim(state.phone),
+				email: trim(state.email),
+				address: trim(state.address),
+				total: formatMoney(state.previewTotal),
+			};
+			Object.keys(map).forEach(function (key) {
+				var el = root.querySelector('[data-booking-success="' + key + '"]');
+				if (el) {
+					el.textContent = map[key];
+				}
+			});
 		}
 
 		function renderAddons() {
@@ -565,12 +658,14 @@
 		function setStep(step) {
 			state.step = step;
 			root.setAttribute('data-step', String(step));
+			root.classList.toggle('is-success', step === SUCCESS_STEP);
 			var activePanel = null;
 
 			panels.forEach(function (panel) {
 				var n = parseInt(panel.getAttribute('data-booking-step'), 10);
 				var show = n === step;
 				panel.hidden = !show;
+				panel.setAttribute('aria-hidden', show ? 'false' : 'true');
 				if (show) {
 					activePanel = panel;
 				}
@@ -589,8 +684,12 @@
 				updateSlotsAvailability();
 			}
 
+			if (step === SUCCESS_STEP) {
+				renderSuccessRecap();
+			}
+
 			if (activePanel && typeof activePanel.scrollIntoView === 'function' && step !== 1) {
-				activePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				activePanel.scrollIntoView({ behavior: 'smooth', block: step === SUCCESS_STEP ? 'center' : 'start' });
 			}
 
 			root.dispatchEvent(
@@ -608,47 +707,16 @@
 
 			var firstInvalid = null;
 			var hasError = false;
-
-			if (!isValidName(state.first_name)) {
-				setFieldError('first_name', i18n.invalidName || 'Please enter your name.');
-				firstInvalid = field('first_name');
-				hasError = true;
-			}
-			if (!isValidName(state.last_name)) {
-				setFieldError('last_name', i18n.invalidName || 'Please enter your name.');
-				if (!firstInvalid) {
-					firstInvalid = field('last_name');
+			['first_name', 'last_name', 'phone', 'email', 'address', 'terms_accepted'].forEach(function (key) {
+				var msg = getContactFieldError(key);
+				if (msg) {
+					setFieldError(key, msg);
+					if (!firstInvalid) {
+						firstInvalid = field(key);
+					}
+					hasError = true;
 				}
-				hasError = true;
-			}
-			if (!isValidEmail(state.email)) {
-				setFieldError('email', i18n.invalidEmail || 'Please enter a valid email address.');
-				if (!firstInvalid) {
-					firstInvalid = field('email');
-				}
-				hasError = true;
-			}
-			if (!isValidPhone(state.phone)) {
-				setFieldError('phone', i18n.invalidPhone || 'Please enter a valid phone number.');
-				if (!firstInvalid) {
-					firstInvalid = field('phone');
-				}
-				hasError = true;
-			}
-			if (trim(state.address).length < 3) {
-				setFieldError('address', i18n.invalidAddress || 'Please enter your street address.');
-				if (!firstInvalid) {
-					firstInvalid = field('address');
-				}
-				hasError = true;
-			}
-			if (!state.terms_accepted) {
-				setFieldError('terms_accepted', i18n.termsRequired || 'Please accept the Terms & Conditions and Privacy Policy.');
-				if (!firstInvalid) {
-					firstInvalid = field('terms_accepted');
-				}
-				hasError = true;
-			}
+			});
 
 			if (hasError) {
 				showError(i18n.required || 'Please complete the required fields.');
@@ -980,17 +1048,26 @@
 			el.addEventListener('input', function () {
 				state[key] = el.value;
 				syncState();
+				if (key !== 'comment' && el.classList.contains('is-invalid')) {
+					validateContactField(key);
+				}
 				updateNextAvailability();
 			});
+			if (key !== 'comment') {
+				el.addEventListener('blur', function () {
+					state[key] = el.value;
+					syncState();
+					validateContactField(key);
+					updateNextAvailability();
+				});
+			}
 		});
 
 		var termsEl = field('terms_accepted');
 		if (termsEl) {
 			termsEl.addEventListener('change', function () {
 				state.terms_accepted = !!termsEl.checked;
-				if (state.terms_accepted) {
-					setFieldError('terms_accepted', '');
-				}
+				validateContactField('terms_accepted', { allowEmpty: false });
 				updateNextAvailability();
 			});
 		}

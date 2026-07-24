@@ -551,6 +551,45 @@ $somvio_bf_counters = array(
 					<p class="booking-form__success-text">
 						<?php esc_html_e( 'We’ll contact you shortly to confirm the details.', 'somvio' ); ?>
 					</p>
+
+					<dl class="booking-form__success-recap" data-booking-success-recap>
+						<div class="booking-form__success-row">
+							<dt><?php esc_html_e( 'Service', 'somvio' ); ?></dt>
+							<dd data-booking-success="service"></dd>
+						</div>
+						<div class="booking-form__success-row">
+							<dt><?php esc_html_e( 'Date', 'somvio' ); ?></dt>
+							<dd data-booking-success="date"></dd>
+						</div>
+						<div class="booking-form__success-row">
+							<dt><?php esc_html_e( 'Time', 'somvio' ); ?></dt>
+							<dd data-booking-success="time"></dd>
+						</div>
+						<div class="booking-form__success-row">
+							<dt><?php esc_html_e( 'Name', 'somvio' ); ?></dt>
+							<dd data-booking-success="name"></dd>
+						</div>
+						<div class="booking-form__success-row">
+							<dt><?php esc_html_e( 'Phone', 'somvio' ); ?></dt>
+							<dd data-booking-success="phone"></dd>
+						</div>
+						<div class="booking-form__success-row">
+							<dt><?php esc_html_e( 'Email', 'somvio' ); ?></dt>
+							<dd data-booking-success="email"></dd>
+						</div>
+						<div class="booking-form__success-row">
+							<dt><?php esc_html_e( 'Address', 'somvio' ); ?></dt>
+							<dd data-booking-success="address"></dd>
+						</div>
+						<div class="booking-form__success-row">
+							<dt><?php esc_html_e( 'Estimated total', 'somvio' ); ?></dt>
+							<dd data-booking-success="total"></dd>
+						</div>
+					</dl>
+
+					<a class="booking-form__success-home btn btn--primary" href="<?php echo esc_url( home_url( '/' ) ); ?>">
+						<?php esc_html_e( 'Back to Home', 'somvio' ); ?>
+					</a>
 				</div>
 			</div>
 		</form>

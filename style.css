@@ -9488,12 +9488,33 @@ body.somvio-has-hero.page-booking .site-main > * {
 	min-height: 196px;
 }
 
-/* Uniform 30px gap between all booking steps (2–5) */
+/* Uniform 30px gap between booking steps (2–4); success is centered separately */
 .booking-form__card--step2,
 .booking-form__card--step3,
-.booking-form__card--step4,
-.booking-form__card--success {
+.booking-form__card--step4 {
 	margin-top: 30px;
+}
+
+.booking-form.is-success {
+	padding-top: 0;
+	padding-bottom: 80px;
+}
+
+.booking-form.is-success .booking-form__error,
+.booking-form.is-success [data-booking-panel]:not([data-booking-step='5']) {
+	display: none !important;
+}
+
+.booking-form.is-success .booking-form__form {
+	max-width: 600px;
+	margin-inline: auto;
+}
+
+.booking-form__card--success {
+	margin: 60px auto;
+	max-width: 600px;
+	padding: 40px;
+	text-align: center;
 }
 
 .booking-form__addon-top {
@@ -9800,16 +9821,35 @@ body.somvio-has-hero.page-booking .site-main > * {
 	-moz-appearance: textfield;
 }
 
-/* Force dark UA form controls inside booking (counters, comment, selects) */
+/* Force dark UA form controls inside booking (counters, contact, selects) */
+.booking-form input[type='text'],
+.booking-form input[type='email'],
+.booking-form input[type='tel'],
 .booking-form input[type='number'],
 .booking-form textarea,
 .booking-form select {
-	color: #ffffff !important;
-	opacity: 1 !important;
 	background-color: #091e2c !important;
-	border-color: #091e2c !important;
+	color: #ffffff !important;
+	border: 1px solid rgba(255, 255, 255, 0.3) !important;
+	border-radius: 4px;
 	-webkit-text-fill-color: #ffffff !important;
+	caret-color: #ffffff !important;
+	opacity: 1 !important;
 	color-scheme: dark;
+}
+
+.booking-form input:-webkit-autofill,
+.booking-form input:-webkit-autofill:hover,
+.booking-form input:-webkit-autofill:focus,
+.booking-form textarea:-webkit-autofill,
+.booking-form textarea:-webkit-autofill:hover,
+.booking-form textarea:-webkit-autofill:focus {
+	-webkit-text-fill-color: #ffffff !important;
+	caret-color: #ffffff !important;
+	border: 1px solid rgba(255, 255, 255, 0.3) !important;
+	-webkit-box-shadow: 0 0 0 1000px #091e2c inset !important;
+	box-shadow: 0 0 0 1000px #091e2c inset !important;
+	transition: background-color 5000s ease-in-out 0s;
 }
 
 .booking-form input[type='number']::-webkit-outer-spin-button,
@@ -9853,7 +9893,7 @@ body.somvio-has-hero.page-booking .site-main > * {
 .booking-form__textarea {
 	width: 100%;
 	padding: 10px;
-	border: 1px solid #c0c0c0;
+	border: 1px solid rgba(255, 255, 255, 0.3);
 	border-radius: 4px;
 	background-color: #091e2c;
 	font-family: var(--somvio-font-sans);
@@ -9898,6 +9938,11 @@ body.somvio-has-hero.page-booking .site-main > * {
 
 .booking-form__input.is-invalid,
 .booking-form__textarea.is-invalid {
+	border-color: #e85d5d !important;
+	box-shadow: 0 0 0 1px rgba(232, 93, 93, 0.35);
+}
+
+.booking-form__terms.is-invalid .booking-form__terms-box {
 	border-color: #e85d5d;
 }
 
@@ -10348,7 +10393,7 @@ body.somvio-has-hero.page-booking .site-main > * {
 	flex-direction: column;
 	align-items: center;
 	gap: 12px;
-	padding: 40px 20px;
+	padding: 0;
 	text-align: center;
 }
 
@@ -10368,6 +10413,7 @@ body.somvio-has-hero.page-booking .site-main > * {
 	margin: 0;
 	font-size: 1.5rem;
 	font-weight: 600;
+	color: #ffffff;
 }
 
 .booking-form__success-subtitle,
@@ -10376,5 +10422,42 @@ body.somvio-has-hero.page-booking .site-main > * {
 	font-size: 1rem;
 	line-height: 1.4;
 	color: var(--somvio-color-text-soft, rgba(255, 255, 255, 0.75));
+}
+
+.booking-form__success-recap {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	width: 100%;
+	margin: 16px 0 8px;
+	padding: 16px 0 0;
+	border-top: 1px solid rgba(255, 255, 255, 0.15);
+	text-align: left;
+}
+
+.booking-form__success-row {
+	display: grid;
+	grid-template-columns: minmax(0, 140px) minmax(0, 1fr);
+	gap: 8px 16px;
+	margin: 0;
+}
+
+.booking-form__success-row dt {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.4;
+	color: rgba(255, 255, 255, 0.55);
+}
+
+.booking-form__success-row dd {
+	margin: 0;
+	font-size: 0.9375rem;
+	line-height: 1.4;
+	color: #ffffff;
+	word-break: break-word;
+}
+
+.booking-form__success-home {
+	margin-top: 12px;
 }
 
