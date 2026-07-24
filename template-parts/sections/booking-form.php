@@ -276,12 +276,19 @@ $somvio_bf_counters = array(
 					<?php esc_html_e( 'Get Your Date', 'somvio' ); ?>
 				</h2>
 
-				<div class="booking-form__date-block is-calendar-open" data-booking-date-block>
+				<div class="booking-form__date-block" data-booking-date-block>
 					<div class="booking-form__field booking-form__field--date">
 						<label class="booking-form__label" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-date-display">
 							<?php esc_html_e( 'Estimated move date:', 'somvio' ); ?>
 						</label>
-						<div class="booking-form__select-wrap" data-booking-date-toggle role="button" tabindex="0" aria-controls="<?php echo esc_attr( $somvio_bf_uid ); ?>-calendar">
+						<div
+							class="booking-form__select-wrap"
+							data-booking-date-toggle
+							role="button"
+							tabindex="0"
+							aria-controls="<?php echo esc_attr( $somvio_bf_uid ); ?>-calendar"
+							aria-expanded="false"
+						>
 							<input
 								type="text"
 								class="booking-form__input booking-form__input--date"
@@ -293,7 +300,7 @@ $somvio_bf_counters = array(
 								aria-live="polite"
 								aria-required="true"
 								aria-haspopup="dialog"
-								aria-expanded="true"
+								aria-expanded="false"
 								aria-controls="<?php echo esc_attr( $somvio_bf_uid ); ?>-calendar"
 							>
 							<input type="hidden" name="date" data-booking-field="date" value="" required>
@@ -309,6 +316,7 @@ $somvio_bf_counters = array(
 						data-booking-calendar
 						role="dialog"
 						aria-label="<?php esc_attr_e( 'Choose a date', 'somvio' ); ?>"
+						hidden
 					>
 						<div class="booking-form__cal-header">
 							<button
@@ -335,11 +343,12 @@ $somvio_bf_counters = array(
 				</div>
 
 				<div
-					class="booking-form__slots"
+					class="booking-form__slots is-disabled"
 					data-booking-slots
 					role="radiogroup"
 					aria-label="<?php esc_attr_e( 'Preferred time', 'somvio' ); ?>"
 					aria-required="true"
+					aria-disabled="true"
 				>
 					<?php foreach ( $somvio_bf_slots as $somvio_bf_slot ) : ?>
 						<?php

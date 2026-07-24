@@ -9950,15 +9950,29 @@ body.somvio-has-hero.page-booking .site-main > * {
 	flex-direction: column;
 	width: 100%;
 	min-height: 420px;
+	margin-top: 10px;
 	padding-bottom: 8px;
 	border: 1px solid rgba(255, 255, 255, 0.1);
 	border-radius: 4px;
 	background-color: #091e2c;
 	box-sizing: border-box;
+	animation: somvio-booking-cal-in 0.2s ease;
 }
 
 .booking-form__calendar[hidden] {
 	display: none !important;
+	animation: none;
+}
+
+@keyframes somvio-booking-cal-in {
+	from {
+		opacity: 0;
+		transform: translateY(-6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 .booking-form__cal-header {
@@ -10115,6 +10129,12 @@ body.somvio-has-hero.page-booking .site-main > * {
 	gap: 20px;
 	width: 100%;
 	max-width: 800px;
+	transition: opacity 0.2s ease;
+}
+
+.booking-form__slots.is-disabled {
+	opacity: 0.4;
+	pointer-events: none;
 }
 
 .booking-form__slot {

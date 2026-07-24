@@ -85,9 +85,9 @@
 		if (parts.length !== 3) {
 			return iso;
 		}
-		var months = i18n.months || [];
+		var monthsShort = i18n.monthsShort || i18n.months || [];
 		var monthIdx = parseInt(parts[1], 10) - 1;
-		var monthName = months[monthIdx] || parts[1];
+		var monthName = monthsShort[monthIdx] || parts[1];
 		return parseInt(parts[2], 10) + ' ' + monthName + ' ' + parts[0];
 	}
 
@@ -288,12 +288,23 @@
 		}
 
 		function renderSlots() {
+			var hasDate = !!state.date;
 			root.querySelectorAll('[data-booking-slot]').forEach(function (btn) {
 				var val = btn.getAttribute('data-booking-slot');
 				var selected = state.time === val;
 				btn.classList.toggle('is-selected', selected);
 				btn.setAttribute('aria-checked', selected ? 'true' : 'false');
+				btn.disabled = !hasDate;
 			});
+			var slotsEl = root.querySelector('[data-booking-slots]');
+			if (slotsEl) {
+				slotsEl.classList.toggle('is-disabled', !hasDate);
+				slotsEl.setAttribute('aria-disabled', hasDate ? 'false' : 'true');
+			}
+		}
+
+		function updateSlotsAvailability() {
+			renderSlots();
 		}
 
 		function renderWeekdays() {
@@ -381,7 +392,9 @@
 				}
 
 				if (!past) {
-					btn.addEventListener('click', function () {
+					btn.addEventListener('click', function (event) {
+						event.preventDefault();
+						event.stopPropagation();
 						state.date = iso;
 						var dateField = field('date');
 						if (dateField) {
@@ -390,7 +403,8 @@
 						if (dateDisplay) {
 							dateDisplay.value = formatDisplayDate(iso);
 						}
-						renderCalendar();
+						setCalendarOpen(false);
+						updateSlotsAvailability();
 						syncState();
 						setFieldError('date', '');
 						showError('');
@@ -498,15 +512,8 @@
 			syncState();
 
 			if (step === 3) {
-				setCalendarOpen(true);
-				/* Panel just un-hidden — paint after layout settles. */
-				requestAnimationFrame(function () {
-					refreshCalendarPaint();
-					requestAnimationFrame(function () {
-						refreshCalendarPaint();
-						window.dispatchEvent(new Event('resize'));
-					});
-				});
+				setCalendarOpen(false);
+				updateSlotsAvailability();
 			}
 
 			if (activePanel && typeof activePanel.scrollIntoView === 'function' && step !== 1) {
@@ -798,6 +805,9 @@
 
 		root.querySelectorAll('[data-booking-slot]').forEach(function (btn) {
 			btn.addEventListener('click', function () {
+				if (!state.date || btn.disabled) {
+					return;
+				}
 				state.time = btn.getAttribute('data-booking-slot') || '';
 				var timeField = field('time');
 				if (timeField) {
