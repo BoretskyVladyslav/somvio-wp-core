@@ -400,10 +400,10 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	if ( $bedrooms < 1 || $bedrooms > 5 || $bathrooms < 1 || $bathrooms > 4 ) {
 		return new WP_Error( 'invalid_rooms', __( 'Invalid room counts.', 'somvio' ), array( 'status' => 400 ) );
 	}
-	if ( $toilets > 0 && ( $toilets < 1 || $toilets > 5 ) ) {
+	if ( $toilets > 5 ) {
 		return new WP_Error( 'invalid_rooms', __( 'Invalid room counts.', 'somvio' ), array( 'status' => 400 ) );
 	}
-	if ( $kitchens > 0 && ( $kitchens < 1 || $kitchens > 5 ) ) {
+	if ( $kitchens > 5 ) {
 		return new WP_Error( 'invalid_rooms', __( 'Invalid room counts.', 'somvio' ), array( 'status' => 400 ) );
 	}
 	if ( '' === $date || ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) ) {

@@ -9396,6 +9396,14 @@ body.somvio-has-hero.page-booking .site-main > * {
 	width: 100%;
 }
 
+/* Step 1 service grid — Figma 418:6214 fixed 240px cards */
+.booking-form__card--step1 .booking-form__services {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 240px));
+	justify-content: start;
+	gap: 20px;
+}
+
 .booking-form__service,
 .booking-form__addon {
 	display: flex;
@@ -9412,20 +9420,39 @@ body.somvio-has-hero.page-booking .site-main > * {
 	color: inherit;
 	text-align: left;
 	cursor: pointer;
-	transition: border-color var(--somvio-transition);
+	overflow: hidden;
+	transition:
+		border-color 0.2s ease,
+		box-shadow 0.2s ease,
+		transform 0.2s ease;
+}
+
+.booking-form__card--step1 .booking-form__service {
+	width: 240px;
+	max-width: 100%;
+	flex: none;
+}
+
+.booking-form__service:hover,
+.booking-form__service:focus-visible {
+	border-color: rgba(51, 172, 166, 0.55);
+	outline: none;
 }
 
 .booking-form__service.is-selected,
 .booking-form__addon.is-selected {
 	border-color: #33aca6;
+	box-shadow: 0 0 0 1px #33aca6;
 }
 
 .booking-form__service-media {
 	display: block;
 	width: 100%;
+	height: 200px;
 	aspect-ratio: 240 / 200;
 	overflow: hidden;
 	border-radius: 4px 4px 0 0;
+	background-color: #1a2e3b;
 }
 
 .booking-form__service-img {
@@ -9433,6 +9460,12 @@ body.somvio-has-hero.page-booking .site-main > * {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
+	transition: transform 0.25s ease;
+}
+
+.booking-form__service:hover .booking-form__service-img,
+.booking-form__service.is-selected .booking-form__service-img {
+	transform: scale(1.03);
 }
 
 .booking-form__service-footer,
@@ -9441,6 +9474,8 @@ body.somvio-has-hero.page-booking .site-main > * {
 	align-items: center;
 	gap: 20px;
 	padding: 20px;
+	background-color: var(--somvio-color-surface-dark);
+	border-radius: 0 0 4px 4px;
 }
 
 .booking-form__service-check {
@@ -9448,13 +9483,14 @@ body.somvio-has-hero.page-booking .site-main > * {
 	flex-shrink: 0;
 	width: 24px;
 	height: 24px;
-	overflow: hidden;
+	overflow: clip;
 }
 
 .booking-form__service-check-img {
 	display: block;
 	width: 24px;
 	height: 24px;
+	transition: opacity 0.15s ease;
 }
 
 .booking-form__service-check-img--on {
@@ -9515,12 +9551,37 @@ body.somvio-has-hero.page-booking .site-main > * {
 	width: 100%;
 }
 
+.booking-form__card--step1 .booking-form__counters {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 240px));
+	gap: 20px;
+	justify-content: start;
+}
+
+@media (max-width: 1100px) {
+	.booking-form__card--step1 .booking-form__counters {
+		grid-template-columns: repeat(2, minmax(0, 240px));
+	}
+}
+
+@media (max-width: 560px) {
+	.booking-form__card--step1 .booking-form__counters {
+		grid-template-columns: 1fr;
+	}
+}
+
 .booking-form__counter {
 	display: flex;
 	flex-direction: column;
 	gap: 5px;
 	flex: 1 1 160px;
 	max-width: 240px;
+	width: 100%;
+}
+
+.booking-form__card--step1 .booking-form__counter {
+	flex: none;
+	max-width: none;
 }
 
 .booking-form__label {
@@ -9537,16 +9598,25 @@ body.somvio-has-hero.page-booking .site-main > * {
 	align-items: center;
 	justify-content: space-between;
 	gap: 10px;
+	width: 100%;
 	padding: 10px;
 	border: 1px solid #c0c0c0;
 	border-radius: 4px;
+	background-color: transparent;
 	box-sizing: border-box;
+	transition: border-color 0.2s ease;
+}
+
+.booking-form__counter.is-active .booking-form__counter-control,
+.booking-form__counter-control:focus-within {
+	border-color: #33aca6;
 }
 
 .booking-form__counter-btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	flex-shrink: 0;
 	width: 26px;
 	height: 26px;
 	padding: 5px;
@@ -9555,10 +9625,30 @@ body.somvio-has-hero.page-booking .site-main > * {
 	background-color: #3a4b56;
 	color: var(--somvio-color-text);
 	cursor: pointer;
+	transition: background-color 0.2s ease, opacity 0.15s ease, color 0.2s ease;
 }
 
+.booking-form__counter-btn:hover:not(:disabled),
+.booking-form__counter-btn:focus-visible:not(:disabled) {
+	filter: brightness(1.12);
+	outline: none;
+}
+
+.booking-form__counter-btn:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+/* Figma 418:6214 — accent + on the active / focused counter */
 .booking-form__counter-btn--plus {
+	background-color: #3a4b56;
+	color: var(--somvio-color-text);
+}
+
+.booking-form__counter.is-active .booking-form__counter-btn--plus,
+.booking-form__counter-control:focus-within .booking-form__counter-btn--plus {
 	background-color: var(--somvio-color-accent);
+	background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2));
 	color: #00050e;
 }
 

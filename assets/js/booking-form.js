@@ -677,26 +677,56 @@
 			if (!input) {
 				return;
 			}
-			var min = parseInt(input.getAttribute('min'), 10) || 1;
-			var max = parseInt(input.getAttribute('max'), 10) || 5;
+			var minAttr = input.getAttribute('min');
+			var maxAttr = input.getAttribute('max');
+			var min = minAttr !== null && minAttr !== '' ? parseInt(minAttr, 10) : 1;
+			var max = maxAttr !== null && maxAttr !== '' ? parseInt(maxAttr, 10) : 5;
+			if (isNaN(min)) {
+				min = 1;
+			}
+			if (isNaN(max)) {
+				max = 5;
+			}
+
+			function syncButtons(n) {
+				if (dec) {
+					dec.disabled = n <= min;
+				}
+				if (inc) {
+					inc.disabled = n >= max;
+				}
+			}
+
+			function setActive() {
+				root.querySelectorAll('[data-booking-counter]').forEach(function (el) {
+					el.classList.remove('is-active');
+				});
+				wrap.classList.add('is-active');
+			}
 
 			function setVal(n) {
 				n = Math.max(min, Math.min(max, n));
 				input.value = String(n);
 				state[key] = String(n);
+				syncButtons(n);
+				setActive();
 				renderSummary();
 			}
 
+			syncButtons(parseInt(input.value, 10) || min);
+
 			if (dec) {
 				dec.addEventListener('click', function () {
-					setVal((parseInt(input.value, 10) || min) - 1);
+					setVal((parseInt(input.value, 10) || 0) - 1);
 				});
 			}
 			if (inc) {
 				inc.addEventListener('click', function () {
-					setVal((parseInt(input.value, 10) || min) + 1);
+					setVal((parseInt(input.value, 10) || 0) + 1);
 				});
 			}
+
+			wrap.addEventListener('focusin', setActive);
 		});
 
 		root.querySelectorAll('[data-booking-addon]').forEach(function (btn) {

@@ -1,6 +1,6 @@
 <?php
 /**
- * Booking form + order summary — Figma 418:6213.
+ * Booking form + order summary — Figma 418:6213 / Step 1: 418:6214.
  *
  * @package Somvio_Child
  */
@@ -43,13 +43,13 @@ $somvio_bf_counters = array(
 	),
 	'toilets'   => array(
 		'label' => __( 'Toilets', 'somvio' ),
-		'min'   => 1,
+		'min'   => 0,
 		'max'   => 5,
 		'value' => 1,
 	),
 	'kitchens'  => array(
 		'label' => __( 'Kitchens', 'somvio' ),
-		'min'   => 1,
+		'min'   => 0,
 		'max'   => 5,
 		'value' => 1,
 	),
@@ -72,8 +72,8 @@ $somvio_bf_counters = array(
 			<form class="booking-form__form" data-booking-form-el novalidate>
 				<p class="booking-form__error" data-booking-error hidden role="alert"></p>
 
-				<?php /* —— Step 1: Choose service —— */ ?>
-				<div class="booking-form__card" data-booking-step="1" data-booking-panel>
+				<?php /* —— Step 1: Choose service (Figma 418:6214) —— */ ?>
+				<div class="booking-form__card booking-form__card--step1" data-booking-step="1" data-booking-panel>
 					<h2 class="booking-form__step-title">
 						<span class="booking-form__step-num" aria-hidden="true">1.</span>
 						<?php esc_html_e( 'Choose service', 'somvio' ); ?>
@@ -133,15 +133,23 @@ $somvio_bf_counters = array(
 					<input type="hidden" name="service" data-booking-field="service" value="regular-cleaning">
 
 					<div class="booking-form__counters">
-						<?php foreach ( $somvio_bf_counters as $somvio_bf_ckey => $somvio_bf_counter ) : ?>
-							<div class="booking-form__counter" data-booking-counter="<?php echo esc_attr( $somvio_bf_ckey ); ?>">
+						<?php
+						$somvio_bf_counter_i = 0;
+						foreach ( $somvio_bf_counters as $somvio_bf_ckey => $somvio_bf_counter ) :
+							$somvio_bf_counter_active = 0 === $somvio_bf_counter_i;
+							++$somvio_bf_counter_i;
+							?>
+							<div
+								class="booking-form__counter<?php echo $somvio_bf_counter_active ? ' is-active' : ''; ?>"
+								data-booking-counter="<?php echo esc_attr( $somvio_bf_ckey ); ?>"
+							>
 								<label class="booking-form__label" for="<?php echo esc_attr( $somvio_bf_uid . '-' . $somvio_bf_ckey ); ?>">
 									<?php echo esc_html( $somvio_bf_counter['label'] ); ?>
 								</label>
-								<div class="booking-form__counter-control">
+								<div class="booking-form__counter-control" data-booking-counter-control>
 									<button
 										type="button"
-										class="booking-form__counter-btn"
+										class="booking-form__counter-btn booking-form__counter-btn--minus"
 										data-booking-counter-dec
 										aria-label="<?php echo esc_attr( sprintf( /* translators: %s: room type */ __( 'Decrease %s', 'somvio' ), $somvio_bf_counter['label'] ) ); ?>"
 									>
