@@ -382,7 +382,7 @@ $somvio_bf_counters = array(
 			</div>
 
 			<?php /* —— Step 4: Contact —— */ ?>
-			<div class="booking-form__card" data-booking-step="4" data-booking-panel hidden>
+			<div class="booking-form__card booking-form__card--step4" data-booking-step="4" data-booking-panel hidden>
 				<h2 class="booking-form__step-title">
 					<span class="booking-form__step-num" aria-hidden="true">4.</span>
 					<?php esc_html_e( 'Get Your Instant Quote', 'somvio' ); ?>

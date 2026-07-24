@@ -9484,12 +9484,16 @@ body.somvio-has-hero.page-booking .site-main > * {
 }
 
 /* Figma 418:6259 — Step 2 Extra Services */
-.booking-form__card--step2 {
-	margin-top: 30px;
-}
-
 .booking-form__card--step2 .booking-form__addon {
 	min-height: 196px;
+}
+
+/* Uniform 30px gap between all booking steps (2–5) */
+.booking-form__card--step2,
+.booking-form__card--step3,
+.booking-form__card--step4,
+.booking-form__card--success {
+	margin-top: 30px;
 }
 
 .booking-form__addon-top {
@@ -9853,15 +9857,24 @@ body.somvio-has-hero.page-booking .site-main > * {
 }
 
 .booking-form__input--date {
-	border-color: #ffffff;
+	border: 1px solid rgba(255, 255, 255, 0.85) !important;
 	padding-right: 40px;
-	background-color: #091e2c;
-	color: #ffffff;
+	background-color: #091e2c !important;
+	color: #ffffff !important;
+	-webkit-text-fill-color: #ffffff;
+	caret-color: #ffffff;
+	color-scheme: dark;
 }
 
-.booking-form__input--date:placeholder-shown,
-.booking-form__input--date:not(:focus):placeholder-shown {
-	color: #848e95;
+.booking-form__input--date::placeholder {
+	color: #848e95 !important;
+	-webkit-text-fill-color: #848e95;
+	opacity: 1;
+}
+
+.booking-form__input--date:placeholder-shown {
+	color: #848e95 !important;
+	-webkit-text-fill-color: #848e95;
 }
 
 .booking-form__input::placeholder,
@@ -9889,13 +9902,23 @@ body.somvio-has-hero.page-booking .site-main > * {
 	display: block;
 	width: 100%;
 	height: 100%;
+	overflow: visible;
 }
 
-/* Figma 418:6269 — Step 3 Get Your Date */
-.booking-form__card--step3 {
-	margin-top: 30px;
+.booking-form__chevron svg > mask {
+	display: none;
 }
 
+.booking-form__chevron svg g {
+	mask: none !important;
+}
+
+.booking-form__chevron svg path {
+	fill: #ffffff !important;
+	fill-opacity: 1 !important;
+}
+
+/* Figma 418:6271 — date field + calendar */
 .booking-form__date-block {
 	display: flex;
 	flex-direction: column;
@@ -9913,9 +9936,10 @@ body.somvio-has-hero.page-booking .site-main > * {
 	flex-direction: column;
 	width: 100%;
 	min-height: 420px;
+	padding-bottom: 8px;
 	border: 1px solid rgba(255, 255, 255, 0.1);
 	border-radius: 4px;
-	background-color: transparent;
+	background-color: #091e2c;
 	box-sizing: border-box;
 }
 
@@ -9973,7 +9997,7 @@ body.somvio-has-hero.page-booking .site-main > * {
 .booking-form__cal-grid {
 	display: grid;
 	grid-template-columns: repeat(7, minmax(0, 1fr));
-	gap: 4px;
+	gap: 8px 4px;
 	justify-items: center;
 	padding: 0 24px 16px;
 	box-sizing: border-box;
@@ -9982,10 +10006,29 @@ body.somvio-has-hero.page-booking .site-main > * {
 .booking-form__cal-weekdays {
 	height: 44px;
 	align-items: center;
-	padding-bottom: 0;
+	padding-bottom: 4px;
+	gap: 4px;
 }
 
-.booking-form__cal-weekday,
+.booking-form__cal-weekday {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	font-family: var(--somvio-font-sans);
+	font-size: 14px;
+	font-weight: 500;
+	line-height: normal;
+	color: #a0aec0;
+	cursor: default;
+	user-select: none;
+}
+
 .booking-form__cal-day {
 	display: inline-flex;
 	align-items: center;
@@ -9996,49 +10039,54 @@ body.somvio-has-hero.page-booking .site-main > * {
 	padding: 0;
 	border: 0;
 	border-radius: 18px;
-	background: rgba(255, 255, 255, 0.2);
+	background-color: rgba(255, 255, 255, 0.2);
 	font-family: var(--somvio-font-sans);
 	font-size: 14px;
-	font-weight: 400;
-	line-height: normal;
-	color: #ffffff;
+	font-weight: 700;
+	line-height: 1;
+	color: #ffffff !important;
+	opacity: 1 !important;
+	-webkit-text-fill-color: #ffffff;
 	cursor: pointer;
 	transition:
 		background-color 0.2s ease,
 		color 0.2s ease,
-		transform 0.15s ease;
-}
-
-.booking-form__cal-weekday {
-	background: transparent;
-	font-weight: 500;
-	cursor: default;
+		-webkit-text-fill-color 0.2s ease;
 }
 
 .booking-form__cal-day:hover:not(:disabled):not(.is-selected),
 .booking-form__cal-day:focus-visible:not(:disabled):not(.is-selected) {
-	background-color: rgba(51, 172, 166, 0.45);
+	background-color: rgba(51, 172, 166, 0.5);
 	outline: none;
 }
 
 .booking-form__cal-day.is-outside {
-	color: rgba(255, 255, 255, 0.2);
-	background: rgba(255, 255, 255, 0.2);
+	color: rgba(255, 255, 255, 0.35) !important;
+	-webkit-text-fill-color: rgba(255, 255, 255, 0.35);
+	background-color: rgba(255, 255, 255, 0.12);
+	font-weight: 600;
+	opacity: 1 !important;
 }
 
 .booking-form__cal-day.is-disabled {
-	opacity: 0.35;
 	cursor: not-allowed;
+	color: rgba(255, 255, 255, 0.4) !important;
+	-webkit-text-fill-color: rgba(255, 255, 255, 0.4);
+	opacity: 1 !important;
 }
 
-.booking-form__cal-day.is-selected {
-	background-color: #40d7d0;
-	color: #ffffff;
-	font-weight: 600;
+.booking-form__cal-day.is-selected,
+.booking-form__cal-day.is-selected.is-outside,
+.booking-form__cal-day.is-selected.is-disabled {
+	background-color: #40d7d0 !important;
+	color: #ffffff !important;
+	-webkit-text-fill-color: #ffffff !important;
+	font-weight: 700;
+	opacity: 1 !important;
 }
 
 .booking-form__cal-day.is-selected:hover {
-	background-color: #33aca6;
+	background-color: #33aca6 !important;
 }
 
 /* Time slots — Figma 418:6269: 4 × ~185px, gap 20 */
