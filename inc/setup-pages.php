@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** @var int Bump to re-run page seeding on admin_init / theme switch. */
-const SOMVIO_CORE_PAGES_VERSION = 8;
+const SOMVIO_CORE_PAGES_VERSION = 9;
 
 /**
  * Core pages to ensure exist (slug => title).
@@ -263,11 +263,18 @@ function somvio_ensure_blog_page() {
 }
 
 /**
- * Ensure the Privacy Policy page exists with its template.
+ * Ensure the Privacy Policy page exists with its template + Figma content.
+ *
+ * Uses the canonical privacy page (WP setting / draft slug) so we never
+ * create privacy-policy-2 while the official page stays as WP filler.
  *
  * @return int Page ID or 0.
  */
 function somvio_ensure_privacy_policy_page() {
+	if ( function_exists( 'somvio_force_seed_privacy_policy_content' ) ) {
+		return somvio_force_seed_privacy_policy_content();
+	}
+
 	$page_id = somvio_ensure_page( 'privacy-policy', 'Privacy Policy' );
 
 	if ( $page_id <= 0 ) {
@@ -289,10 +296,6 @@ function somvio_ensure_privacy_policy_page() {
 
 	if ( 'page-privacy-policy.php' !== $template ) {
 		update_post_meta( $page_id, '_wp_page_template', 'page-privacy-policy.php' );
-	}
-
-	if ( function_exists( 'somvio_seed_legal_page_content' ) && function_exists( 'somvio_get_privacy_policy_seed_content' ) ) {
-		somvio_seed_legal_page_content( $page_id, somvio_get_privacy_policy_seed_content() );
 	}
 
 	return $page_id;
