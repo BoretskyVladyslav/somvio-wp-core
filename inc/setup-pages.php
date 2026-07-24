@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** @var int Bump to re-run page seeding on admin_init / theme switch. */
-const SOMVIO_CORE_PAGES_VERSION = 6;
+const SOMVIO_CORE_PAGES_VERSION = 7;
 
 /**
  * Core pages to ensure exist (slug => title).
@@ -19,14 +19,16 @@ const SOMVIO_CORE_PAGES_VERSION = 6;
  */
 function somvio_get_core_pages() {
 	return array(
-		'home'     => 'Home',
-		'services' => 'Services',
-		'about-us' => 'About Us',
-		'reviews'  => 'Reviews',
-		'faq'      => 'FAQ',
-		'booking'  => 'Booking',
-		'contact'  => 'Contact',
-		'blog'     => 'Blog',
+		'home'           => 'Home',
+		'services'       => 'Services',
+		'about-us'       => 'About Us',
+		'reviews'        => 'Reviews',
+		'faq'            => 'FAQ',
+		'booking'        => 'Booking',
+		'contact'        => 'Contact',
+		'blog'           => 'Blog',
+		'privacy-policy' => 'Privacy Policy',
+		'terms-of-use'   => 'Terms of Use',
 	);
 }
 
@@ -261,6 +263,70 @@ function somvio_ensure_blog_page() {
 }
 
 /**
+ * Ensure the Privacy Policy page exists with its template.
+ *
+ * @return int Page ID or 0.
+ */
+function somvio_ensure_privacy_policy_page() {
+	$page_id = somvio_ensure_page( 'privacy-policy', 'Privacy Policy' );
+
+	if ( $page_id <= 0 ) {
+		return 0;
+	}
+
+	$page = get_post( $page_id );
+
+	if ( $page instanceof WP_Post && 'publish' !== $page->post_status ) {
+		wp_update_post(
+			array(
+				'ID'          => $page_id,
+				'post_status' => 'publish',
+			)
+		);
+	}
+
+	$template = get_post_meta( $page_id, '_wp_page_template', true );
+
+	if ( 'page-privacy-policy.php' !== $template ) {
+		update_post_meta( $page_id, '_wp_page_template', 'page-privacy-policy.php' );
+	}
+
+	return $page_id;
+}
+
+/**
+ * Ensure the Terms of Use page exists with its template.
+ *
+ * @return int Page ID or 0.
+ */
+function somvio_ensure_terms_of_use_page() {
+	$page_id = somvio_ensure_page( 'terms-of-use', 'Terms of Use' );
+
+	if ( $page_id <= 0 ) {
+		return 0;
+	}
+
+	$page = get_post( $page_id );
+
+	if ( $page instanceof WP_Post && 'publish' !== $page->post_status ) {
+		wp_update_post(
+			array(
+				'ID'          => $page_id,
+				'post_status' => 'publish',
+			)
+		);
+	}
+
+	$template = get_post_meta( $page_id, '_wp_page_template', true );
+
+	if ( 'page-terms-of-use.php' !== $template ) {
+		update_post_meta( $page_id, '_wp_page_template', 'page-terms-of-use.php' );
+	}
+
+	return $page_id;
+}
+
+/**
  * Ensure a single-service page exists with the Single Service template.
  *
  * @param string $slug      Service slug.
@@ -333,6 +399,16 @@ function somvio_setup_core_pages() {
 
 			if ( 'blog' === $slug ) {
 				$page_ids[ $slug ] = somvio_ensure_blog_page();
+				continue;
+			}
+
+			if ( 'privacy-policy' === $slug ) {
+				$page_ids[ $slug ] = somvio_ensure_privacy_policy_page();
+				continue;
+			}
+
+			if ( 'terms-of-use' === $slug ) {
+				$page_ids[ $slug ] = somvio_ensure_terms_of_use_page();
 				continue;
 			}
 

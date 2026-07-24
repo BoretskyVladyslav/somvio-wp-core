@@ -224,8 +224,8 @@ $somvio_year = (int) gmdate( 'Y' );
 					<?php esc_html_e( 'Privacy Policy', 'somvio' ); ?>
 				</a>
 				<span class="site-footer__legal-sep" aria-hidden="true">|</span>
-				<a class="site-footer__legal-link" href="<?php echo esc_url( home_url( '/terms-conditions/' ) ); ?>">
-					<?php esc_html_e( 'Terms & Conditions', 'somvio' ); ?>
+				<a class="site-footer__legal-link" href="<?php echo esc_url( home_url( '/terms-of-use/' ) ); ?>">
+					<?php esc_html_e( 'Terms of Use', 'somvio' ); ?>
 				</a>
 			</p>
 		</div>
