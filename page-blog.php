@@ -3,10 +3,10 @@
  * Template Name: Blog
  *
  * Blog landing. Hero is the first full-width block inside main;
- * Process Steps (How It Works) follows in the page body.
+ * featured grid + Process Steps follow in the page body.
  * No default post loop — keep main clean for custom section templates.
  *
- * Figma nodes: 300:2181 (hero)
+ * Figma nodes: 300:2181 (hero), 300:2187 (featured / categories / grid)
  *
  * @package Somvio_Child
  */
@@ -30,8 +30,10 @@ get_header();
 
 			get_template_part( 'template-parts/sections/blog', 'hero' );
 
+			get_template_part( 'template-parts/sections/blog', 'grid' );
+
 			/**
-			 * Blog page body sections (posts grid, etc.).
+			 * Blog page body sections (future blocks).
 			 *
 			 * @since 1.0.0
 			 */

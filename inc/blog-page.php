@@ -49,6 +49,32 @@ function somvio_blog_body_class( $classes ) {
 add_filter( 'body_class', 'somvio_blog_body_class' );
 
 /**
+ * Enqueue blog category filter script on the Blog page.
+ *
+ * @return void
+ */
+function somvio_enqueue_blog_assets() {
+	if ( ! somvio_is_blog_page() ) {
+		return;
+	}
+
+	$script_path = get_stylesheet_directory() . '/assets/js/blog-filter.js';
+
+	if ( ! file_exists( $script_path ) ) {
+		return;
+	}
+
+	wp_enqueue_script(
+		'somvio-blog-filter',
+		get_stylesheet_directory_uri() . '/assets/js/blog-filter.js',
+		array(),
+		(string) filemtime( $script_path ),
+		true
+	);
+}
+add_action( 'wp_enqueue_scripts', 'somvio_enqueue_blog_assets' );
+
+/**
  * Load page-blog.php for the posts index (page_for_posts ignores page templates).
  *
  * @param string $template Path to template.
