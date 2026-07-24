@@ -48,7 +48,7 @@ if ( ! is_string( $somvio_title ) || '' === $somvio_title ) {
 								?>
 							</span>
 							<span class="service-single-hero__breadcrumb-current">
-								<?php esc_html_e( 'Services', 'somvio' ); ?>
+								<?php echo esc_html( $somvio_title ); ?>
 							</span>
 						</li>
 					</ol>

@@ -32,14 +32,11 @@ if ( ! $somvio_bf_privacy_url ) {
 }
 $somvio_bf_terms_id = 0;
 if ( function_exists( 'somvio_get_page_id_by_slug' ) ) {
-	$somvio_bf_terms_id = (int) somvio_get_page_id_by_slug( 'terms-conditions' );
-	if ( $somvio_bf_terms_id <= 0 ) {
-		$somvio_bf_terms_id = (int) somvio_get_page_id_by_slug( 'terms-of-use' );
-	}
+	$somvio_bf_terms_id = (int) somvio_get_page_id_by_slug( 'terms-of-use' );
 }
 $somvio_bf_terms_url = $somvio_bf_terms_id > 0
 	? get_permalink( $somvio_bf_terms_id )
-	: home_url( '/terms-conditions/' );
+	: home_url( '/terms-of-use/' );
 
 $somvio_bf_counters = array(
 	'bedrooms'  => array(
@@ -98,6 +95,7 @@ $somvio_bf_counters = array(
 							data-booking-service="<?php echo esc_attr( $somvio_bf_key ); ?>"
 							role="radio"
 							aria-checked="false"
+							tabindex="-1"
 						>
 							<span class="booking-form__service-media">
 								<img
@@ -345,7 +343,7 @@ $somvio_bf_counters = array(
 							</button>
 						</div>
 						<div class="booking-form__cal-weekdays" data-booking-cal-weekdays aria-hidden="true"></div>
-						<div class="booking-form__cal-grid" data-booking-cal-grid role="listbox" aria-label="<?php esc_attr_e( 'Calendar days', 'somvio' ); ?>"></div>
+						<div class="booking-form__cal-grid" data-booking-cal-grid role="group" aria-label="<?php esc_attr_e( 'Calendar days', 'somvio' ); ?>"></div>
 					</div>
 				</div>
 
@@ -367,6 +365,7 @@ $somvio_bf_counters = array(
 							data-booking-slot="<?php echo esc_attr( $somvio_bf_slot ); ?>"
 							role="radio"
 							aria-checked="false"
+							tabindex="-1"
 						>
 							<?php echo esc_html( $somvio_bf_slot_label ); ?>
 						</button>
@@ -554,6 +553,7 @@ $somvio_bf_counters = array(
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="<?php echo esc_attr( $somvio_bf_uid ); ?>-success-title"
+			tabindex="-1"
 		>
 			<div class="booking-form__card booking-form__card--success">
 				<div class="booking-form__success">

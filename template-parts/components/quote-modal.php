@@ -21,6 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		role="dialog"
 		aria-modal="true"
 		aria-label="<?php esc_attr_e( 'Get Your Instant Quote', 'somvio' ); ?>"
+		tabindex="-1"
 	>
 		<button
 			type="button"

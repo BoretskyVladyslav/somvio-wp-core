@@ -162,6 +162,44 @@ function somvio_is_valid_quote_email( $email ) {
 }
 
 /**
+ * Validate a real, non-past booking date in the site timezone.
+ *
+ * @param string $date ISO date.
+ * @return bool
+ */
+function somvio_is_valid_quote_date( $date ) {
+	$date = trim( (string) $date );
+	if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) ) {
+		return false;
+	}
+
+	$parsed = DateTimeImmutable::createFromFormat( '!Y-m-d', $date, wp_timezone() );
+	$errors = DateTimeImmutable::getLastErrors();
+
+	if (
+		false === $parsed ||
+		( is_array( $errors ) && ( $errors['warning_count'] > 0 || $errors['error_count'] > 0 ) ) ||
+		$date !== $parsed->format( 'Y-m-d' )
+	) {
+		return false;
+	}
+
+	return $date >= current_datetime()->format( 'Y-m-d' );
+}
+
+/**
+ * Return a multibyte-safe text length where available.
+ *
+ * @param string $value Text value.
+ * @return int
+ */
+function somvio_quote_text_length( $value ) {
+	$value = (string) $value;
+
+	return function_exists( 'mb_strlen' ) ? mb_strlen( $value ) : strlen( $value );
+}
+
+/**
  * Service type options for the quote calculator.
  *
  * @return array<string, string> value => label
@@ -374,18 +412,21 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	$address   = sanitize_text_field( (string) ( $request['address'] ?? '' ) );
 	$comment   = sanitize_textarea_field( (string) $request['comment'] );
 	$addons    = somvio_rest_sanitize_string_list( $request['addons'] ?? array() );
-	$terms     = (bool) $request['terms_accepted'];
+	$terms     = rest_sanitize_boolean( $request['terms_accepted'] ?? false );
 	$source    = sanitize_key( (string) ( $request['source'] ?? 'quote' ) );
 
 	if ( '' === $property ) {
 		$property = 'house';
 	}
 
-	$services  = somvio_get_quote_service_options();
-	$props     = somvio_get_quote_property_options();
-	$rates     = somvio_get_quote_rates();
+	$services   = somvio_get_quote_service_options();
+	$props      = somvio_get_quote_property_options();
+	$rates      = somvio_get_quote_rates();
 	$addon_defs = isset( $rates['addons'] ) && is_array( $rates['addons'] ) ? $rates['addons'] : array();
 
+	if ( ! in_array( $source, array( 'quote', 'booking' ), true ) ) {
+		return new WP_Error( 'invalid_source', __( 'Invalid submission source.', 'somvio' ), array( 'status' => 400 ) );
+	}
 	if ( ! isset( $services[ $service ] ) ) {
 		return new WP_Error( 'invalid_service', __( 'Invalid service type.', 'somvio' ), array( 'status' => 400 ) );
 	}
@@ -401,7 +442,7 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	if ( $kitchens > 5 ) {
 		return new WP_Error( 'invalid_rooms', __( 'Invalid room counts.', 'somvio' ), array( 'status' => 400 ) );
 	}
-	if ( '' === $date || ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) ) {
+	if ( ! somvio_is_valid_quote_date( $date ) ) {
 		return new WP_Error( 'invalid_date', __( 'Invalid date.', 'somvio' ), array( 'status' => 400 ) );
 	}
 	if ( ! in_array( $time, $rates['time_slots'], true ) ) {
@@ -414,18 +455,29 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 		$name = trim( $name );
 	}
 
-	if ( strlen( $name ) < 2 ) {
+	if ( somvio_quote_text_length( $name ) < 2 || somvio_quote_text_length( $name ) > 160 ) {
 		return new WP_Error( 'invalid_name', __( 'Please enter your full name.', 'somvio' ), array( 'status' => 400 ) );
 	}
-	if ( ! somvio_is_valid_quote_email( $email ) ) {
+	if ( somvio_quote_text_length( $email ) > 254 || ! somvio_is_valid_quote_email( $email ) ) {
 		return new WP_Error( 'invalid_email', __( 'Please enter a valid email address.', 'somvio' ), array( 'status' => 400 ) );
 	}
-	if ( ! somvio_is_valid_quote_phone( $phone ) ) {
+	if ( somvio_quote_text_length( $phone ) > 32 || ! somvio_is_valid_quote_phone( $phone ) ) {
 		return new WP_Error( 'invalid_phone', __( 'Please enter a valid phone number.', 'somvio' ), array( 'status' => 400 ) );
+	}
+	if ( somvio_quote_text_length( $comment ) > 2000 ) {
+		return new WP_Error( 'invalid_comment', __( 'Comment is too long.', 'somvio' ), array( 'status' => 400 ) );
 	}
 
 	if ( 'booking' === $source ) {
-		if ( strlen( trim( $address ) ) < 3 ) {
+		if (
+			somvio_quote_text_length( trim( $first ) ) < 2 ||
+			somvio_quote_text_length( trim( $first ) ) > 80 ||
+			somvio_quote_text_length( trim( $last ) ) < 2 ||
+			somvio_quote_text_length( trim( $last ) ) > 80
+		) {
+			return new WP_Error( 'invalid_name', __( 'Please enter your first and last name.', 'somvio' ), array( 'status' => 400 ) );
+		}
+		if ( somvio_quote_text_length( trim( $address ) ) < 3 || somvio_quote_text_length( trim( $address ) ) > 255 ) {
 			return new WP_Error( 'invalid_address', __( 'Please enter your street address.', 'somvio' ), array( 'status' => 400 ) );
 		}
 		if ( ! $terms ) {
@@ -442,6 +494,9 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	$server_total = somvio_calculate_quote_price( $service, $property, $bedrooms, $bathrooms, $addons );
 	$client_total = isset( $request['client_total'] ) ? (float) $request['client_total'] : null;
 
+	if ( null !== $client_total && ! is_finite( $client_total ) ) {
+		return new WP_Error( 'invalid_total', __( 'Invalid estimated total.', 'somvio' ), array( 'status' => 400 ) );
+	}
 	if ( null !== $client_total && abs( $client_total - $server_total ) > 0.01 ) {
 		return new WP_Error(
 			'price_mismatch',

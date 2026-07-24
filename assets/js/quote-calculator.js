@@ -185,6 +185,7 @@
 			phone: '',
 			comment: '',
 			previewTotal: 0,
+			quotedTotal: null,
 			calYear: today.getFullYear(),
 			calMonth: today.getMonth(),
 			submitting: false,
@@ -265,8 +266,10 @@
 			if (nextIcon) {
 				nextIcon.hidden = loading;
 			}
-			if (nextLabel && loading && state.step === TOTAL_STEPS) {
-				nextLabel.textContent = i18n.submitting || 'Submitting…';
+			if (nextLabel && state.step === TOTAL_STEPS) {
+				nextLabel.textContent = loading
+					? i18n.submitting || 'Submitting…'
+					: i18n.submitQuote || 'Submit Quote';
 			}
 		}
 
@@ -572,6 +575,13 @@
 			readFields();
 			renderPrice();
 
+			if (!cfg.restUrl || !cfg.nonce) {
+				state.submitting = false;
+				setLoading(false);
+				showError(i18n.submitError || 'Something went wrong. Please try again.');
+				return Promise.resolve();
+			}
+
 			var payload = {
 				service: state.service,
 				property: state.property,
@@ -583,7 +593,7 @@
 				email: trim(state.email),
 				phone: normalizePhone(state.phone),
 				comment: trim(state.comment),
-				client_total: state.previewTotal,
+				client_total: state.quotedTotal != null ? state.quotedTotal : state.previewTotal,
 			};
 
 			return fetch(cfg.restUrl, {
@@ -596,18 +606,27 @@
 				body: JSON.stringify(payload),
 			})
 				.then(function (res) {
-					return res.json().then(function (data) {
+					return res.text().then(function (text) {
+						var data = {};
+						if (text) {
+							try {
+								data = JSON.parse(text);
+							} catch (error) {
+								data = {};
+							}
+						}
 						return { ok: res.ok, status: res.status, data: data };
 					});
 				})
 				.then(function (result) {
 					if (result.status === 409 && result.data && result.data.data && result.data.data.total != null) {
 						state.previewTotal = Number(result.data.data.total);
+						state.quotedTotal = state.previewTotal;
 						renderPrice();
 						showError(result.data.message || i18n.submitError);
 						return;
 					}
-					if (!result.ok) {
+					if (!result.ok || !result.data || !result.data.success) {
 						var msg =
 							(result.data && result.data.message) ||
 							i18n.submitError ||
@@ -645,6 +664,7 @@
 			state.email = '';
 			state.phone = '';
 			state.comment = '';
+			state.quotedTotal = null;
 			state.calYear = today.getFullYear();
 			state.calMonth = today.getMonth();
 
@@ -680,6 +700,7 @@
 				return;
 			}
 			el.addEventListener('change', function () {
+				state.quotedTotal = null;
 				readFields();
 				renderPrice();
 			});
@@ -810,6 +831,60 @@
 		}
 
 		var lastFocus = null;
+		var dialog = modal.querySelector('.quote-modal__dialog');
+		var isolationRecords = [];
+
+		function setModalIsolation(active) {
+			if (active) {
+				isolationRecords = [];
+				var current = modal;
+				while (current && current !== document.body) {
+					var parent = current.parentElement;
+					if (!parent) {
+						break;
+					}
+					Array.prototype.forEach.call(parent.children, function (sibling) {
+						if (sibling === current) {
+							return;
+						}
+						isolationRecords.push({
+							element: sibling,
+							hadInert: sibling.hasAttribute('inert'),
+							hadAriaHidden: sibling.hasAttribute('aria-hidden'),
+							ariaHidden: sibling.getAttribute('aria-hidden'),
+						});
+						sibling.setAttribute('inert', '');
+						sibling.setAttribute('aria-hidden', 'true');
+					});
+					current = parent;
+				}
+				return;
+			}
+
+			isolationRecords.forEach(function (record) {
+				if (!record.hadInert) {
+					record.element.removeAttribute('inert');
+				}
+				if (record.hadAriaHidden) {
+					record.element.setAttribute('aria-hidden', record.ariaHidden);
+				} else {
+					record.element.removeAttribute('aria-hidden');
+				}
+			});
+			isolationRecords = [];
+		}
+
+		function getFocusable() {
+			return Array.prototype.slice
+				.call(
+					modal.querySelectorAll(
+						'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+					)
+				)
+				.filter(function (element) {
+					return !element.hidden && element.offsetParent !== null;
+				});
+		}
 
 		function openModal(e) {
 			if (e) {
@@ -819,14 +894,17 @@
 			modal.hidden = false;
 			modal.setAttribute('aria-hidden', 'false');
 			document.documentElement.classList.add('has-quote-modal');
-			var focusable = modal.querySelector('[data-quote-next], button, [href], input, select, textarea');
-			if (focusable) {
-				focusable.focus();
+			var focusable = getFocusable();
+			var focusTarget = focusable[0] || dialog;
+			if (focusTarget && typeof focusTarget.focus === 'function') {
+				focusTarget.focus();
 			}
+			setModalIsolation(true);
 		}
 
 		function closeModal(options) {
 			var opts = options || {};
+			setModalIsolation(false);
 			modal.hidden = true;
 			modal.setAttribute('aria-hidden', 'true');
 			document.documentElement.classList.remove('has-quote-modal');
@@ -836,9 +914,10 @@
 					calc.somvioQuoteReset({ emitClose: false });
 				}
 			}
-			if (lastFocus && typeof lastFocus.focus === 'function') {
+			if (lastFocus && document.contains(lastFocus) && typeof lastFocus.focus === 'function') {
 				lastFocus.focus();
 			}
+			lastFocus = null;
 		}
 
 		document.querySelectorAll('[data-quote-modal-open]').forEach(function (trigger) {
@@ -854,6 +933,27 @@
 		document.addEventListener('keydown', function (e) {
 			if (e.key === 'Escape' && !modal.hidden) {
 				closeModal();
+				return;
+			}
+			if (e.key !== 'Tab' || modal.hidden) {
+				return;
+			}
+			var focusable = getFocusable();
+			if (!focusable.length) {
+				e.preventDefault();
+				if (dialog) {
+					dialog.focus();
+				}
+				return;
+			}
+			var first = focusable[0];
+			var last = focusable[focusable.length - 1];
+			if (e.shiftKey && document.activeElement === first) {
+				e.preventDefault();
+				last.focus();
+			} else if (!e.shiftKey && document.activeElement === last) {
+				e.preventDefault();
+				first.focus();
 			}
 		});
 

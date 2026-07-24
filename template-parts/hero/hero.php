@@ -150,9 +150,9 @@ $somvio_render_hero_ratings = static function ( $icons_uri, $duplicate = false )
 
 		<div class="somvio-hero__reviews">
 			<p class="somvio-hero__reviews-label">
-				<span class="somvio-hero__reviews-label-line"><?php esc_html_e( 'Top rated NYC', 'somvio' ); ?></span>
+				<span class="somvio-hero__reviews-label-line"><?php esc_html_e( 'Top rated London', 'somvio' ); ?></span>
 				<span class="somvio-hero__reviews-label-line"><?php esc_html_e( 'Cleaning Services', 'somvio' ); ?></span>
-				<span class="somvio-hero__reviews-label-line"><?php esc_html_e( 'All review', 'somvio' ); ?></span>
+				<span class="somvio-hero__reviews-label-line"><?php esc_html_e( 'All reviews', 'somvio' ); ?></span>
 			</p>
 
 			<div class="somvio-hero__ratings-viewport">

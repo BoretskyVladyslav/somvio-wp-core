@@ -107,6 +107,12 @@ html {
 	scroll-behavior: smooth;
 }
 
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+}
+
 #somvio-instant-quote {
 	scroll-margin-top: calc(var(--somvio-header-height) + 16px);
 }
@@ -8642,6 +8648,18 @@ body.somvio-has-hero.single-post .site-main > * {
 	box-sizing: border-box;
 }
 
+.quote-modal .quote-calculator input:-webkit-autofill,
+.quote-modal .quote-calculator input:-webkit-autofill:hover,
+.quote-modal .quote-calculator input:-webkit-autofill:focus,
+.quote-modal .quote-calculator textarea:-webkit-autofill,
+.quote-modal .quote-calculator textarea:-webkit-autofill:hover,
+.quote-modal .quote-calculator textarea:-webkit-autofill:focus {
+	-webkit-text-fill-color: #ffffff !important;
+	caret-color: #ffffff !important;
+	-webkit-box-shadow: 0 0 0 1000px #091e2c inset !important;
+	box-shadow: 0 0 0 1000px #091e2c inset !important;
+}
+
 .quote-calculator__step {
 	display: flex;
 	flex-direction: column;
@@ -9179,7 +9197,9 @@ body.somvio-has-hero.single-post .site-main > * {
 	width: 100%;
 	max-width: 510px;
 	max-height: calc(100vh - 48px);
+	max-height: calc(100dvh - 48px);
 	overflow: auto;
+	overscroll-behavior: contain;
 }
 
 .quote-modal__dismiss {
@@ -9190,8 +9210,8 @@ body.somvio-has-hero.single-post .site-main > * {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 36px;
-	height: 36px;
+	width: 44px;
+	height: 44px;
 	padding: 0;
 	border: none;
 	border-radius: 50%;
@@ -9399,7 +9419,7 @@ body.somvio-has-hero.page-booking .site-main > * {
 
 /* -------------------------------------------------------------------------
    Block: booking-form — Figma 418:6214 / 418:6259
-   Desktop shell ~1100px; fluid grids below 900px.
+   Desktop shell 1170px; fluid grids below 1200px.
    ------------------------------------------------------------------------- */
 .booking-form {
 	display: block;
@@ -9426,7 +9446,8 @@ body.somvio-has-hero.page-booking .site-main > * {
 
 .booking-form__form {
 	width: 100%;
-	max-width: 1100px;
+	max-width: 1170px;
+	min-width: 0;
 }
 
 .booking-form__card {
@@ -9435,6 +9456,7 @@ body.somvio-has-hero.page-booking .site-main > * {
 	gap: 20px;
 	width: 100%;
 	max-width: 100%;
+	min-width: 0;
 	padding: 40px;
 	border-radius: 4px;
 	background-color: #091e2c; /* Figma 418:6214 */
@@ -9497,6 +9519,15 @@ body.somvio-has-hero.page-booking .site-main > * {
 	gap: 20px;
 	width: 100%;
 	max-width: 100%;
+}
+
+@media (min-width: 1200px) {
+	.booking-form__services,
+	.booking-form__addons,
+	.booking-form__card--step1 .booking-form__services,
+	.booking-form__card--step2 .booking-form__addons {
+		grid-template-columns: repeat(4, minmax(0, 240px));
+	}
 }
 
 .booking-form__service,
@@ -9580,10 +9611,12 @@ body.somvio-has-hero.page-booking .site-main > * {
 	left: 0;
 	width: 100vw;
 	height: 100vh;
+	height: 100dvh;
 	z-index: 9999;
 	box-sizing: border-box;
 	padding: 24px;
 	overflow-y: auto;
+	overscroll-behavior: contain;
 	-webkit-overflow-scrolling: touch;
 	background: rgba(0, 5, 14, 0.85);
 	backdrop-filter: blur(12px);
@@ -9774,6 +9807,13 @@ body.booking-form-modal-open {
 	max-width: 100%;
 }
 
+@media (min-width: 1200px) {
+	.booking-form__counters,
+	.booking-form__card--step1 .booking-form__counters {
+		grid-template-columns: repeat(4, minmax(0, 240px));
+	}
+}
+
 .booking-form__counter {
 	display: flex;
 	flex-direction: column;
@@ -9797,7 +9837,7 @@ body.booking-form-modal-open {
 @media (max-width: 599px) {
 	.booking-form__counters,
 	.booking-form__card--step1 .booking-form__counters {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-columns: 1fr;
 		gap: 12px;
 	}
 
@@ -9842,6 +9882,7 @@ body.booking-form-modal-open {
 }
 
 .booking-form__counter-btn {
+	position: relative;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -9859,6 +9900,13 @@ body.booking-form-modal-open {
 		background-color 0.2s ease,
 		color 0.2s ease,
 		opacity 0.15s ease;
+}
+
+.booking-form__counter-btn::after,
+.booking-form__cal-nav::after {
+	content: '';
+	position: absolute;
+	inset: -9px;
 }
 
 .booking-form__counter-btn:hover:not(:disabled),
@@ -9976,6 +10024,12 @@ body.booking-form-modal-open {
 	transition: background-color 5000s ease-in-out 0s;
 }
 
+.booking-form input:autofill,
+.booking-form textarea:autofill {
+	background-color: #091e2c !important;
+	color: #ffffff !important;
+}
+
 .booking-form input[type='number']::-webkit-outer-spin-button,
 .booking-form input[type='number']::-webkit-inner-spin-button {
 	-webkit-appearance: none;
@@ -9993,6 +10047,7 @@ body.booking-form-modal-open {
 	flex-direction: column;
 	gap: 5px;
 	width: 100%;
+	min-width: 0;
 }
 
 .booking-form__field--full {
@@ -10167,6 +10222,7 @@ body.booking-form-modal-open {
 }
 
 .booking-form__cal-nav {
+	position: relative;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -10333,6 +10389,7 @@ body.booking-form-modal-open {
 	justify-content: center;
 	width: 100%;
 	min-width: 0;
+	min-height: 44px;
 	padding: 10px;
 	border: 1px solid #c0c0c0;
 	border-radius: 4px;
@@ -10390,6 +10447,14 @@ body.booking-form-modal-open {
 	.booking-form__cal-weekdays,
 	.booking-form__cal-grid {
 		padding-inline: 12px;
+	}
+
+	.booking-form__cal-weekday,
+	.booking-form__cal-day {
+		width: 100%;
+		max-width: 36px;
+		height: auto;
+		aspect-ratio: 1;
 	}
 
 	.booking-form__cal-header {
@@ -10451,6 +10516,11 @@ body.booking-form-modal-open {
 	background-repeat: no-repeat;
 	background-position: center;
 	background-size: 16px;
+}
+
+.booking-form__terms-input:focus-visible + .booking-form__terms-box {
+	outline: 2px solid #33aca6;
+	outline-offset: 3px;
 }
 
 .booking-form__terms-text {
@@ -10598,6 +10668,17 @@ body.booking-form-modal-open {
 	.booking-form__success-row {
 		grid-template-columns: 1fr;
 		gap: 2px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.booking-form *,
+	.booking-form *::before,
+	.booking-form *::after {
+		scroll-behavior: auto !important;
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
 	}
 }
 
