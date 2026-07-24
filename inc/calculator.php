@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return array<string, mixed>
  */
 function somvio_get_quote_rates() {
-	$cached = get_transient( 'somvio_quote_rates_v2' );
+	$cached = get_transient( 'somvio_quote_rates_v3' );
 	if ( false !== $cached && is_array( $cached ) ) {
 		return $cached;
 	}
@@ -56,36 +56,27 @@ function somvio_get_quote_rates() {
 			'09:00-11:00',
 			'13:00-15:00',
 		),
+		/* Figma 418:6213 Extra Services (booking form). */
 		'addons'           => array(
-			'inside-fridge'     => array(
-				'label' => __( 'Inside Fridge', 'somvio' ),
-				'price' => 15,
-				'icon'  => 'icon-room-kitchen',
+			'carpet-shampoo'     => array(
+				'label' => __( 'Carpet Shampoo (per Room)', 'somvio' ),
+				'price' => 35,
+				'icon'  => 'icon-addon-carpet.png',
 			),
-			'oven-cleaning'     => array(
-				'label' => __( 'Oven Cleaning', 'somvio' ),
-				'price' => 20,
-				'icon'  => 'icon-sparkle',
-			),
-			'interior-windows'  => array(
-				'label' => __( 'Interior Windows', 'somvio' ),
-				'price' => 25,
-				'icon'  => 'icon-leaf',
-			),
-			'balcony'           => array(
-				'label' => __( 'Balcony', 'somvio' ),
-				'price' => 18,
-				'icon'  => 'icon-sofa',
-			),
-			'ironing'           => array(
-				'label' => __( 'Ironing', 'somvio' ),
-				'price' => 30,
-				'icon'  => 'icon-shield',
+			'oven-cleaning'      => array(
+				'label' => __( 'Deep Oven Clean', 'somvio' ),
+				'price' => 35,
+				'icon'  => 'icon-addon-oven.png',
 			),
 			'fridge-and-freezer' => array(
-				'label' => __( 'Fridge & Freezer', 'somvio' ),
-				'price' => 25,
-				'icon'  => 'icon-room-kitchen',
+				'label' => __( 'Fridge/Freezer Clean (internal)', 'somvio' ),
+				'price' => 35,
+				'icon'  => 'icon-addon-fridge.png',
+			),
+			'white-goods'        => array(
+				'label' => __( 'White Goods (internal)', 'somvio' ),
+				'price' => 35,
+				'icon'  => 'icon-addon-white-goods.png',
 			),
 		),
 	);
@@ -97,7 +88,7 @@ function somvio_get_quote_rates() {
 	 */
 	$rates = apply_filters( 'somvio_quote_rates', $rates );
 
-	set_transient( 'somvio_quote_rates_v2', $rates, HOUR_IN_SECONDS );
+	set_transient( 'somvio_quote_rates_v3', $rates, HOUR_IN_SECONDS );
 
 	return $rates;
 }
@@ -376,13 +367,24 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	$property  = sanitize_key( (string) $request['property'] );
 	$bedrooms  = absint( $request['bedrooms'] );
 	$bathrooms = absint( $request['bathrooms'] );
+	$toilets   = absint( $request['toilets'] ?? 0 );
+	$kitchens  = absint( $request['kitchens'] ?? 0 );
 	$date      = sanitize_text_field( (string) $request['date'] );
 	$time      = sanitize_text_field( (string) $request['time'] );
+	$first     = sanitize_text_field( (string) ( $request['first_name'] ?? '' ) );
+	$last      = sanitize_text_field( (string) ( $request['last_name'] ?? '' ) );
 	$name      = sanitize_text_field( (string) $request['name'] );
 	$email     = sanitize_email( (string) $request['email'] );
 	$phone     = sanitize_text_field( (string) $request['phone'] );
+	$address   = sanitize_text_field( (string) ( $request['address'] ?? '' ) );
 	$comment   = sanitize_textarea_field( (string) $request['comment'] );
 	$addons    = somvio_rest_sanitize_string_list( $request['addons'] ?? array() );
+	$terms     = (bool) $request['terms_accepted'];
+	$source    = sanitize_key( (string) ( $request['source'] ?? 'quote' ) );
+
+	if ( '' === $property ) {
+		$property = 'house';
+	}
 
 	$services  = somvio_get_quote_service_options();
 	$props     = somvio_get_quote_property_options();
@@ -398,6 +400,12 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	if ( $bedrooms < 1 || $bedrooms > 5 || $bathrooms < 1 || $bathrooms > 4 ) {
 		return new WP_Error( 'invalid_rooms', __( 'Invalid room counts.', 'somvio' ), array( 'status' => 400 ) );
 	}
+	if ( $toilets > 0 && ( $toilets < 1 || $toilets > 5 ) ) {
+		return new WP_Error( 'invalid_rooms', __( 'Invalid room counts.', 'somvio' ), array( 'status' => 400 ) );
+	}
+	if ( $kitchens > 0 && ( $kitchens < 1 || $kitchens > 5 ) ) {
+		return new WP_Error( 'invalid_rooms', __( 'Invalid room counts.', 'somvio' ), array( 'status' => 400 ) );
+	}
 	if ( '' === $date || ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) ) {
 		return new WP_Error( 'invalid_date', __( 'Invalid date.', 'somvio' ), array( 'status' => 400 ) );
 	}
@@ -405,7 +413,12 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 		return new WP_Error( 'invalid_time', __( 'Invalid time slot.', 'somvio' ), array( 'status' => 400 ) );
 	}
 
-	$name = trim( $name );
+	if ( '' !== $first || '' !== $last ) {
+		$name = trim( $first . ' ' . $last );
+	} else {
+		$name = trim( $name );
+	}
+
 	if ( strlen( $name ) < 2 ) {
 		return new WP_Error( 'invalid_name', __( 'Please enter your full name.', 'somvio' ), array( 'status' => 400 ) );
 	}
@@ -414,6 +427,15 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	}
 	if ( ! somvio_is_valid_quote_phone( $phone ) ) {
 		return new WP_Error( 'invalid_phone', __( 'Please enter a valid phone number.', 'somvio' ), array( 'status' => 400 ) );
+	}
+
+	if ( 'booking' === $source ) {
+		if ( strlen( trim( $address ) ) < 3 ) {
+			return new WP_Error( 'invalid_address', __( 'Please enter your street address.', 'somvio' ), array( 'status' => 400 ) );
+		}
+		if ( ! $terms ) {
+			return new WP_Error( 'terms_required', __( 'Please accept the Terms & Conditions and Privacy Policy.', 'somvio' ), array( 'status' => 400 ) );
+		}
 	}
 
 	foreach ( $addons as $addon_key ) {
@@ -437,18 +459,25 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	}
 
 	$payload = array(
-		'service'   => $service,
-		'property'  => $property,
-		'bedrooms'  => $bedrooms,
-		'bathrooms' => $bathrooms,
-		'date'      => $date,
-		'time'      => $time,
-		'name'      => $name,
-		'email'     => $email,
-		'phone'     => $phone,
-		'comment'   => $comment,
-		'addons'    => $addons,
-		'total'     => $server_total,
+		'service'         => $service,
+		'property'        => $property,
+		'bedrooms'        => $bedrooms,
+		'bathrooms'       => $bathrooms,
+		'toilets'         => $toilets,
+		'kitchens'        => $kitchens,
+		'date'            => $date,
+		'time'            => $time,
+		'first_name'      => $first,
+		'last_name'       => $last,
+		'name'            => $name,
+		'email'           => $email,
+		'phone'           => $phone,
+		'address'         => $address,
+		'comment'         => $comment,
+		'addons'          => $addons,
+		'terms_accepted'  => $terms,
+		'source'          => $source,
+		'total'           => $server_total,
 	);
 
 	/**
@@ -533,13 +562,54 @@ function somvio_register_quote_rest_routes() {
 					'default'           => '',
 					'sanitize_callback' => 'sanitize_textarea_field',
 				),
-				'addons'       => array(
+				'addons'          => array(
 					'required'          => false,
 					'type'              => 'array',
 					'default'           => array(),
 					'sanitize_callback' => 'somvio_rest_sanitize_string_list',
 				),
-				'client_total' => array(
+				'toilets'         => array(
+					'required'          => false,
+					'type'              => 'integer',
+					'default'           => 0,
+					'sanitize_callback' => 'absint',
+				),
+				'kitchens'        => array(
+					'required'          => false,
+					'type'              => 'integer',
+					'default'           => 0,
+					'sanitize_callback' => 'absint',
+				),
+				'first_name'      => array(
+					'required'          => false,
+					'type'              => 'string',
+					'default'           => '',
+					'sanitize_callback' => 'sanitize_text_field',
+				),
+				'last_name'       => array(
+					'required'          => false,
+					'type'              => 'string',
+					'default'           => '',
+					'sanitize_callback' => 'sanitize_text_field',
+				),
+				'address'         => array(
+					'required'          => false,
+					'type'              => 'string',
+					'default'           => '',
+					'sanitize_callback' => 'sanitize_text_field',
+				),
+				'terms_accepted'  => array(
+					'required' => false,
+					'type'     => 'boolean',
+					'default'  => false,
+				),
+				'source'          => array(
+					'required'          => false,
+					'type'              => 'string',
+					'default'           => 'quote',
+					'sanitize_callback' => 'sanitize_key',
+				),
+				'client_total'    => array(
 					'required' => false,
 					'type'     => 'number',
 				),

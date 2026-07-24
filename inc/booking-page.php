@@ -1,8 +1,8 @@
 <?php
 /**
- * Booking page — hero body class for transparent header merge.
+ * Booking page — hero body class, form assets.
  *
- * Figma node: 418:6207
+ * Figma nodes: 418:6207 (hero), 418:6213 (form + summary)
  *
  * @package Somvio_Child
  */
@@ -42,3 +42,93 @@ function somvio_booking_body_class( $classes ) {
 	return $classes;
 }
 add_filter( 'body_class', 'somvio_booking_body_class' );
+
+/**
+ * Enqueue booking form script (dedicated funnel; modal calculator stays separate).
+ *
+ * @return void
+ */
+function somvio_enqueue_booking_form_assets() {
+	if ( ! somvio_is_booking_page() ) {
+		return;
+	}
+
+	$script_path = get_stylesheet_directory() . '/assets/js/booking-form.js';
+
+	if ( ! file_exists( $script_path ) ) {
+		return;
+	}
+
+	wp_enqueue_script(
+		'somvio-booking-form',
+		get_stylesheet_directory_uri() . '/assets/js/booking-form.js',
+		array(),
+		(string) filemtime( $script_path ),
+		true
+	);
+
+	$privacy_url = function_exists( 'somvio_get_privacy_policy_page_id' )
+		? get_permalink( somvio_get_privacy_policy_page_id() )
+		: home_url( '/privacy-policy/' );
+	$terms_id    = function_exists( 'somvio_get_page_id_by_slug' )
+		? somvio_get_page_id_by_slug( 'terms-of-use' )
+		: 0;
+	$terms_url   = $terms_id > 0 ? get_permalink( $terms_id ) : home_url( '/terms-of-use/' );
+
+	wp_localize_script(
+		'somvio-booking-form',
+		'somvioBookingForm',
+		array(
+			'restUrl' => esc_url_raw( rest_url( 'somvio/v1/quote/submit' ) ),
+			'nonce'   => wp_create_nonce( 'wp_rest' ),
+			'rates'   => function_exists( 'somvio_get_quote_rates' ) ? somvio_get_quote_rates() : array(),
+			'services'=> function_exists( 'somvio_get_quote_service_options' ) ? somvio_get_quote_service_options() : array(),
+			'i18n'    => array(
+				'stepOf'         => __( 'Step %1$d of %2$d', 'somvio' ),
+				'selectDate'     => __( 'Select date', 'somvio' ),
+				'selectTime'     => __( 'Please select a time slot.', 'somvio' ),
+				'selectService'  => __( 'Please select a service.', 'somvio' ),
+				'nextStep'       => __( 'Next Step', 'somvio' ),
+				'back'           => __( 'Back', 'somvio' ),
+				'complete'       => __( 'Complete Booking', 'somvio' ),
+				'submitting'     => __( 'Submitting…', 'somvio' ),
+				'required'       => __( 'Please complete the required fields.', 'somvio' ),
+				'invalidEmail'   => __( 'Please enter a valid email address.', 'somvio' ),
+				'invalidPhone'   => __( 'Please enter a valid phone number.', 'somvio' ),
+				'invalidName'    => __( 'Please enter your name.', 'somvio' ),
+				'invalidAddress' => __( 'Please enter your street address.', 'somvio' ),
+				'termsRequired'  => __( 'Please accept the Terms & Conditions and Privacy Policy.', 'somvio' ),
+				'submitError'    => __( 'Something went wrong. Please try again.', 'somvio' ),
+				'estimatedTotal' => __( 'Estimated total', 'somvio' ),
+				'none'           => __( 'None', 'somvio' ),
+				'notSelected'    => __( 'Not selected', 'somvio' ),
+				'months'         => array(
+					__( 'January', 'somvio' ),
+					__( 'February', 'somvio' ),
+					__( 'March', 'somvio' ),
+					__( 'April', 'somvio' ),
+					__( 'May', 'somvio' ),
+					__( 'June', 'somvio' ),
+					__( 'July', 'somvio' ),
+					__( 'August', 'somvio' ),
+					__( 'September', 'somvio' ),
+					__( 'October', 'somvio' ),
+					__( 'November', 'somvio' ),
+					__( 'December', 'somvio' ),
+				),
+				'weekdays'       => array(
+					__( 'S', 'somvio' ),
+					__( 'M', 'somvio' ),
+					__( 'T', 'somvio' ),
+					__( 'W', 'somvio' ),
+					__( 'T', 'somvio' ),
+					__( 'F', 'somvio' ),
+					__( 'S', 'somvio' ),
+				),
+			),
+			'privacyUrl' => esc_url_raw( $privacy_url ? (string) $privacy_url : home_url( '/privacy-policy/' ) ),
+			'termsUrl'   => esc_url_raw( $terms_url ? (string) $terms_url : home_url( '/terms-of-use/' ) ),
+		)
+	);
+}
+add_action( 'wp_enqueue_scripts', 'somvio_enqueue_booking_form_assets' );

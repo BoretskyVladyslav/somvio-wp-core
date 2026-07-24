@@ -3,9 +3,9 @@
  * Template Name: Booking
  *
  * Booking landing. Hero is the first full-width block inside main;
- * quote calculator follows in the page body. No pre-footer CTA.
+ * booking form + order summary follow (Figma 418:6213). No pre-footer CTA.
  *
- * Figma node: 418:6207 (hero)
+ * Figma nodes: 418:6207 (hero), 418:6213 (form)
  *
  * @package Somvio_Child
  */
@@ -30,13 +30,13 @@ get_header();
 			get_template_part( 'template-parts/sections/booking', 'hero' );
 
 			/**
-			 * Booking page body sections (calculator, future blocks).
+			 * Booking page body sections (future blocks above form).
 			 *
 			 * @since 1.0.0
 			 */
 			do_action( 'somvio_booking_page_content' );
 
-			get_template_part( 'template-parts/sections/booking', 'quote' );
+			get_template_part( 'template-parts/sections/booking', 'form' );
 
 			if ( generate_has_default_loop() ) {
 				while ( have_posts() ) :
