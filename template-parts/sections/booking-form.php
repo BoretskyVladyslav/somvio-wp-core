@@ -186,8 +186,8 @@ $somvio_bf_counters = array(
 				</div>
 			</div>
 
-			<?php /* —— Step 2: Extra Services —— */ ?>
-			<div class="booking-form__card" data-booking-step="2" data-booking-panel hidden>
+			<?php /* —— Step 2: Extra Services — Figma 418:6259 —— */ ?>
+			<div class="booking-form__card booking-form__card--step2" data-booking-step="2" data-booking-panel hidden>
 				<h2 class="booking-form__step-title">
 					<span class="booking-form__step-num" aria-hidden="true">2.</span>
 					<?php esc_html_e( 'Extra Services', 'somvio' ); ?>
@@ -199,7 +199,14 @@ $somvio_bf_counters = array(
 						$somvio_bf_alabel = isset( $somvio_bf_addon['label'] ) ? (string) $somvio_bf_addon['label'] : $somvio_bf_akey;
 						$somvio_bf_aprice = isset( $somvio_bf_addon['price'] ) ? (float) $somvio_bf_addon['price'] : 0;
 						$somvio_bf_aicon  = isset( $somvio_bf_addon['icon'] ) ? (string) $somvio_bf_addon['icon'] : '';
-						$somvio_bf_auri   = '' !== $somvio_bf_aicon ? $somvio_bf_icons_uri . $somvio_bf_aicon : '';
+						$somvio_bf_auri   = '';
+						if ( '' !== $somvio_bf_aicon ) {
+							$somvio_bf_auri  = $somvio_bf_icons_uri . $somvio_bf_aicon;
+							$somvio_bf_apath = get_stylesheet_directory() . '/assets/icons/' . $somvio_bf_aicon;
+							if ( file_exists( $somvio_bf_apath ) ) {
+								$somvio_bf_auri .= '?v=' . rawurlencode( (string) filemtime( $somvio_bf_apath ) );
+							}
+						}
 						?>
 						<button
 							type="button"
@@ -221,6 +228,7 @@ $somvio_bf_counters = array(
 										alt=""
 										width="60"
 										height="60"
+										decoding="async"
 									>
 								<?php endif; ?>
 							</span>
@@ -246,6 +254,7 @@ $somvio_bf_counters = array(
 						</button>
 					<?php endforeach; ?>
 				</div>
+				<input type="hidden" name="addons" data-booking-field="addons" value="">
 
 				<div class="booking-form__footer">
 					<button type="button" class="booking-form__back btn btn--outline btn--has-icon" data-booking-back>

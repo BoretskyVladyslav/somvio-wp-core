@@ -266,6 +266,10 @@
 				btn.classList.toggle('is-selected', on);
 				btn.setAttribute('aria-pressed', on ? 'true' : 'false');
 			});
+			var addonsField = field('addons');
+			if (addonsField) {
+				addonsField.value = state.addons.join(',');
+			}
 		}
 
 		function renderSlots() {

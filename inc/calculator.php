@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return array<string, mixed>
  */
 function somvio_get_quote_rates() {
-	$cached = get_transient( 'somvio_quote_rates_v4' );
+	$cached = get_transient( 'somvio_quote_rates_v5' );
 	if ( false !== $cached && is_array( $cached ) ) {
 		return $cached;
 	}
@@ -55,27 +55,27 @@ function somvio_get_quote_rates() {
 			'09:00-11:00',
 			'13:00-15:00',
 		),
-		/* Figma 418:6213 Extra Services (booking form). */
+		/* Figma 418:6259 Extra Services (booking form). */
 		'addons'           => array(
 			'carpet-shampoo'     => array(
 				'label' => __( 'Carpet Shampoo (per Room)', 'somvio' ),
 				'price' => 35,
-				'icon'  => 'icon-addon-carpet.png',
+				'icon'  => 'icon-addon-carpet.svg',
 			),
 			'oven-cleaning'      => array(
 				'label' => __( 'Deep Oven Clean', 'somvio' ),
 				'price' => 35,
-				'icon'  => 'icon-addon-oven.png',
+				'icon'  => 'icon-addon-oven.svg',
 			),
 			'fridge-and-freezer' => array(
 				'label' => __( 'Fridge/Freezer Clean (internal)', 'somvio' ),
 				'price' => 35,
-				'icon'  => 'icon-addon-fridge.png',
+				'icon'  => 'icon-addon-fridge.svg',
 			),
 			'white-goods'        => array(
 				'label' => __( 'White Goods (internal)', 'somvio' ),
 				'price' => 35,
-				'icon'  => 'icon-addon-white-goods.png',
+				'icon'  => 'icon-addon-white-goods.svg',
 			),
 		),
 	);
@@ -87,7 +87,7 @@ function somvio_get_quote_rates() {
 	 */
 	$rates = apply_filters( 'somvio_quote_rates', $rates );
 
-	set_transient( 'somvio_quote_rates_v4', $rates, HOUR_IN_SECONDS );
+	set_transient( 'somvio_quote_rates_v5', $rates, HOUR_IN_SECONDS );
 
 	return $rates;
 }
