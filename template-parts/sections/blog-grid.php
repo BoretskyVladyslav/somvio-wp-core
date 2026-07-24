@@ -145,13 +145,13 @@ $somvio_posts = array(
 ?>
 <section class="blog-grid" aria-label="<?php esc_attr_e( 'Blog articles', 'somvio' ); ?>">
 	<div class="blog-grid__inner">
-		<div class="blog-grid__featured reveal-on-scroll" data-blog-featured>
+		<div class="blog-grid__featured" data-blog-featured>
 			<?php
 			$somvio_featured_main = $somvio_featured[0];
 			$somvio_featured_side = array_slice( $somvio_featured, 1 );
 			$somvio_main_img      = $somvio_blog_image( $somvio_featured_main['image'] );
 			?>
-			<article class="blog-card blog-card--featured">
+			<article class="blog-card blog-card--featured reveal-on-scroll">
 				<?php if ( $somvio_main_img['exists'] ) : ?>
 					<a class="blog-card__media" href="<?php echo esc_url( $somvio_featured_main['url'] ); ?>" tabindex="-1" aria-hidden="true">
 						<img
@@ -180,9 +180,12 @@ $somvio_posts = array(
 			</article>
 
 			<div class="blog-grid__featured-side">
-				<?php foreach ( $somvio_featured_side as $somvio_side_post ) : ?>
+				<?php foreach ( $somvio_featured_side as $somvio_side_index => $somvio_side_post ) : ?>
 					<?php $somvio_side_img = $somvio_blog_image( $somvio_side_post['image'] ); ?>
-					<article class="blog-card blog-card--horizontal">
+					<article
+						class="blog-card blog-card--horizontal reveal-on-scroll"
+						style="--reveal-delay: <?php echo esc_attr( (string) ( 0.05 + ( $somvio_side_index * 0.05 ) ) ); ?>s;"
+					>
 						<?php if ( $somvio_side_img['exists'] ) : ?>
 							<a class="blog-card__media" href="<?php echo esc_url( $somvio_side_post['url'] ); ?>" tabindex="-1" aria-hidden="true">
 								<img
@@ -235,11 +238,12 @@ $somvio_posts = array(
 			</div>
 		</div>
 
-		<div class="blog-grid__posts reveal-on-scroll" style="--reveal-delay: 0.1s;" data-blog-posts>
-			<?php foreach ( $somvio_posts as $somvio_post ) : ?>
+		<div class="blog-grid__posts" data-blog-posts>
+			<?php foreach ( $somvio_posts as $somvio_post_index => $somvio_post ) : ?>
 				<?php $somvio_post_img = $somvio_blog_image( $somvio_post['image'] ); ?>
 				<article
-					class="blog-card blog-card--grid"
+					class="blog-card blog-card--grid reveal-on-scroll"
+					style="--reveal-delay: <?php echo esc_attr( (string) ( $somvio_post_index * 0.05 ) ); ?>s;"
 					data-blog-category="<?php echo esc_attr( $somvio_post['category'] ); ?>"
 				>
 					<?php if ( $somvio_post_img['exists'] ) : ?>

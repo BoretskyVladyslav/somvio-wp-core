@@ -6596,6 +6596,15 @@ body.somvio-has-hero.page-template-page-blog-php .site-main > * {
 	width: 100%;
 	max-width: 1360px;
 	margin-inline: auto;
+	min-width: 0;
+}
+
+.blog-grid .reveal-on-scroll {
+	transform: translateY(20px);
+}
+
+.blog-grid .reveal-on-scroll.is-revealed {
+	transform: translateY(0);
 }
 
 .blog-grid__featured {
@@ -6625,10 +6634,12 @@ body.somvio-has-hero.page-template-page-blog-php .site-main > * {
 	flex-direction: column;
 	align-items: stretch;
 	min-width: 0;
+	max-width: 100%;
 	overflow: hidden;
 	border-radius: 4px;
 	background-color: var(--somvio-color-bg);
 	color: var(--somvio-color-text);
+	box-sizing: border-box;
 }
 
 .blog-card--featured {
@@ -6788,6 +6799,7 @@ body.somvio-has-hero.page-template-page-blog-php .site-main > * {
 	gap: 15px;
 	width: 100%;
 	max-width: 1170px;
+	min-width: 0;
 }
 
 .blog-grid__categories-title {
@@ -6851,6 +6863,7 @@ body.somvio-has-hero.page-template-page-blog-php .site-main > * {
 	justify-items: stretch;
 	width: 100%;
 	max-width: 1170px;
+	min-width: 0;
 }
 
 .blog-grid__posts > .blog-card.is-filtered-out,
@@ -6900,6 +6913,7 @@ body.somvio-has-hero.page-template-page-blog-php .site-main > * {
 @media (max-width: 767px) {
 	.blog-grid {
 		padding: 40px 20px;
+		overflow-x: clip;
 	}
 
 	.blog-grid__inner {
@@ -6907,12 +6921,15 @@ body.somvio-has-hero.page-template-page-blog-php .site-main > * {
 	}
 
 	.blog-grid__featured {
+		flex-direction: column;
+		align-items: stretch;
 		padding: 20px;
 		gap: 20px;
 	}
 
 	.blog-grid__featured-side {
 		gap: 20px;
+		max-width: none;
 	}
 
 	.blog-card--featured .blog-card__media,
@@ -6939,8 +6956,13 @@ body.somvio-has-hero.page-template-page-blog-php .site-main > * {
 		justify-content: flex-start;
 		overflow-x: auto;
 		-webkit-overflow-scrolling: touch;
-		scrollbar-width: thin;
+		overscroll-behavior-x: contain;
+		scrollbar-width: none;
 		padding-bottom: 4px;
+	}
+
+	.blog-grid__filters::-webkit-scrollbar {
+		display: none;
 	}
 
 	.blog-grid__filter {
@@ -6955,6 +6977,35 @@ body.somvio-has-hero.page-template-page-blog-php .site-main > * {
 	.blog-card--featured .blog-card__body,
 	.blog-card--grid .blog-card__body {
 		padding: 20px;
+	}
+
+	.blog-card--horizontal .blog-card__body {
+		padding: 20px;
+	}
+}
+
+@media (max-width: 479px) {
+	.blog-grid {
+		padding: 32px 16px;
+	}
+
+	.blog-grid__featured {
+		padding: 16px;
+		gap: 16px;
+	}
+
+	.blog-grid__featured-side {
+		gap: 16px;
+	}
+
+	.blog-grid__posts {
+		gap: 16px;
+	}
+
+	.blog-card--featured .blog-card__body,
+	.blog-card--grid .blog-card__body,
+	.blog-card--horizontal .blog-card__body {
+		padding: 16px;
 	}
 }
 
