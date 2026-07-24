@@ -9139,3 +9139,184 @@ body.somvio-has-hero.single-post .site-main > * {
 html.has-quote-modal {
 	overflow: hidden;
 }
+
+/* -------------------------------------------------------------------------
+   Block: booking-hero — Figma 418:6207
+   Full-bleed dark hero (#00050e); breadcrumbs + title + lead.
+   Must stay a block-level section inside main (never a .site-content flex sibling).
+   ------------------------------------------------------------------------- */
+.booking-hero {
+	display: block !important;
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	float: none !important;
+	clear: both;
+	flex: none !important;
+	width: 100% !important;
+	max-width: none;
+	margin: 0;
+	margin-top: 0 !important;
+	padding: 0;
+	padding-top: 0 !important;
+	box-sizing: border-box;
+	color: var(--somvio-color-text);
+	background-color: var(--somvio-color-header-bg-alt);
+}
+
+body.somvio-has-hero.page-template-page-booking-php .site-content,
+body.somvio-has-hero.page-booking .site-content,
+body.somvio-has-hero.page-template-page-booking-php .content-area,
+body.somvio-has-hero.page-booking .content-area,
+body.somvio-has-hero.page-template-page-booking-php .site-main,
+body.somvio-has-hero.page-booking .site-main {
+	display: block !important;
+	float: none !important;
+	flex: none !important;
+	width: 100% !important;
+	max-width: none;
+}
+
+body.somvio-has-hero.page-template-page-booking-php .site-main > *,
+body.somvio-has-hero.page-booking .site-main > * {
+	display: block;
+	float: none !important;
+	flex: none !important;
+	width: 100% !important;
+	max-width: none;
+	margin-inline: 0;
+}
+
+.site-main > .booking-hero,
+#primary > .booking-hero,
+#main > .booking-hero {
+	display: block !important;
+	float: none !important;
+	flex: none !important;
+	width: 100% !important;
+	max-width: none;
+	margin-inline: 0;
+}
+
+.somvio-header + .booking-hero,
+#masthead + .booking-hero,
+.site-header + .booking-hero {
+	margin-top: 0 !important;
+}
+
+.booking-hero__bg {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	background-color: var(--somvio-color-header-bg-alt);
+}
+
+.booking-hero__inner {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 20px;
+	width: 100%;
+	max-width: 1170px;
+	margin-inline: auto;
+	/* Figma 418:6207: py 60px below fixed header */
+	padding: calc(var(--somvio-header-height) + 60px) var(--somvio-container-pad) 60px;
+	box-sizing: border-box;
+}
+
+.booking-hero__breadcrumbs {
+	width: 100%;
+}
+
+.booking-hero__breadcrumb-list {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.booking-hero__breadcrumb-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: var(--somvio-font-size-base); /* 16px */
+	font-weight: 400;
+	line-height: 1.4;
+}
+
+.booking-hero__breadcrumb-link {
+	color: var(--somvio-color-text);
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+	transition: color var(--somvio-transition);
+}
+
+.booking-hero__breadcrumb-link:hover,
+.booking-hero__breadcrumb-link:focus-visible {
+	color: var(--somvio-color-accent);
+}
+
+.booking-hero__breadcrumb-sep {
+	display: inline-flex;
+	flex-shrink: 0;
+	width: 18px;
+	height: 18px;
+	color: var(--somvio-color-text);
+}
+
+.booking-hero__breadcrumb-sep svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.booking-hero__breadcrumb-current {
+	color: var(--somvio-color-text);
+}
+
+.booking-hero__title {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(2.25rem, 1.2rem + 3vw, 4.5rem); /* → 72px */
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.booking-hero__text {
+	margin: 0;
+	max-width: 518px;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem); /* → 20px */
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--somvio-color-text);
+}
+
+@media (max-width: 767px) {
+	.booking-hero__inner {
+		padding:
+			calc(var(--somvio-header-height) + 40px + env(safe-area-inset-top, 0px))
+			20px
+			40px;
+		gap: 16px;
+	}
+
+	.booking-hero__title {
+		font-size: 2.5rem; /* 40px */
+	}
+
+	.booking-hero__text {
+		max-width: none;
+	}
+}

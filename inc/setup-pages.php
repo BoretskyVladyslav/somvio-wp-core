@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** @var int Bump to re-run page seeding on admin_init / theme switch. */
-const SOMVIO_CORE_PAGES_VERSION = 9;
+const SOMVIO_CORE_PAGES_VERSION = 10;
 
 /**
  * Core pages to ensure exist (slug => title).
@@ -231,6 +231,38 @@ function somvio_ensure_faq_page() {
 }
 
 /**
+ * Ensure the Booking page exists with the Booking template.
+ *
+ * @return int Page ID or 0.
+ */
+function somvio_ensure_booking_page() {
+	$page_id = somvio_ensure_page( 'booking', 'Booking' );
+
+	if ( $page_id <= 0 ) {
+		return 0;
+	}
+
+	$page = get_post( $page_id );
+
+	if ( $page instanceof WP_Post && 'publish' !== $page->post_status ) {
+		wp_update_post(
+			array(
+				'ID'          => $page_id,
+				'post_status' => 'publish',
+			)
+		);
+	}
+
+	$template = get_post_meta( $page_id, '_wp_page_template', true );
+
+	if ( 'page-booking.php' !== $template ) {
+		update_post_meta( $page_id, '_wp_page_template', 'page-booking.php' );
+	}
+
+	return $page_id;
+}
+
+/**
  * Ensure the Blog page exists with the Blog template.
  *
  * @return int Page ID or 0.
@@ -405,6 +437,11 @@ function somvio_setup_core_pages() {
 
 			if ( 'faq' === $slug ) {
 				$page_ids[ $slug ] = somvio_ensure_faq_page();
+				continue;
+			}
+
+			if ( 'booking' === $slug ) {
+				$page_ids[ $slug ] = somvio_ensure_booking_page();
 				continue;
 			}
 

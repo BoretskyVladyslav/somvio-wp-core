@@ -2,7 +2,10 @@
 /**
  * Template Name: Booking
  *
- * Dedicated booking / instant quote page.
+ * Booking landing. Hero is the first full-width block inside main;
+ * quote calculator follows in the page body. No pre-footer CTA.
+ *
+ * Figma node: 418:6207 (hero)
  *
  * @package Somvio_Child
  */
@@ -24,7 +27,17 @@ get_header();
 			 */
 			do_action( 'generate_before_main_content' );
 
-			// Calculator is injected via generate_after_header in inc/calculator.php.
+			get_template_part( 'template-parts/sections/booking', 'hero' );
+
+			/**
+			 * Booking page body sections (calculator, future blocks).
+			 *
+			 * @since 1.0.0
+			 */
+			do_action( 'somvio_booking_page_content' );
+
+			get_template_part( 'template-parts/sections/booking', 'quote' );
+
 			if ( generate_has_default_loop() ) {
 				while ( have_posts() ) :
 					the_post();

@@ -548,17 +548,3 @@ function somvio_register_quote_rest_routes() {
 	);
 }
 add_action( 'rest_api_init', 'somvio_register_quote_rest_routes' );
-
-/**
- * Render booking page calculator section.
- *
- * @return void
- */
-function somvio_render_booking_quote() {
-	if ( ! is_page( 'booking' ) ) {
-		return;
-	}
-
-	get_template_part( 'template-parts/sections/booking', 'quote' );
-}
-add_action( 'generate_after_header', 'somvio_render_booking_quote', 12 );

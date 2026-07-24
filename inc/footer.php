@@ -93,7 +93,7 @@ add_action( 'after_setup_theme', 'somvio_replace_default_footer', 20 );
 /**
  * Whether the current view should omit the pre-footer CTA banner.
  *
- * Privacy Policy, Terms of Use, and 404 go straight to the footer.
+ * Privacy Policy, Terms of Use, Booking, and 404 go straight to the footer.
  *
  * @return bool
  */
@@ -107,6 +107,10 @@ function somvio_should_skip_cta_banner() {
 	}
 
 	if ( is_page( 'terms-of-use' ) || is_page_template( 'page-terms-of-use.php' ) ) {
+		return true;
+	}
+
+	if ( is_page( 'booking' ) || is_page_template( 'page-booking.php' ) ) {
 		return true;
 	}
 
