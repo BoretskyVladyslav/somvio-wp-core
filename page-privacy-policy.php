@@ -3,6 +3,9 @@
  * Template Name: Privacy Policy
  *
  * Legal shell — full-width main, no pre-footer CTA.
+ * Hero is the first full-width block inside main.
+ *
+ * Figma node: 300:2218 (hero)
  *
  * @package Somvio_Child
  */
@@ -24,8 +27,19 @@ get_header();
 			 */
 			do_action( 'generate_before_main_content' );
 
+			get_template_part(
+				'template-parts/sections/legal',
+				'hero',
+				array(
+					'title'      => __( 'Privacy Policy', 'somvio' ),
+					'breadcrumb' => __( 'Privacy Policy', 'somvio' ),
+					'lead'       => __( 'Last Updated: June 2026', 'somvio' ),
+					'aria_label' => __( 'Privacy Policy', 'somvio' ),
+				)
+			);
+
 			/**
-			 * Privacy Policy page body (hero / content sections).
+			 * Privacy Policy page body (content sections).
 			 *
 			 * @since 1.0.0
 			 */

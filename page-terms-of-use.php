@@ -3,6 +3,9 @@
  * Template Name: Terms of Use
  *
  * Legal shell — full-width main, no pre-footer CTA.
+ * Hero is the first full-width block inside main.
+ *
+ * Figma node: 300:2239 (hero)
  *
  * @package Somvio_Child
  */
@@ -24,8 +27,19 @@ get_header();
 			 */
 			do_action( 'generate_before_main_content' );
 
+			get_template_part(
+				'template-parts/sections/legal',
+				'hero',
+				array(
+					'title'      => __( 'Terms & Conditions', 'somvio' ),
+					'breadcrumb' => __( 'Terms of Use', 'somvio' ),
+					'lead'       => __( 'Please read these Terms carefully before booking our services.', 'somvio' ),
+					'aria_label' => __( 'Terms of Use', 'somvio' ),
+				)
+			);
+
 			/**
-			 * Terms of Use page body (hero / content sections).
+			 * Terms of Use page body (content sections).
 			 *
 			 * @since 1.0.0
 			 */
