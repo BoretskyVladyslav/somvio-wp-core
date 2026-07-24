@@ -655,10 +655,59 @@
 			updateNextAvailability();
 		}
 
+		function closeSuccessModal() {
+			var modal = root.querySelector('[data-booking-success-modal]');
+			root.classList.remove('is-success');
+			document.body.classList.remove('booking-form-modal-open');
+			if (!modal) {
+				return;
+			}
+			modal.classList.remove('is-open');
+			modal.hidden = true;
+			modal.setAttribute('aria-hidden', 'true');
+		}
+
+		function openSuccessModal() {
+			state.step = SUCCESS_STEP;
+			state.submitting = false;
+			root.setAttribute('data-step', String(SUCCESS_STEP));
+			root.classList.add('is-success');
+			renderSuccessRecap();
+			setLoading(false);
+			updateStepLabels(SUCCESS_STEP);
+			updateNextAvailability();
+
+			var modal = root.querySelector('[data-booking-success-modal]');
+			if (modal) {
+				modal.hidden = false;
+				modal.setAttribute('aria-hidden', 'false');
+				/* Force reflow so open animation restarts */
+				void modal.offsetWidth;
+				modal.classList.add('is-open');
+				document.body.classList.add('booking-form-modal-open');
+				var homeBtn = modal.querySelector('.booking-form__success-home');
+				if (homeBtn && typeof homeBtn.focus === 'function') {
+					homeBtn.focus();
+				}
+			}
+
+			root.dispatchEvent(
+				new CustomEvent('somvio:booking-step', {
+					bubbles: true,
+					detail: { step: SUCCESS_STEP },
+				})
+			);
+		}
+
 		function setStep(step) {
+			if (step === SUCCESS_STEP) {
+				openSuccessModal();
+				return;
+			}
+
+			closeSuccessModal();
 			state.step = step;
 			root.setAttribute('data-step', String(step));
-			root.classList.toggle('is-success', step === SUCCESS_STEP);
 			var activePanel = null;
 
 			panels.forEach(function (panel) {
@@ -684,12 +733,8 @@
 				updateSlotsAvailability();
 			}
 
-			if (step === SUCCESS_STEP) {
-				renderSuccessRecap();
-			}
-
 			if (activePanel && typeof activePanel.scrollIntoView === 'function' && step !== 1) {
-				activePanel.scrollIntoView({ behavior: 'smooth', block: step === SUCCESS_STEP ? 'center' : 'start' });
+				activePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 			}
 
 			root.dispatchEvent(
@@ -868,7 +913,7 @@
 						syncState();
 					}
 
-					setStep(SUCCESS_STEP);
+					openSuccessModal();
 					root.dispatchEvent(
 						new CustomEvent('somvio:booking-success', {
 							bubbles: true,

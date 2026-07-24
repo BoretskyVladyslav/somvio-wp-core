@@ -539,14 +539,30 @@ $somvio_bf_counters = array(
 					</p>
 				</div>
 			</div>
+		</form>
+	</div>
 
-			<?php /* —— Step 5: Success —— */ ?>
-			<div class="booking-form__card booking-form__card--success" data-booking-step="5" data-booking-panel hidden>
+	<?php /* Success modal — out of page flow; shown only after REST success */ ?>
+	<div
+		class="booking-form__success-modal"
+		data-booking-success-modal
+		hidden
+		aria-hidden="true"
+	>
+		<div
+			class="booking-form__success-dialog"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="<?php echo esc_attr( $somvio_bf_uid ); ?>-success-title"
+		>
+			<div class="booking-form__card booking-form__card--success">
 				<div class="booking-form__success">
 					<span class="booking-form__success-icon" aria-hidden="true">
 						<?php echo somvio_get_icon( 'icon-check-circle' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</span>
-					<p class="booking-form__success-title"><?php esc_html_e( 'Thank you!', 'somvio' ); ?></p>
+					<p class="booking-form__success-title" id="<?php echo esc_attr( $somvio_bf_uid ); ?>-success-title">
+						<?php esc_html_e( 'Thank you!', 'somvio' ); ?>
+					</p>
 					<p class="booking-form__success-subtitle"><?php esc_html_e( 'Your request has been sent', 'somvio' ); ?></p>
 					<p class="booking-form__success-text">
 						<?php esc_html_e( 'We’ll contact you shortly to confirm the details.', 'somvio' ); ?>
@@ -592,6 +608,6 @@ $somvio_bf_counters = array(
 					</a>
 				</div>
 			</div>
-		</form>
+		</div>
 	</div>
 </section>

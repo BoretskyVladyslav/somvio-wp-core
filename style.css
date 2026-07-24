@@ -9488,33 +9488,81 @@ body.somvio-has-hero.page-booking .site-main > * {
 	min-height: 196px;
 }
 
-/* Uniform 30px gap between booking steps (2–4); success is centered separately */
+/* Uniform 30px gap between booking steps (2–4) */
 .booking-form__card--step2,
 .booking-form__card--step3,
 .booking-form__card--step4 {
 	margin-top: 30px;
 }
 
-.booking-form.is-success {
-	padding-top: 0;
-	padding-bottom: 80px;
-}
-
-.booking-form.is-success .booking-form__error,
-.booking-form.is-success [data-booking-panel]:not([data-booking-step='5']) {
+/* Success modal — hidden until REST success; out of document flow */
+.booking-form__success-modal {
 	display: none !important;
+	position: fixed;
+	inset: 0;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	z-index: 9999;
+	box-sizing: border-box;
+	padding: 24px;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+	background: rgba(0, 5, 14, 0.85);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
 }
 
-.booking-form.is-success .booking-form__form {
+.booking-form__success-modal.is-open {
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+	animation: booking-success-backdrop-in 0.28s ease-out;
+}
+
+.booking-form__success-dialog {
+	width: 100%;
 	max-width: 600px;
-	margin-inline: auto;
+	margin: auto;
 }
 
 .booking-form__card--success {
-	margin: 60px auto;
+	width: 100%;
 	max-width: 600px;
+	margin: 0;
 	padding: 40px;
 	text-align: center;
+	opacity: 0;
+	transform: scale(0.94);
+}
+
+.booking-form__success-modal.is-open .booking-form__card--success {
+	animation: booking-success-card-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes booking-success-backdrop-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes booking-success-card-in {
+	from {
+		opacity: 0;
+		transform: scale(0.94) translateY(12px);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1) translateY(0);
+	}
+}
+
+body.booking-form-modal-open {
+	overflow: hidden;
 }
 
 .booking-form__addon-top {
@@ -10459,5 +10507,21 @@ body.somvio-has-hero.page-booking .site-main > * {
 
 .booking-form__success-home {
 	margin-top: 12px;
+}
+
+@media (max-width: 640px) {
+	.booking-form__success-modal {
+		padding: 16px;
+		align-items: flex-start;
+	}
+
+	.booking-form__card--success {
+		padding: 28px 20px;
+	}
+
+	.booking-form__success-row {
+		grid-template-columns: 1fr;
+		gap: 2px;
+	}
 }
 
