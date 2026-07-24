@@ -6770,6 +6770,162 @@ body.somvio-has-hero.page-terms-of-use .site-main > * {
 }
 
 /* -------------------------------------------------------------------------
+   Block: legal-content — Figma 300:2222 / 300:2243
+   Centered reading column; white H2s; soft body #a0aec0; section rules.
+   ------------------------------------------------------------------------- */
+.legal-content {
+	display: block !important;
+	float: none !important;
+	flex: none !important;
+	clear: both;
+	width: 100% !important;
+	max-width: none;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	background-color: var(--somvio-color-header-bg-alt);
+	color: #a0aec0;
+}
+
+.site-main > .legal-content,
+#primary > .legal-content,
+#main > .legal-content {
+	display: block !important;
+	float: none !important;
+	flex: none !important;
+	width: 100% !important;
+	max-width: none;
+	margin-inline: 0;
+}
+
+.legal-content__inner {
+	width: 100%;
+	max-width: 920px;
+	margin-inline: auto;
+	padding: 80px var(--somvio-container-pad);
+	box-sizing: border-box;
+}
+
+.legal-content__section {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 20px;
+	width: 100%;
+	margin: 0 0 30px;
+	padding: 0 0 30px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+	box-sizing: border-box;
+}
+
+.legal-content__section:last-child {
+	margin-bottom: 0;
+}
+
+.legal-content__inner h2,
+.legal-content__section h2 {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 1.5rem; /* 24px */
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--somvio-color-text);
+}
+
+.legal-content__inner h3,
+.legal-content__section h3 {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 1.125rem;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--somvio-color-text);
+}
+
+.legal-content__inner p,
+.legal-content__section p {
+	margin: 0;
+	font-family: var(--somvio-font-sans);
+	font-size: var(--somvio-font-size-base); /* 16px */
+	font-weight: 400;
+	line-height: 1.7;
+	color: #a0aec0;
+}
+
+.legal-content__inner p + p,
+.legal-content__section p + p {
+	margin-top: 1em;
+}
+
+.legal-content__inner ul,
+.legal-content__section ul {
+	margin: 0;
+	padding: 0 0 0 1.5rem;
+	list-style: none;
+}
+
+.legal-content__inner li,
+.legal-content__section li {
+	position: relative;
+	margin: 0;
+	padding: 0 0 0 0.35rem;
+	font-family: var(--somvio-font-sans);
+	font-size: var(--somvio-font-size-base);
+	font-weight: 400;
+	line-height: 1.7;
+	color: #a0aec0;
+}
+
+.legal-content__inner li + li,
+.legal-content__section li + li {
+	margin-top: 0.15em;
+}
+
+.legal-content__inner li::before,
+.legal-content__section li::before {
+	content: "";
+	position: absolute;
+	top: 0.65em;
+	left: -1.15rem;
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	background-color: var(--somvio-color-text);
+}
+
+.legal-content__inner a,
+.legal-content__section a {
+	color: var(--somvio-color-accent);
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+	transition: color var(--somvio-transition);
+}
+
+.legal-content__inner a:hover,
+.legal-content__inner a:focus-visible,
+.legal-content__section a:hover,
+.legal-content__section a:focus-visible {
+	color: var(--somvio-color-accent-hover);
+}
+
+@media (max-width: 767px) {
+	.legal-content__inner {
+		padding: 48px 20px 60px;
+	}
+
+	.legal-content__section {
+		gap: 16px;
+		margin-bottom: 24px;
+		padding-bottom: 24px;
+	}
+
+	.legal-content__inner h2,
+	.legal-content__section h2 {
+		font-size: 1.25rem; /* 20px */
+	}
+}
+
+/* -------------------------------------------------------------------------
    Block: blog-grid - Figma 300:2187
    Featured duo + category filters + 3-col post cards + Load more.
    Full-width block inside main (never a .site-content flex sibling).

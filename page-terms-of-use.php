@@ -3,9 +3,9 @@
  * Template Name: Terms of Use
  *
  * Legal shell — full-width main, no pre-footer CTA.
- * Hero is the first full-width block inside main.
+ * Hero + article body inside main.
  *
- * Figma node: 300:2239 (hero)
+ * Figma nodes: 300:2239 (hero), 300:2243 (content)
  *
  * @package Somvio_Child
  */
@@ -27,7 +27,7 @@ $somvio_legal_hero_args = array(
 	<div <?php generate_do_attr( 'content' ); ?>>
 		<main <?php generate_do_attr( 'main' ); ?>>
 			<?php
-			// Hero first — Figma 300:2239 (Home → Terms of Use / Terms & Conditions / lead).
+			// Hero first — Figma 300:2239.
 			get_template_part( 'template-parts/sections/legal-hero', null, $somvio_legal_hero_args );
 
 			/**
@@ -38,7 +38,7 @@ $somvio_legal_hero_args = array(
 			do_action( 'generate_before_main_content' );
 
 			/**
-			 * Terms of Use page body (content sections).
+			 * Terms of Use page body (extra sections).
 			 *
 			 * @since 1.0.0
 			 */
@@ -47,7 +47,7 @@ $somvio_legal_hero_args = array(
 			if ( generate_has_default_loop() ) {
 				while ( have_posts() ) :
 					the_post();
-					generate_do_template_part( 'page' );
+					get_template_part( 'template-parts/sections/legal-content' );
 				endwhile;
 			}
 

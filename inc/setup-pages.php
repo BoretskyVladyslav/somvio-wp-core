@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** @var int Bump to re-run page seeding on admin_init / theme switch. */
-const SOMVIO_CORE_PAGES_VERSION = 7;
+const SOMVIO_CORE_PAGES_VERSION = 8;
 
 /**
  * Core pages to ensure exist (slug => title).
@@ -291,6 +291,10 @@ function somvio_ensure_privacy_policy_page() {
 		update_post_meta( $page_id, '_wp_page_template', 'page-privacy-policy.php' );
 	}
 
+	if ( function_exists( 'somvio_seed_legal_page_content' ) && function_exists( 'somvio_get_privacy_policy_seed_content' ) ) {
+		somvio_seed_legal_page_content( $page_id, somvio_get_privacy_policy_seed_content() );
+	}
+
 	return $page_id;
 }
 
@@ -321,6 +325,10 @@ function somvio_ensure_terms_of_use_page() {
 
 	if ( 'page-terms-of-use.php' !== $template ) {
 		update_post_meta( $page_id, '_wp_page_template', 'page-terms-of-use.php' );
+	}
+
+	if ( function_exists( 'somvio_seed_legal_page_content' ) && function_exists( 'somvio_get_terms_of_use_seed_content' ) ) {
+		somvio_seed_legal_page_content( $page_id, somvio_get_terms_of_use_seed_content() );
 	}
 
 	return $page_id;

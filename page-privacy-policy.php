@@ -3,9 +3,9 @@
  * Template Name: Privacy Policy
  *
  * Legal shell — full-width main, no pre-footer CTA.
- * Hero is the first full-width block inside main.
+ * Hero + article body inside main.
  *
- * Figma node: 300:2218 (hero)
+ * Figma nodes: 300:2218 (hero), 300:2222 (content)
  *
  * @package Somvio_Child
  */
@@ -15,11 +15,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 get_header();
+
+$somvio_legal_hero_args = array(
+	'title'      => __( 'Privacy Policy', 'somvio' ),
+	'breadcrumb' => __( 'Privacy Policy', 'somvio' ),
+	'lead'       => __( 'Last Updated: June 2026', 'somvio' ),
+	'aria_label' => __( 'Privacy Policy', 'somvio' ),
+);
 ?>
 
 	<div <?php generate_do_attr( 'content' ); ?>>
 		<main <?php generate_do_attr( 'main' ); ?>>
 			<?php
+			get_template_part( 'template-parts/sections/legal-hero', null, $somvio_legal_hero_args );
+
 			/**
 			 * generate_before_main_content hook.
 			 *
@@ -27,19 +36,8 @@ get_header();
 			 */
 			do_action( 'generate_before_main_content' );
 
-			get_template_part(
-				'template-parts/sections/legal',
-				'hero',
-				array(
-					'title'      => __( 'Privacy Policy', 'somvio' ),
-					'breadcrumb' => __( 'Privacy Policy', 'somvio' ),
-					'lead'       => __( 'Last Updated: June 2026', 'somvio' ),
-					'aria_label' => __( 'Privacy Policy', 'somvio' ),
-				)
-			);
-
 			/**
-			 * Privacy Policy page body (content sections).
+			 * Privacy Policy page body (extra sections).
 			 *
 			 * @since 1.0.0
 			 */
@@ -48,7 +46,7 @@ get_header();
 			if ( generate_has_default_loop() ) {
 				while ( have_posts() ) :
 					the_post();
-					generate_do_template_part( 'page' );
+					get_template_part( 'template-parts/sections/legal-content' );
 				endwhile;
 			}
 
