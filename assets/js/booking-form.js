@@ -442,6 +442,30 @@
 			return !msg;
 		}
 
+		function buildSuccessDetail(extra) {
+			var serviceLabel = (services && services[state.service]) || state.service || '';
+			var detail = {
+				service: serviceLabel,
+				date: formatDisplayDate(state.date),
+				time: formatSlot(state.time),
+				name: (trim(state.first_name) + ' ' + trim(state.last_name)).trim(),
+				phone: trim(state.phone),
+				email: trim(state.email),
+				address: trim(state.address),
+				total: formatMoney(state.confirmedTotal != null ? state.confirmedTotal : state.previewTotal),
+				booking_id: 0,
+				payment_method: state.payment_method || '',
+				requires_payment: false,
+				deferRedirect: false,
+			};
+			if (extra && typeof extra === 'object') {
+				Object.keys(extra).forEach(function (key) {
+					detail[key] = extra[key];
+				});
+			}
+			return detail;
+		}
+
 		function renderSuccessRecap() {
 			var serviceLabel = (services && services[state.service]) || state.service || '';
 			var map = {
@@ -1338,25 +1362,36 @@
 						state.confirmedTotal = state.previewTotal;
 					}
 
-					openSuccessModal();
-					root.dispatchEvent(
-						new CustomEvent('somvio:booking-success', {
-							bubbles: true,
-							detail: {
-								total: state.previewTotal,
-								booking_id: result.data.booking_id || 0,
-								payment_method: result.data.payment_method || state.payment_method,
-							},
-						})
-					);
-
-					if (
+					var needsPayment = !!(
 						result.data.requires_payment &&
 						result.data.payment &&
 						result.data.payment.client_secret
-					) {
+					);
+
+					var successDetail = buildSuccessDetail({
+						total: formatMoney(state.previewTotal),
+						booking_id: result.data.booking_id || 0,
+						payment_method: result.data.payment_method || state.payment_method,
+						requires_payment: needsPayment,
+						deferRedirect: needsPayment,
+						message: result.data.message || '',
+					});
+
+					if (needsPayment) {
+						openSuccessModal();
+					}
+
+					root.dispatchEvent(
+						new CustomEvent('somvio:booking-success', {
+							bubbles: true,
+							detail: successDetail,
+						})
+					);
+
+					if (needsPayment) {
 						initStripePayment(result.data);
 					} else if (result.data.payment_error) {
+						openSuccessModal();
 						showStripeError(
 							result.data.message ||
 								i18n.paymentError ||
@@ -1561,6 +1596,19 @@
 								if (text) {
 									text.textContent = i18n.paymentSuccess || 'Payment successful — your booking is confirmed.';
 								}
+								root.dispatchEvent(
+									new CustomEvent('somvio:booking-paid', {
+										bubbles: true,
+										detail: buildSuccessDetail({
+											booking_id: (data && data.booking_id) || 0,
+											message:
+												i18n.paymentSuccess ||
+												'Payment successful — your booking is confirmed.',
+											requires_payment: false,
+											deferRedirect: false,
+										}),
+									})
+								);
 							})
 							.catch(function () {
 								payBtn.disabled = false;

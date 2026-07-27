@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 $somvio_image_path = get_stylesheet_directory() . '/assets/images/service-single-pricing.jpg';
 $somvio_image_uri  = get_stylesheet_directory_uri() . '/assets/images/service-single-pricing.jpg';
 
-$somvio_quote_anchor = '#somvio-instant-quote';
+$somvio_quote_anchor = '#booking-calculator';
 $somvio_quote_url    = get_permalink()
 	? esc_url( get_permalink() ) . $somvio_quote_anchor
 	: $somvio_quote_anchor;

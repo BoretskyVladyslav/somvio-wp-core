@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$somvio_quote_anchor = '#somvio-instant-quote';
+$somvio_quote_anchor = '#booking-calculator';
 $somvio_book_url     = get_permalink()
 	? esc_url( get_permalink() ) . $somvio_quote_anchor
 	: $somvio_quote_anchor;

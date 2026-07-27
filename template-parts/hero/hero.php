@@ -127,7 +127,7 @@ $somvio_render_hero_ratings = static function ( $icons_uri, $duplicate = false )
 				</p>
 
 				<div class="somvio-hero__actions">
-					<a class="btn btn--primary btn--md" href="<?php echo $somvio_book_url; ?>">
+					<a class="btn btn--primary btn--md" href="#booking-calculator">
 						<span class="btn__label"><?php esc_html_e( 'Get Instant Quote', 'somvio' ); ?></span>
 					</a>
 					<a class="btn btn--outline btn--md" href="<?php echo $somvio_services; ?>">
@@ -142,7 +142,8 @@ $somvio_render_hero_ratings = static function ( $icons_uri, $duplicate = false )
 				'calculator',
 				array(
 					'variant' => 'glass',
-					'class'   => 'somvio-hero__quote',
+					'id'      => 'booking-calculator',
+					'class'   => 'somvio-hero__quote scroll-mt-24',
 				)
 			);
 			?>

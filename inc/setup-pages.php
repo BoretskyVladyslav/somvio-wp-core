@@ -10,7 +10,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** @var int Bump to re-run page seeding on admin_init / theme switch. */
-const SOMVIO_CORE_PAGES_VERSION = 12;
+const SOMVIO_CORE_PAGES_VERSION = 13;
+
+/**
+ * Ensure site title + tagline are Somvio (not default "My WordPress").
+ *
+ * Only overwrites empty or stock WordPress defaults so Customizer edits stick.
+ *
+ * @return void
+ */
+function somvio_ensure_site_identity() {
+	$name = (string) get_option( 'blogname', '' );
+	$desc = (string) get_option( 'blogdescription', '' );
+
+	$default_names = array( '', 'My WordPress', 'WordPress', 'Just another WordPress site' );
+	$default_descs = array( '', 'Just another WordPress site' );
+
+	if ( in_array( trim( $name ), $default_names, true ) ) {
+		update_option( 'blogname', 'Somvio' );
+	}
+
+	if ( in_array( trim( $desc ), $default_descs, true ) ) {
+		update_option( 'blogdescription', 'Clean Spaces. Better Living.' );
+	}
+}
 
 /**
  * Core pages to ensure exist (slug => title).
@@ -19,15 +42,16 @@ const SOMVIO_CORE_PAGES_VERSION = 12;
  */
 function somvio_get_core_pages() {
 	$pages = array(
-		'home'           => 'Home',
-		'services'       => 'Services',
-		'about-us'       => 'About Us',
-		'reviews'        => 'Reviews',
-		'faq'            => 'FAQ',
-		'booking'        => 'Booking',
-		'contact'        => 'Contact',
-		'blog'           => 'Blog',
-		'privacy-policy' => 'Privacy Policy',
+		'home'             => 'Home',
+		'services'         => 'Services',
+		'about-us'         => 'About Us',
+		'reviews'          => 'Reviews',
+		'faq'              => 'FAQ',
+		'booking'          => 'Booking',
+		'thank-you'        => 'Thank You',
+		'contact'          => 'Contact',
+		'blog'             => 'Blog',
+		'privacy-policy'   => 'Privacy Policy',
 		'terms-conditions' => 'Terms & Conditions',
 		'legal'            => 'Somvio Legal & Policy Pack',
 	);
@@ -272,6 +296,58 @@ function somvio_ensure_booking_page() {
 }
 
 /**
+ * Ensure the Thank You page exists with its template.
+ *
+ * @return int Page ID or 0.
+ */
+function somvio_ensure_thank_you_page() {
+	$page_id = somvio_ensure_page( 'thank-you', 'Thank You' );
+
+	if ( $page_id <= 0 ) {
+		return 0;
+	}
+
+	$page = get_post( $page_id );
+
+	if ( $page instanceof WP_Post && 'publish' !== $page->post_status ) {
+		wp_update_post(
+			array(
+				'ID'          => $page_id,
+				'post_status' => 'publish',
+			)
+		);
+	}
+
+	$template = get_post_meta( $page_id, '_wp_page_template', true );
+
+	if ( 'page-thank-you.php' !== $template ) {
+		update_post_meta( $page_id, '_wp_page_template', 'page-thank-you.php' );
+	}
+
+	return $page_id;
+}
+
+/**
+ * Permalink for the Thank You page.
+ *
+ * @return string
+ */
+function somvio_get_thank_you_url() {
+	$page_id = function_exists( 'somvio_get_page_id_by_slug' )
+		? (int) somvio_get_page_id_by_slug( 'thank-you' )
+		: 0;
+
+	if ( $page_id > 0 ) {
+		$url = get_permalink( $page_id );
+		if ( $url ) {
+			return (string) $url;
+		}
+	}
+
+	return home_url( '/thank-you/' );
+}
+
+/**
  * Ensure the Blog page exists with the Blog template.
  *
  * @return int Page ID or 0.
@@ -412,6 +488,8 @@ function somvio_setup_core_pages() {
 	update_option( 'somvio_core_pages_setup_lock', 1, false );
 
 	try {
+		somvio_ensure_site_identity();
+
 		$page_ids = array();
 
 		foreach ( somvio_get_core_pages() as $slug => $title ) {
@@ -427,6 +505,11 @@ function somvio_setup_core_pages() {
 
 			if ( 'booking' === $slug ) {
 				$page_ids[ $slug ] = somvio_ensure_booking_page();
+				continue;
+			}
+
+			if ( 'thank-you' === $slug ) {
+				$page_ids[ $slug ] = somvio_ensure_thank_you_page();
 				continue;
 			}
 

@@ -96,6 +96,10 @@ function somvio_run_pages_seeder() {
 		somvio_setup_core_pages();
 	}
 
+	if ( function_exists( 'somvio_ensure_site_identity' ) ) {
+		somvio_ensure_site_identity();
+	}
+
 	/* Explicit guarantees for the empty-DB checklist. */
 	$home_id = somvio_seeder_insert_page( 'home', 'Home' );
 
@@ -103,6 +107,11 @@ function somvio_run_pages_seeder() {
 		? somvio_ensure_booking_page()
 		: somvio_seeder_insert_page( 'booking', 'Booking' );
 	somvio_seeder_assign_template( $booking_id, 'page-booking.php' );
+
+	$thank_you_id = function_exists( 'somvio_ensure_thank_you_page' )
+		? somvio_ensure_thank_you_page()
+		: somvio_seeder_insert_page( 'thank-you', 'Thank You' );
+	somvio_seeder_assign_template( $thank_you_id, 'page-thank-you.php' );
 
 	$services_id = somvio_seeder_insert_page( 'services', 'Services' );
 
@@ -145,6 +154,6 @@ function somvio_run_pages_seeder() {
 
 	flush_rewrite_rules( false );
 
-	unset( $booking_id, $legal_id );
+	unset( $booking_id, $thank_you_id, $legal_id );
 }
 add_action( 'admin_init', 'somvio_run_pages_seeder', 5 );

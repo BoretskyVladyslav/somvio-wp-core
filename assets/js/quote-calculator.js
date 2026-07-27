@@ -844,7 +844,20 @@
 					root.dispatchEvent(
 						new CustomEvent('somvio:quote-success', {
 							bubbles: true,
-							detail: { total: state.previewTotal, root: root },
+							detail: {
+								service: state.service || '',
+								date: formatDisplayDate(state.date),
+								time: state.time || '',
+								name: trim(state.name),
+								phone: formatPhoneDisplay(state.phone),
+								email: trim(state.email),
+								address: '',
+								total: formatMoney(state.previewTotal),
+								booking_id: (result.data && result.data.booking_id) || 0,
+								message: (result.data && result.data.message) || '',
+								requires_payment: false,
+								deferRedirect: false,
+							},
 						})
 					);
 				})

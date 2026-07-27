@@ -54,12 +54,21 @@ function somvio_filter_header_alignment_body_class( $classes ) {
 add_filter( 'body_class', 'somvio_filter_header_alignment_body_class', 20 );
 
 /**
- * Book Now CTA URL (filterable for ACF / booking page later).
+ * Book Now CTA URL — booking page Step 1 anchor (filterable).
  *
  * @return string
  */
 function somvio_get_book_now_url() {
-	return esc_url( apply_filters( 'somvio_book_now_url', home_url( '/booking/' ) ) );
+	return esc_url( apply_filters( 'somvio_book_now_url', home_url( '/booking/#booking-calculator' ) ) );
+}
+
+/**
+ * On-page calculator / booking form hash target.
+ *
+ * @return string
+ */
+function somvio_get_booking_calculator_hash() {
+	return '#booking-calculator';
 }
 
 /**

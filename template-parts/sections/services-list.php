@@ -111,7 +111,7 @@ $somvio_list_services = array(
 					</h2>
 					<p class="services-list__price"><?php echo esc_html( $service['price'] ); ?></p>
 					<p class="services-list__text"><?php echo esc_html( $service['text'] ); ?></p>
-					<a class="btn btn--primary btn--sm btn--has-icon services-list__cta" href="<?php echo $service_url; ?>">
+					<a class="btn btn--primary btn--sm btn--has-icon services-list__cta" href="<?php echo esc_url( $service_url . '#booking-calculator' ); ?>">
 						<span class="btn__label"><?php esc_html_e( 'Book Now', 'somvio' ); ?></span>
 						<span class="btn__icon" aria-hidden="true">
 							<?php

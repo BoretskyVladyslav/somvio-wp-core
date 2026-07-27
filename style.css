@@ -113,8 +113,10 @@ html {
 	}
 }
 
-#somvio-instant-quote {
-	scroll-margin-top: calc(var(--somvio-header-height) + 16px);
+#booking-calculator,
+#somvio-instant-quote,
+.scroll-mt-24 {
+	scroll-margin-top: calc(var(--somvio-header-height) + 1.5rem);
 }
 
 img {
@@ -11735,3 +11737,121 @@ body.booking-form-modal-open {
 	}
 }
 
+
+/* -------------------------------------------------------------------------
+   Block: thank-you — booking confirmation
+   ------------------------------------------------------------------------- */
+.thank-you {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: calc(100vh - var(--somvio-header-height));
+	padding: calc(var(--somvio-header-height) + 48px) var(--somvio-container-pad) 80px;
+	box-sizing: border-box;
+	background:
+		radial-gradient(ellipse 80% 50% at 50% 0%, rgba(64, 215, 208, 0.12), transparent 55%),
+		var(--somvio-color-bg);
+	color: var(--somvio-color-text);
+}
+
+.thank-you__inner {
+	width: 100%;
+	max-width: 560px;
+	margin: 0 auto;
+	padding: 40px 32px;
+	border: 1px solid rgba(132, 142, 149, 0.25);
+	border-radius: var(--somvio-radius);
+	background: var(--somvio-color-surface-dark);
+	text-align: center;
+	box-sizing: border-box;
+}
+
+.thank-you__icon {
+	display: inline-flex;
+	width: 56px;
+	height: 56px;
+	margin: 0 0 20px;
+	color: var(--somvio-color-accent);
+}
+
+.thank-you__icon svg {
+	width: 100%;
+	height: 100%;
+}
+
+.thank-you__title {
+	margin: 0 0 12px;
+	font-family: var(--somvio-font-sans);
+	font-size: clamp(1.75rem, 2vw + 1rem, 2.25rem);
+	font-weight: 700;
+	line-height: 1.2;
+	color: #fff;
+}
+
+.thank-you__subtitle {
+	margin: 0 0 8px;
+	font-size: 1.125rem;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--somvio-color-accent);
+}
+
+.thank-you__text {
+	margin: 0 0 28px;
+	font-size: 1rem;
+	line-height: 1.5;
+	color: var(--somvio-color-text-body);
+}
+
+.thank-you__recap {
+	display: grid;
+	gap: 12px;
+	margin: 0 0 32px;
+	padding: 20px;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: var(--somvio-radius);
+	background: rgba(0, 0, 0, 0.25);
+	text-align: left;
+}
+
+.thank-you__row {
+	display: grid;
+	grid-template-columns: minmax(0, 140px) minmax(0, 1fr);
+	gap: 8px 16px;
+	align-items: baseline;
+	margin: 0;
+}
+
+.thank-you__row dt {
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--somvio-color-text-soft);
+}
+
+.thank-you__row dd {
+	margin: 0;
+	font-size: 0.9375rem;
+	font-weight: 500;
+	color: #fff;
+	word-break: break-word;
+}
+
+.thank-you__home {
+	display: inline-flex;
+}
+
+@media (max-width: 767px) {
+	.thank-you {
+		padding: calc(var(--somvio-header-height) + 32px) 20px 60px;
+	}
+
+	.thank-you__inner {
+		padding: 32px 20px;
+	}
+
+	.thank-you__row {
+		grid-template-columns: 1fr;
+		gap: 4px;
+	}
+}

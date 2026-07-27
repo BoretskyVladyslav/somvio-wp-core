@@ -69,7 +69,6 @@ $somvio_whatsapp  = function_exists( 'somvio_get_whatsapp_url' ) ? somvio_get_wh
 						<a
 							class="btn btn--outline btn--sm btn--has-icon somvio-header__cta somvio-header__cta--drawer"
 							href="<?php echo $somvio_book_url; ?>"
-							data-quote-modal-open
 						>
 							<span class="btn__label"><?php esc_html_e( 'Book Now', 'somvio' ); ?></span>
 							<span class="btn__icon" aria-hidden="true">
@@ -107,7 +106,6 @@ $somvio_whatsapp  = function_exists( 'somvio_get_whatsapp_url' ) ? somvio_get_wh
 				<a
 					class="btn btn--outline btn--sm btn--has-icon somvio-header__cta somvio-header__cta--desktop"
 					href="<?php echo $somvio_book_url; ?>"
-					data-quote-modal-open
 				>
 					<span class="btn__label"><?php esc_html_e( 'Book Now', 'somvio' ); ?></span>
 					<span class="btn__icon" aria-hidden="true">

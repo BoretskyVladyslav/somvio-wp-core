@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $somvio_home_url     = esc_url( home_url( '/' ) );
 $somvio_services_url = esc_url( home_url( '/services/' ) );
-$somvio_quote_url    = '#somvio-instant-quote';
+$somvio_quote_url    = '#booking-calculator';
 $somvio_title        = get_the_title();
 
 if ( ! is_string( $somvio_title ) || '' === $somvio_title ) {
@@ -87,8 +87,8 @@ if ( ! is_string( $somvio_title ) || '' === $somvio_title ) {
 				'calculator',
 				array(
 					'variant'         => 'glass',
-					'id'              => 'somvio-instant-quote',
-					'class'           => 'service-single-hero__quote reveal-on-scroll',
+					'id'              => 'booking-calculator',
+					'class'           => 'service-single-hero__quote scroll-mt-24 reveal-on-scroll',
 					'default_service' => $somvio_default_service,
 				)
 			);

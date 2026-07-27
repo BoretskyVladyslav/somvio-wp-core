@@ -70,6 +70,7 @@ $somvio_bf_counters = array(
 	),
 );
 ?>
+<div id="booking-calculator" class="scroll-mt-24">
 <section
 	class="booking-form"
 	aria-label="<?php esc_attr_e( 'Book your cleaning', 'somvio' ); ?>"
@@ -742,3 +743,4 @@ $somvio_bf_counters = array(
 		</div>
 	</div>
 </section>
+</div>
