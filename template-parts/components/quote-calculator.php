@@ -236,14 +236,20 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 				aria-label="<?php esc_attr_e( 'Preferred time', 'somvio' ); ?>"
 			>
 				<?php foreach ( $somvio_qc_slots as $slot ) : ?>
+					<?php
+					$somvio_qc_slot_raw   = (string) $slot;
+					$somvio_qc_slot_start = strpos( $somvio_qc_slot_raw, '-' ) !== false
+						? trim( explode( '-', $somvio_qc_slot_raw, 2 )[0] )
+						: $somvio_qc_slot_raw;
+					?>
 					<button
 						type="button"
 						class="quote-calculator__slot"
-						data-quote-slot="<?php echo esc_attr( $slot ); ?>"
+						data-quote-slot="<?php echo esc_attr( $somvio_qc_slot_raw ); ?>"
 						role="radio"
 						aria-checked="false"
 					>
-						<?php echo esc_html( str_replace( '-', ' - ', $slot ) ); ?>
+						<?php echo esc_html( $somvio_qc_slot_start ); ?>
 					</button>
 				<?php endforeach; ?>
 			</div>

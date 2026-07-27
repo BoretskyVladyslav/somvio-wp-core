@@ -17,7 +17,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return array<string, mixed>
  */
 function somvio_get_quote_rates() {
-	$cached = get_transient( 'somvio_quote_rates_v5' );
+	delete_transient( 'somvio_quote_rates_v5' );
+	delete_transient( 'somvio_quote_rates_v6' );
+
+	$cached = get_transient( 'somvio_quote_rates_v7' );
 	if ( false !== $cached && is_array( $cached ) ) {
 		return $cached;
 	}
@@ -25,6 +28,7 @@ function somvio_get_quote_rates() {
 	$rates = array(
 		'currency'         => 'GBP',
 		'symbol'           => '£',
+		/* Placeholder rates — replace when client confirms final pricing. */
 		'bedroom_base'     => array(
 			'1' => 55,
 			'2' => 75,
@@ -41,42 +45,82 @@ function somvio_get_quote_rates() {
 			'after-builders'   => 1.6,
 		),
 		'property_mult'    => array(
-			'house'      => 1.0,
-			'apartment'  => 0.95,
-			'office'     => 1.1,
+			'house'     => 1.0,
+			'apartment' => 0.95,
 		),
 		'time_slots'       => array(
-			'08:00-10:00',
-			'10:00-12:00',
-			'12:00-14:00',
-			'14:00-16:00',
-			'16:00-18:00',
-			'18:00-20:00',
-			'09:00-11:00',
-			'13:00-15:00',
+			'08:00',
+			'09:00',
+			'10:00',
+			'12:00',
+			'13:00',
+			'14:00',
+			'16:00',
+			'18:00',
 		),
-		/* Figma 418:6259 Extra Services (booking form). */
+		/* Extra Services (booking form) — placeholder prices. */
 		'addons'           => array(
-			'carpet-shampoo'     => array(
-				'label' => __( 'Carpet Shampoo (per Room)', 'somvio' ),
-				'price' => 35,
-				'icon'  => 'icon-addon-carpet.svg',
-			),
-			'oven-cleaning'      => array(
+			'deep-oven-clean'           => array(
 				'label' => __( 'Deep Oven Clean', 'somvio' ),
-				'price' => 35,
+				'price' => 49,
 				'icon'  => 'icon-addon-oven.svg',
 			),
-			'fridge-and-freezer' => array(
-				'label' => __( 'Fridge/Freezer Clean (internal)', 'somvio' ),
-				'price' => 35,
+			'inside-fridge-freezer'     => array(
+				'label' => __( 'Inside Fridge / Freezer', 'somvio' ),
+				'price' => 25,
 				'icon'  => 'icon-addon-fridge.svg',
 			),
-			'white-goods'        => array(
-				'label' => __( 'White Goods (internal)', 'somvio' ),
-				'price' => 35,
+			'kitchen-cupboards'         => array(
+				'label' => __( 'Inside All Kitchen Cupboards (empty)', 'somvio' ),
+				'price' => 39,
 				'icon'  => 'icon-addon-white-goods.svg',
 			),
+			'kitchen-appliances'        => array(
+				'label' => __( 'Kitchen Appliances (Internal)', 'somvio' ),
+				'price' => 20,
+				'icon'  => 'icon-addon-white-goods.svg',
+			),
+			'washing-machine'           => array(
+				'label' => __( 'Washing Machine', 'somvio' ),
+				'price' => 20,
+				'icon'  => 'icon-addon-white-goods.svg',
+			),
+			'dishwasher'                => array(
+				'label' => __( 'Dishwasher', 'somvio' ),
+				'price' => 20,
+				'icon'  => 'icon-addon-white-goods.svg',
+			),
+			'tumble-dryer'              => array(
+				'label' => __( 'Tumble Dryer', 'somvio' ),
+				'price' => 20,
+				'icon'  => 'icon-addon-white-goods.svg',
+			),
+			'microwave-air-fryer'       => array(
+				'label' => __( 'Microwave / Air Fryer Cleaning', 'somvio' ),
+				'price' => 15,
+				'icon'  => 'icon-addon-oven.svg',
+			),
+			'carpet-deep-clean'         => array(
+				'label' => __( 'Carpet Deep Cleaning (per room)', 'somvio' ),
+				'price' => 30,
+				'icon'  => 'icon-addon-carpet.svg',
+			),
+			'venetian-blinds'           => array(
+				'label' => __( 'Venetian Blinds (per window)', 'somvio' ),
+				'price' => 12,
+				'icon'  => 'icon-addon-carpet.svg',
+			),
+			'balcony-patio'             => array(
+				'label' => __( 'Balcony / Patio Cleaning', 'somvio' ),
+				'price' => 25,
+				'icon'  => 'icon-addon-carpet.svg',
+			),
+		),
+		/* Services that include Extra Services step. */
+		'extras_services'  => array(
+			'deep-cleaning',
+			'end-of-tenancy',
+			'after-builders',
 		),
 	);
 
@@ -87,7 +131,7 @@ function somvio_get_quote_rates() {
 	 */
 	$rates = apply_filters( 'somvio_quote_rates', $rates );
 
-	set_transient( 'somvio_quote_rates_v5', $rates, HOUR_IN_SECONDS );
+	set_transient( 'somvio_quote_rates_v7', $rates, HOUR_IN_SECONDS );
 
 	return $rates;
 }
@@ -223,7 +267,6 @@ function somvio_get_quote_property_options() {
 	return array(
 		'house'     => __( 'House', 'somvio' ),
 		'apartment' => __( 'Apartment', 'somvio' ),
-		'office'    => __( 'Office', 'somvio' ),
 	);
 }
 
@@ -398,10 +441,13 @@ function somvio_rest_can_submit_quote( WP_REST_Request $request ) {
 function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	$service   = sanitize_key( (string) $request['service'] );
 	$property  = sanitize_key( (string) $request['property'] );
-	$bedrooms  = absint( $request['bedrooms'] );
-	$bathrooms = absint( $request['bathrooms'] );
-	$toilets   = absint( $request['toilets'] ?? 0 );
-	$kitchens  = absint( $request['kitchens'] ?? 0 );
+	$bedrooms       = absint( $request['bedrooms'] );
+	$bathrooms      = absint( $request['bathrooms'] );
+	$main_rooms     = absint( $request['main_rooms'] ?? 0 );
+	$linen_changes  = absint( $request['linen_changes'] ?? 0 );
+	$welcome_pack   = sanitize_key( (string) ( $request['welcome_pack'] ?? 'no' ) );
+	$toilets        = absint( $request['toilets'] ?? 0 );
+	$kitchens       = absint( $request['kitchens'] ?? 0 );
 	$date      = sanitize_text_field( (string) $request['date'] );
 	$time      = sanitize_text_field( (string) $request['time'] );
 	$first     = sanitize_text_field( (string) ( $request['first_name'] ?? '' ) );
@@ -433,8 +479,20 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	if ( ! isset( $props[ $property ] ) ) {
 		return new WP_Error( 'invalid_property', __( 'Invalid property type.', 'somvio' ), array( 'status' => 400 ) );
 	}
-	if ( $bedrooms < 1 || $bedrooms > 5 || $bathrooms < 1 || $bathrooms > 4 ) {
+	if ( $bedrooms < 1 || $bedrooms > 5 ) {
 		return new WP_Error( 'invalid_rooms', __( 'Invalid room counts.', 'somvio' ), array( 'status' => 400 ) );
+	}
+	if ( $bathrooms < 1 || $bathrooms > 4 ) {
+		return new WP_Error( 'invalid_rooms', __( 'Invalid room counts.', 'somvio' ), array( 'status' => 400 ) );
+	}
+	if ( $main_rooms > 10 ) {
+		return new WP_Error( 'invalid_rooms', __( 'Invalid room counts.', 'somvio' ), array( 'status' => 400 ) );
+	}
+	if ( $linen_changes > 10 ) {
+		return new WP_Error( 'invalid_rooms', __( 'Invalid room counts.', 'somvio' ), array( 'status' => 400 ) );
+	}
+	if ( ! in_array( $welcome_pack, array( 'yes', 'no' ), true ) ) {
+		$welcome_pack = 'no';
 	}
 	if ( $toilets > 5 ) {
 		return new WP_Error( 'invalid_rooms', __( 'Invalid room counts.', 'somvio' ), array( 'status' => 400 ) );
@@ -485,6 +543,13 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 		}
 	}
 
+	$extras_services = isset( $rates['extras_services'] ) && is_array( $rates['extras_services'] )
+		? $rates['extras_services']
+		: array( 'deep-cleaning', 'end-of-tenancy', 'after-builders' );
+	if ( ! in_array( $service, $extras_services, true ) ) {
+		$addons = array();
+	}
+
 	foreach ( $addons as $addon_key ) {
 		if ( ! isset( $addon_defs[ $addon_key ] ) ) {
 			return new WP_Error( 'invalid_addon', __( 'Invalid add-on selection.', 'somvio' ), array( 'status' => 400 ) );
@@ -513,6 +578,9 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 		'property'        => $property,
 		'bedrooms'        => $bedrooms,
 		'bathrooms'       => $bathrooms,
+		'main_rooms'      => $main_rooms,
+		'linen_changes'   => $linen_changes,
+		'welcome_pack'    => $welcome_pack,
 		'toilets'         => $toilets,
 		'kitchens'        => $kitchens,
 		'date'            => $date,
@@ -629,6 +697,24 @@ function somvio_register_quote_rest_routes() {
 					'type'              => 'integer',
 					'default'           => 0,
 					'sanitize_callback' => 'absint',
+				),
+				'main_rooms'      => array(
+					'required'          => false,
+					'type'              => 'integer',
+					'default'           => 0,
+					'sanitize_callback' => 'absint',
+				),
+				'linen_changes'   => array(
+					'required'          => false,
+					'type'              => 'integer',
+					'default'           => 0,
+					'sanitize_callback' => 'absint',
+				),
+				'welcome_pack'    => array(
+					'required'          => false,
+					'type'              => 'string',
+					'default'           => 'no',
+					'sanitize_callback' => 'sanitize_key',
 				),
 				'first_name'      => array(
 					'required'          => false,

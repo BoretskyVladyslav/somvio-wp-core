@@ -39,29 +39,29 @@ $somvio_bf_terms_url = $somvio_bf_terms_id > 0
 	: home_url( '/terms-of-use/' );
 
 $somvio_bf_counters = array(
-	'bedrooms'  => array(
+	'main_rooms'     => array(
+		'label' => __( 'Main rooms', 'somvio' ),
+		'min'   => 1,
+		'max'   => 10,
+		'value' => 1,
+	),
+	'bedrooms'       => array(
 		'label' => __( 'Bedrooms', 'somvio' ),
 		'min'   => 1,
 		'max'   => 5,
 		'value' => 1,
 	),
-	'toilets'   => array(
-		'label' => __( 'Toilets', 'somvio' ),
-		'min'   => 0,
-		'max'   => 5,
-		'value' => 1,
-	),
-	'kitchens'  => array(
-		'label' => __( 'Kitchens', 'somvio' ),
-		'min'   => 0,
-		'max'   => 5,
-		'value' => 1,
-	),
-	'bathrooms' => array(
+	'bathrooms'      => array(
 		'label' => __( 'Bathrooms', 'somvio' ),
 		'min'   => 1,
 		'max'   => 4,
 		'value' => 1,
+	),
+	'linen_changes'  => array(
+		'label' => __( 'No. of Linen Changes', 'somvio' ),
+		'min'   => 0,
+		'max'   => 10,
+		'value' => 0,
 	),
 );
 ?>
@@ -132,13 +132,14 @@ $somvio_bf_counters = array(
 				</div>
 				<input type="hidden" name="service" data-booking-field="service" value="">
 
-				<div class="booking-form__counters">
+				<div class="booking-form__counters" data-booking-counters hidden>
 					<?php foreach ( $somvio_bf_counters as $somvio_bf_ckey => $somvio_bf_counter ) : ?>
 						<div
 							class="booking-form__counter"
 							data-booking-counter="<?php echo esc_attr( $somvio_bf_ckey ); ?>"
+							hidden
 						>
-							<label class="booking-form__label" for="<?php echo esc_attr( $somvio_bf_uid . '-' . $somvio_bf_ckey ); ?>">
+							<label class="booking-form__label" for="<?php echo esc_attr( $somvio_bf_uid . '-' . $somvio_bf_ckey ); ?>" data-booking-counter-label>
 								<?php echo esc_html( $somvio_bf_counter['label'] ); ?>
 							</label>
 							<div class="booking-form__counter-control" data-booking-counter-control>
@@ -174,6 +175,31 @@ $somvio_bf_counters = array(
 						</div>
 					<?php endforeach; ?>
 				</div>
+
+				<fieldset class="booking-form__welcome" data-booking-welcome hidden>
+					<legend class="booking-form__label"><?php esc_html_e( 'Welcome Pack Required?', 'somvio' ); ?></legend>
+					<div class="booking-form__welcome-options" role="radiogroup" aria-label="<?php esc_attr_e( 'Welcome Pack Required?', 'somvio' ); ?>">
+						<label class="booking-form__welcome-option">
+							<input
+								type="radio"
+								name="welcome_pack"
+								data-booking-field="welcome_pack"
+								value="yes"
+							>
+							<span><?php esc_html_e( 'Yes', 'somvio' ); ?></span>
+						</label>
+						<label class="booking-form__welcome-option">
+							<input
+								type="radio"
+								name="welcome_pack"
+								data-booking-field="welcome_pack"
+								value="no"
+								checked
+							>
+							<span><?php esc_html_e( 'No', 'somvio' ); ?></span>
+						</label>
+					</div>
+				</fieldset>
 
 				<div class="booking-form__footer">
 					<button type="button" class="booking-form__next btn btn--primary btn--has-icon" data-booking-next disabled aria-disabled="true" title="<?php esc_attr_e( 'Select a service to continue', 'somvio' ); ?>">
@@ -357,17 +383,20 @@ $somvio_bf_counters = array(
 				>
 					<?php foreach ( $somvio_bf_slots as $somvio_bf_slot ) : ?>
 						<?php
-						$somvio_bf_slot_label = preg_replace( '/\b0(\d:)/', '$1', str_replace( '-', ' - ', (string) $somvio_bf_slot ) );
+						$somvio_bf_slot_raw   = (string) $somvio_bf_slot;
+						$somvio_bf_slot_start = strpos( $somvio_bf_slot_raw, '-' ) !== false
+							? trim( explode( '-', $somvio_bf_slot_raw, 2 )[0] )
+							: $somvio_bf_slot_raw;
 						?>
 						<button
 							type="button"
 							class="booking-form__slot"
-							data-booking-slot="<?php echo esc_attr( $somvio_bf_slot ); ?>"
+							data-booking-slot="<?php echo esc_attr( $somvio_bf_slot_raw ); ?>"
 							role="radio"
 							aria-checked="false"
 							tabindex="-1"
 						>
-							<?php echo esc_html( $somvio_bf_slot_label ); ?>
+							<?php echo esc_html( $somvio_bf_slot_start ); ?>
 						</button>
 					<?php endforeach; ?>
 				</div>
