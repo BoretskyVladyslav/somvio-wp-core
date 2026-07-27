@@ -3844,8 +3844,13 @@ a.site-footer__contact-text:focus-visible {
 	}
 
 	.site-footer__grid {
-		grid-template-columns: 1fr;
-		gap: 32px;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 32px 24px;
+	}
+
+	.site-footer__col--brand,
+	.site-footer__col--contact {
+		grid-column: 1 / -1;
 	}
 
 	.site-footer__col--brand {
