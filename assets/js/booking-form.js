@@ -762,6 +762,87 @@
 					el.textContent = label;
 				}
 			});
+			updateStepNumbers(visible);
+			updateStepper(step, visible);
+		}
+
+		function updateStepNumbers(visible) {
+			var list = visible || getVisibleSteps();
+			panels.forEach(function (panel) {
+				var n = parseInt(panel.getAttribute('data-booking-step'), 10);
+				var numEl = panel.querySelector('[data-booking-step-num]');
+				if (!numEl) {
+					return;
+				}
+				var idx = list.indexOf(n);
+				numEl.textContent = idx === -1 ? '' : String(idx + 1) + '.';
+			});
+		}
+
+		function updateStepper(step, visible) {
+			var list = visible || getVisibleSteps();
+			var hasExtras = serviceHasExtras(state.service);
+			var extrasTab = root.querySelector('[data-booking-extras-tab]');
+			var stepper = root.querySelector('[data-booking-stepper]');
+
+			root.setAttribute('data-booking-has-extras', hasExtras ? '1' : '0');
+			root.classList.toggle('booking-form--has-extras', hasExtras);
+			root.classList.toggle('booking-form--no-extras', !!state.service && !hasExtras);
+
+			if (stepper) {
+				stepper.hidden = step === SUCCESS_STEP;
+				stepper.setAttribute('aria-hidden', step === SUCCESS_STEP ? 'true' : 'false');
+			}
+
+			if (extrasTab) {
+				extrasTab.hidden = !hasExtras;
+				extrasTab.setAttribute('aria-hidden', hasExtras ? 'false' : 'true');
+			}
+
+			root.querySelectorAll('[data-booking-step-item]').forEach(function (item) {
+				var n = parseInt(item.getAttribute('data-booking-step-item'), 10);
+				var btn = item.querySelector('[data-booking-step-tab]');
+				var indexEl = item.querySelector('[data-booking-step-index]');
+				var idx = list.indexOf(n);
+				var isVisible = idx !== -1;
+				var currentIdx = list.indexOf(step);
+				var isCurrent = n === step;
+				var isDone = isVisible && currentIdx !== -1 && idx < currentIdx;
+
+				if (n === 2 && !hasExtras) {
+					item.hidden = true;
+					item.setAttribute('aria-hidden', 'true');
+					if (btn) {
+						btn.disabled = true;
+						btn.setAttribute('aria-disabled', 'true');
+						btn.removeAttribute('aria-current');
+						btn.tabIndex = -1;
+					}
+					return;
+				}
+
+				item.hidden = false;
+				item.setAttribute('aria-hidden', 'false');
+				item.classList.toggle('is-current', isCurrent);
+				item.classList.toggle('is-done', isDone);
+
+				if (indexEl && isVisible) {
+					indexEl.textContent = String(idx + 1);
+				}
+
+				if (btn) {
+					/* Allow jump only to current or earlier visible steps; hard-block extras when skipped. */
+					var canJump = isVisible && currentIdx !== -1 && idx <= currentIdx;
+					btn.disabled = !canJump;
+					btn.setAttribute('aria-disabled', canJump ? 'false' : 'true');
+					btn.tabIndex = canJump ? 0 : -1;
+					if (isCurrent) {
+						btn.setAttribute('aria-current', 'step');
+					} else {
+						btn.removeAttribute('aria-current');
+					}
+				}
+			});
 		}
 
 		function getVisibleSteps() {
@@ -782,6 +863,25 @@
 				return visible[visible.length - 1];
 			}
 			return visible[idx + 1];
+		}
+
+		function getPrevStep(step) {
+			var visible = getVisibleSteps();
+			var idx = visible.indexOf(step);
+			if (idx <= 0) {
+				return 1;
+			}
+			return visible[idx - 1];
+		}
+
+		function clearAddonsIfNeeded() {
+			if (!serviceHasExtras(state.service)) {
+				if (state.addons.length) {
+					state.addons = [];
+					invalidateServerQuote();
+				}
+				renderAddons();
+			}
 		}
 
 		function syncRoomFields() {
@@ -848,9 +948,10 @@
 			}
 
 			if (!hasExtras) {
-				state.addons = [];
-				renderAddons();
+				clearAddonsIfNeeded();
 			}
+
+			updateStepper(state.step, getVisibleSteps());
 		}
 
 		function setLoading(loading) {
@@ -1244,12 +1345,16 @@
 				state.service = btn.getAttribute('data-booking-service') || '';
 				invalidateServerQuote();
 				showError('');
-				if (!serviceHasExtras(state.service)) {
-					state.addons = [];
-				}
+				clearAddonsIfNeeded();
 				renderServiceCards();
 				syncRoomFields();
-				updateStepLabels(state.step);
+
+				/* Leave Extra Services if the new service skips that step. */
+				if (state.step === 2 && !serviceHasExtras(state.service)) {
+					setStep(1);
+				} else {
+					updateStepLabels(state.step);
+				}
 				syncState();
 			});
 		});
@@ -1447,6 +1552,39 @@
 					return;
 				}
 				setStep(getNextStep(state.step));
+			});
+		});
+
+		root.querySelectorAll('[data-booking-back]').forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				if (state.step <= 1 || state.step === SUCCESS_STEP) {
+					return;
+				}
+				setStep(getPrevStep(state.step));
+			});
+		});
+
+		root.querySelectorAll('[data-booking-step-tab]').forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				var target = parseInt(btn.getAttribute('data-booking-step-tab'), 10);
+				if (isNaN(target) || target === state.step) {
+					return;
+				}
+				/* Hard-block Extra Services when Regular / Airbnb (no extras). */
+				if (target === 2 && !serviceHasExtras(state.service)) {
+					return;
+				}
+				var visible = getVisibleSteps();
+				if (visible.indexOf(target) === -1) {
+					return;
+				}
+				/* Only allow navigating to current or earlier steps. */
+				var currentIdx = visible.indexOf(state.step);
+				var targetIdx = visible.indexOf(target);
+				if (targetIdx > currentIdx) {
+					return;
+				}
+				setStep(target);
 			});
 		});
 

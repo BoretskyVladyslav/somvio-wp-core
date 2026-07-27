@@ -75,10 +75,39 @@ $somvio_bf_counters = array(
 		<form class="booking-form__form" data-booking-form-el novalidate>
 			<p class="booking-form__error" data-booking-error hidden role="alert"></p>
 
+			<nav class="booking-form__stepper" data-booking-stepper aria-label="<?php esc_attr_e( 'Booking progress', 'somvio' ); ?>">
+				<ol class="booking-form__stepper-list">
+					<li class="booking-form__stepper-item is-current" data-booking-step-item="1">
+						<button type="button" class="booking-form__stepper-btn" data-booking-step-tab="1" aria-current="step">
+							<span class="booking-form__stepper-index" data-booking-step-index>1</span>
+							<span class="booking-form__stepper-label"><?php esc_html_e( 'Choose service', 'somvio' ); ?></span>
+						</button>
+					</li>
+					<li class="booking-form__stepper-item" data-booking-step-item="2" data-booking-extras-tab>
+						<button type="button" class="booking-form__stepper-btn" data-booking-step-tab="2">
+							<span class="booking-form__stepper-index" data-booking-step-index>2</span>
+							<span class="booking-form__stepper-label"><?php esc_html_e( 'Extra Services', 'somvio' ); ?></span>
+						</button>
+					</li>
+					<li class="booking-form__stepper-item" data-booking-step-item="3">
+						<button type="button" class="booking-form__stepper-btn" data-booking-step-tab="3">
+							<span class="booking-form__stepper-index" data-booking-step-index>3</span>
+							<span class="booking-form__stepper-label"><?php esc_html_e( 'Get Your Date', 'somvio' ); ?></span>
+						</button>
+					</li>
+					<li class="booking-form__stepper-item" data-booking-step-item="4">
+						<button type="button" class="booking-form__stepper-btn" data-booking-step-tab="4">
+							<span class="booking-form__stepper-index" data-booking-step-index>4</span>
+							<span class="booking-form__stepper-label"><?php esc_html_e( 'Contact', 'somvio' ); ?></span>
+						</button>
+					</li>
+				</ol>
+			</nav>
+
 			<?php /* —— Step 1: Choose service — Figma 418:6214 —— */ ?>
 			<div class="booking-form__card booking-form__card--step1" data-booking-step="1" data-booking-panel>
 				<h2 class="booking-form__step-title">
-					<span class="booking-form__step-num" aria-hidden="true">1.</span>
+					<span class="booking-form__step-num" data-booking-step-num aria-hidden="true">1.</span>
 					<?php esc_html_e( 'Choose service', 'somvio' ); ?>
 				</h2>
 
@@ -220,7 +249,7 @@ $somvio_bf_counters = array(
 			<?php /* —— Step 2: Extra Services — Figma 418:6259 —— */ ?>
 			<div class="booking-form__card booking-form__card--step2" data-booking-step="2" data-booking-panel hidden>
 				<h2 class="booking-form__step-title">
-					<span class="booking-form__step-num" aria-hidden="true">2.</span>
+					<span class="booking-form__step-num" data-booking-step-num aria-hidden="true">2.</span>
 					<?php esc_html_e( 'Extra Services', 'somvio' ); ?>
 				</h2>
 
@@ -288,6 +317,9 @@ $somvio_bf_counters = array(
 				<input type="hidden" name="addons" data-booking-field="addons" value="">
 
 				<div class="booking-form__footer">
+					<button type="button" class="booking-form__back btn btn--outline" data-booking-back>
+						<span class="btn__label"><?php esc_html_e( 'Back', 'somvio' ); ?></span>
+					</button>
 					<button type="button" class="booking-form__next btn btn--primary btn--has-icon" data-booking-next>
 						<span class="btn__label" data-booking-next-label><?php esc_html_e( 'Next Step', 'somvio' ); ?></span>
 						<span class="btn__icon" data-booking-next-icon aria-hidden="true">
@@ -303,7 +335,7 @@ $somvio_bf_counters = array(
 			<?php /* —— Step 3: Get Your Date — Figma 418:6269 —— */ ?>
 			<div class="booking-form__card booking-form__card--step3" data-booking-step="3" data-booking-panel hidden>
 				<h2 class="booking-form__step-title">
-					<span class="booking-form__step-num" aria-hidden="true">3.</span>
+					<span class="booking-form__step-num" data-booking-step-num aria-hidden="true">3.</span>
 					<?php esc_html_e( 'Get Your Date', 'somvio' ); ?>
 				</h2>
 
@@ -405,6 +437,9 @@ $somvio_bf_counters = array(
 				<p class="booking-form__field-error" data-booking-field-error="date" hidden role="alert"></p>
 
 				<div class="booking-form__footer">
+					<button type="button" class="booking-form__back btn btn--outline" data-booking-back>
+						<span class="btn__label"><?php esc_html_e( 'Back', 'somvio' ); ?></span>
+					</button>
 					<button type="button" class="booking-form__next btn btn--primary btn--has-icon" data-booking-next disabled aria-disabled="true" title="<?php esc_attr_e( 'Select a date and time to continue', 'somvio' ); ?>">
 						<span class="btn__label" data-booking-next-label><?php esc_html_e( 'Next Step', 'somvio' ); ?></span>
 						<span class="btn__icon" data-booking-next-icon aria-hidden="true">
@@ -420,7 +455,7 @@ $somvio_bf_counters = array(
 			<?php /* —— Step 4: Contact —— */ ?>
 			<div class="booking-form__card booking-form__card--step4" data-booking-step="4" data-booking-panel hidden>
 				<h2 class="booking-form__step-title">
-					<span class="booking-form__step-num" aria-hidden="true">4.</span>
+					<span class="booking-form__step-num" data-booking-step-num aria-hidden="true">4.</span>
 					<?php esc_html_e( 'Get Your Instant Quote', 'somvio' ); ?>
 				</h2>
 
@@ -560,6 +595,9 @@ $somvio_bf_counters = array(
 				<p class="booking-form__field-error" data-booking-field-error="terms_accepted" hidden role="alert"></p>
 
 				<div class="booking-form__footer">
+					<button type="button" class="booking-form__back btn btn--outline" data-booking-back>
+						<span class="btn__label"><?php esc_html_e( 'Back', 'somvio' ); ?></span>
+					</button>
 					<button type="button" class="booking-form__next btn btn--primary btn--has-icon" data-booking-next disabled aria-disabled="true" aria-busy="false" title="<?php esc_attr_e( 'Complete required fields and accept the terms to continue', 'somvio' ); ?>">
 						<span class="booking-form__spinner" data-booking-spinner hidden aria-hidden="true"></span>
 						<span class="btn__label" data-booking-next-label><?php esc_html_e( 'Complete Booking', 'somvio' ); ?></span>
