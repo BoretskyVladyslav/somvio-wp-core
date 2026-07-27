@@ -208,7 +208,7 @@ body.somvio-has-hero .site-main {
 	display: none !important;
 }
 
-/* Neutralize default GP footer until custom footer ships */
+/* Neutralize leftover GeneratePress footer chrome */
 .site-footer,
 .footer-widgets-container,
 .site-info,
@@ -223,13 +223,6 @@ body.somvio-has-hero .site-main {
 .site-footer .footer-widgets,
 .footer-widgets-container {
 	display: none;
-}
-
-.site-info {
-	padding: 1.25rem var(--somvio-container-pad);
-	text-align: center;
-	font-size: var(--somvio-font-size-sm);
-	opacity: 0.55;
 }
 
 /* Utility: fluid BEM content shell for future blocks */
@@ -3708,8 +3701,8 @@ a.site-footer__contact-text:focus-visible {
 	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 	align-items: center;
 	gap: 20px;
-	padding: 20px 0;
-	border-top: 1px solid rgba(133, 149, 159, 0.2);
+	padding: 30px 0 20px;
+	border-top: 1px solid rgba(255, 255, 255, 0.1);
 	font-family: var(--somvio-font-sans);
 	font-size: 16px;
 	font-weight: 400;
@@ -3832,7 +3825,7 @@ a.site-footer__contact-text:focus-visible {
 
 	.site-footer__grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 40px 30px;
+		gap: 32px 30px;
 	}
 
 	.site-footer__col--brand {
@@ -3847,16 +3840,17 @@ a.site-footer__contact-text:focus-visible {
 	}
 
 	.site-footer__inner {
-		gap: 40px;
+		gap: 32px;
 	}
 
 	.site-footer__grid {
 		grid-template-columns: 1fr;
-		gap: 40px;
+		gap: 32px;
 	}
 
 	.site-footer__col--brand {
-		gap: 28px;
+		gap: 24px;
+		align-items: flex-start;
 	}
 
 	.site-footer__list {
