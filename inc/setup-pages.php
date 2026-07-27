@@ -29,6 +29,7 @@ function somvio_get_core_pages() {
 		'blog'           => 'Blog',
 		'privacy-policy' => 'Privacy Policy',
 		'terms-conditions' => 'Terms & Conditions',
+		'legal'            => 'Somvio Legal & Policy Pack',
 	);
 
 	if ( function_exists( 'somvio_get_legal_pages_registry' ) ) {

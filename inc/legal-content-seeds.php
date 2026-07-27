@@ -107,9 +107,58 @@ function somvio_get_legal_page_seed_content( $slug ) {
 			return somvio_get_complaints_procedure_seed_content( $date );
 		case 'service-checklist':
 			return somvio_get_service_checklist_seed_content( $date );
+		case 'legal':
+			return somvio_get_legal_index_seed_content( $date );
 		default:
 			return '';
 	}
+}
+
+/**
+ * Master Legal Index hub seed HTML.
+ *
+ * @param string $date Effective date (escaped).
+ * @return string
+ */
+function somvio_get_legal_index_seed_content( $date = '' ) {
+	if ( '' === $date ) {
+		$date = esc_html( somvio_get_legal_effective_date() );
+	}
+
+	$items = array();
+	$n     = 0;
+
+	foreach ( somvio_get_legal_pages_registry() as $slug => $meta ) {
+		++$n;
+		$title   = isset( $meta['title'] ) ? (string) $meta['title'] : $slug;
+		$url     = esc_url( home_url( '/' . $slug . '/' ) );
+		$label   = esc_html( $title );
+		$num     = esc_html( sprintf( '%02d', $n ) );
+		$items[] = '<li class="legal-index__item">'
+			. '<a class="legal-index__card" href="' . $url . '">'
+			. '<span class="legal-index__num" aria-hidden="true">' . $num . '</span>'
+			. '<span class="legal-index__title">' . $label . '</span>'
+			. '</a></li>';
+	}
+
+	$grid = implode( "\n", $items );
+
+	return <<<HTML
+<div class="legal-content__section legal-index__meta">
+<p><strong>Version:</strong> 1.0</p>
+<p><strong>Prepared for:</strong> Somvio (<a href="mailto:info@somvio.co.uk">info@somvio.co.uk</a> | <a href="tel:+447402495410">+44 7402 495410</a>)</p>
+<p><strong>Service Area:</strong> Glasgow &amp; Surrounding Areas</p>
+<p><strong>Effective Date:</strong> {$date}</p>
+</div>
+<div class="legal-content__section">
+<h2>Policy Directory</h2>
+<nav class="legal-index" aria-label="Legal policies">
+<ul class="legal-index__grid">
+{$grid}
+</ul>
+</nav>
+</div>
+HTML;
 }
 
 /**

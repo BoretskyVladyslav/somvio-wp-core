@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once get_stylesheet_directory() . '/inc/legal-content-seeds.php';
 
 /** @var int Bump to force re-seed all legal page post_content. */
-const SOMVIO_LEGAL_CONTENT_VERSION = 3;
+const SOMVIO_LEGAL_CONTENT_VERSION = 4;
 
 /**
  * Whether the current view is a legal page with a dark hero.
@@ -28,7 +28,7 @@ function somvio_is_legal_page() {
 		}
 	}
 
-	if ( is_page( 'terms-of-use' ) ) {
+	if ( is_page( 'legal' ) || is_page( 'terms-of-use' ) ) {
 		return true;
 	}
 
@@ -244,9 +244,14 @@ function somvio_ensure_all_legal_pages() {
 	}
 
 	foreach ( somvio_get_legal_pages_registry() as $slug => $meta ) {
-		$title       = isset( $meta['title'] ) ? (string) $meta['title'] : $slug;
+		$title        = isset( $meta['title'] ) ? (string) $meta['title'] : $slug;
 		$ids[ $slug ] = somvio_ensure_legal_page( $slug, $title );
 	}
+
+	$ids['legal'] = somvio_ensure_legal_page(
+		'legal',
+		__( 'Somvio Legal & Policy Pack', 'somvio' )
+	);
 
 	return $ids;
 }
@@ -323,6 +328,11 @@ function somvio_get_current_legal_hero_args() {
 	$meta     = isset( $registry[ $slug ] ) ? $registry[ $slug ] : array();
 	$title    = isset( $meta['title'] ) ? (string) $meta['title'] : get_the_title();
 	$lead     = isset( $meta['lead'] ) ? (string) $meta['lead'] : '';
+
+	if ( 'legal' === $slug ) {
+		$title = __( 'Somvio Legal & Policy Pack', 'somvio' );
+		$lead  = __( 'Version 1.0', 'somvio' );
+	}
 
 	if ( '' === $title ) {
 		$title = __( 'Legal', 'somvio' );
