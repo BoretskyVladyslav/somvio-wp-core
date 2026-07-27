@@ -37,7 +37,7 @@ function somvio_get_email() {
  * @return string
  */
 function somvio_get_location() {
-	return (string) apply_filters( 'somvio_location', __( 'London, United Kingdom', 'somvio' ) );
+	return (string) apply_filters( 'somvio_location', __( 'Glasgow, United Kingdom', 'somvio' ) );
 }
 
 /**

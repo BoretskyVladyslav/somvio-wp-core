@@ -5,8 +5,8 @@
 (function () {
 	'use strict';
 
-	var TOTAL_STEPS = 4;
-	var SUCCESS_STEP = 5;
+	var TOTAL_STEPS = 5;
+	var SUCCESS_STEP = 6;
 	var cfg = window.somvioQuoteCalc || {};
 	var rates = cfg.rates || {};
 	var i18n = cfg.i18n || {};
@@ -87,6 +87,41 @@
 		return trim(name).length >= 2;
 	}
 
+	function serviceHasExtras(service) {
+		var list = rates.extras_services;
+		if (Array.isArray(list) && list.length) {
+			return list.indexOf(service) !== -1;
+		}
+		return (
+			service === 'deep-cleaning' ||
+			service === 'end-of-tenancy' ||
+			service === 'after-builders'
+		);
+	}
+
+	function getRoomFieldsForService(service) {
+		if (service === 'regular-cleaning') {
+			return ['bedrooms'];
+		}
+		if (service === 'airbnb-cleaning') {
+			return ['bedrooms', 'bathrooms', 'linen_changes'];
+		}
+		if (
+			service === 'deep-cleaning' ||
+			service === 'end-of-tenancy' ||
+			service === 'after-builders'
+		) {
+			return ['main_rooms', 'bedrooms', 'bathrooms'];
+		}
+		return ['bedrooms', 'bathrooms'];
+	}
+
+	function bedroomHomeLabel(n) {
+		var count = parseInt(n, 10) || 1;
+		var tpl = i18n.bedroomHome || '%d Bedroom Home';
+		return tpl.replace('%d', String(count));
+	}
+
 	/**
 	 * @param {object} state
 	 * @returns {number}
@@ -108,7 +143,15 @@
 				? Number(rates.property_mult[state.property])
 				: 1;
 
-		return Math.round((base + bathExtra) * svcMult * propMult * 100) / 100;
+		var addonTotal = 0;
+		var addonDefs = rates.addons || {};
+		(state.addons || []).forEach(function (key) {
+			if (addonDefs[key] && addonDefs[key].price != null) {
+				addonTotal += Number(addonDefs[key].price);
+			}
+		});
+
+		return Math.round(((base + bathExtra) * svcMult * propMult + addonTotal) * 100) / 100;
 	}
 
 	/**
@@ -176,8 +219,12 @@
 			step: 1,
 			service: '',
 			property: '',
+			main_rooms: '1',
 			bedrooms: '1',
-			bathrooms: '2',
+			bathrooms: '1',
+			linen_changes: '0',
+			welcome_pack: 'no',
+			addons: [],
 			date: '',
 			time: '',
 			name: '',
@@ -200,7 +247,7 @@
 		}
 
 		function readFields() {
-			['service', 'property', 'bedrooms', 'bathrooms', 'date', 'time', 'name', 'email', 'phone', 'comment'].forEach(
+			['service', 'property', 'main_rooms', 'bedrooms', 'bathrooms', 'linen_changes', 'date', 'time', 'name', 'email', 'phone', 'comment'].forEach(
 				function (key) {
 					var el = field(key);
 					if (el) {
@@ -208,7 +255,111 @@
 					}
 				}
 			);
+			var welcomeEl = root.querySelector('[data-quote-field="welcome_pack"]:checked');
+			state.welcome_pack = welcomeEl ? welcomeEl.value : 'no';
+			if (state.service === 'regular-cleaning') {
+				state.bathrooms = state.bathrooms || '1';
+			}
 			state.previewTotal = getPreviewTotal(state);
+		}
+
+		function getVisibleSteps() {
+			return serviceHasExtras(state.service) ? [1, 2, 3, 4, 5] : [1, 3, 4, 5];
+		}
+
+		function getNextStep(step) {
+			var visible = getVisibleSteps();
+			var idx = visible.indexOf(step);
+			if (idx === -1) {
+				if (step === 2 && !serviceHasExtras(state.service)) {
+					return 3;
+				}
+				return Math.min(step + 1, TOTAL_STEPS);
+			}
+			if (idx >= visible.length - 1) {
+				return visible[visible.length - 1];
+			}
+			return visible[idx + 1];
+		}
+
+		function getPrevStep(step) {
+			var visible = getVisibleSteps();
+			var idx = visible.indexOf(step);
+			if (idx <= 0) {
+				return 1;
+			}
+			return visible[idx - 1];
+		}
+
+		function renderAddons() {
+			root.querySelectorAll('[data-quote-addon]').forEach(function (btn) {
+				var key = btn.getAttribute('data-quote-addon');
+				var on = state.addons.indexOf(key) !== -1;
+				btn.classList.toggle('is-selected', on);
+				btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+			});
+			var addonsField = field('addons');
+			if (addonsField) {
+				addonsField.value = state.addons.join(',');
+			}
+		}
+
+		function syncRoomFields() {
+			var fields = getRoomFieldsForService(state.service);
+			var countersWrap = root.querySelector('[data-quote-counters]');
+			var welcomeWrap = root.querySelector('[data-quote-welcome]');
+			var hasExtras = serviceHasExtras(state.service);
+
+			root.setAttribute('data-quote-has-extras', hasExtras ? '1' : '0');
+
+			if (countersWrap) {
+				fields.forEach(function (key) {
+					var el = countersWrap.querySelector('[data-quote-counter="' + key + '"]');
+					if (el) {
+						countersWrap.appendChild(el);
+					}
+				});
+			}
+
+			root.querySelectorAll('[data-quote-counter]').forEach(function (wrap) {
+				var key = wrap.getAttribute('data-quote-counter');
+				var show = fields.indexOf(key) !== -1;
+				wrap.hidden = !show;
+				wrap.setAttribute('aria-hidden', show ? 'false' : 'true');
+
+				var labelEl = wrap.querySelector('[data-quote-counter-label]');
+				var input = wrap.querySelector('[data-quote-field="' + key + '"]');
+				if (!labelEl || !input) {
+					return;
+				}
+
+				if (state.service === 'regular-cleaning' && key === 'bedrooms') {
+					labelEl.textContent = bedroomHomeLabel(input.value || state.bedrooms);
+				} else if (state.service === 'airbnb-cleaning' && key === 'bedrooms') {
+					labelEl.textContent = i18n.noOfBedrooms || 'No. of Bedrooms';
+				} else if (state.service === 'airbnb-cleaning' && key === 'bathrooms') {
+					labelEl.textContent = i18n.noOfBathrooms || 'No. of Bathrooms';
+				} else if (key === 'main_rooms') {
+					labelEl.textContent = i18n.mainRooms || 'Main rooms';
+				} else if (key === 'bedrooms') {
+					labelEl.textContent = i18n.bedrooms || 'Bedrooms';
+				} else if (key === 'bathrooms') {
+					labelEl.textContent = i18n.bathrooms || 'Bathrooms';
+				} else if (key === 'linen_changes') {
+					labelEl.textContent = i18n.linenChanges || 'No. of Linen Changes';
+				}
+			});
+
+			if (welcomeWrap) {
+				var showWelcome = state.service === 'airbnb-cleaning';
+				welcomeWrap.hidden = !showWelcome;
+				welcomeWrap.setAttribute('aria-hidden', showWelcome ? 'false' : 'true');
+			}
+
+			if (!hasExtras) {
+				state.addons = [];
+				renderAddons();
+			}
 		}
 
 		function showError(msg) {
@@ -390,9 +541,16 @@
 		}
 
 		function setStep(step) {
+			if (step === 2 && !serviceHasExtras(state.service)) {
+				step = 3;
+			}
+
 			state.step = step;
 			root.setAttribute('data-step', String(step));
 			var isSuccess = step === SUCCESS_STEP;
+			var visible = getVisibleSteps();
+			var displayStep = Math.max(1, visible.indexOf(step) + 1);
+			var totalVisible = visible.length;
 
 			root.classList.toggle('quote-calculator--success', isSuccess);
 
@@ -405,9 +563,11 @@
 				titleEl.hidden = isSuccess;
 				if (!isSuccess) {
 					titleEl.textContent =
-						step === 2
+						step === 3
 							? i18n.titleDate || 'Get Your Date'
-							: i18n.titleDefault || 'Get Your Instant Quote';
+							: step === 2
+								? i18n.titleExtras || 'Extra Services'
+								: i18n.titleDefault || 'Get Your Instant Quote';
 				}
 			}
 
@@ -416,13 +576,12 @@
 				if (!isSuccess) {
 					var tpl = i18n.stepOf || 'Step %1$d of %2$d';
 					stepLabel.textContent = tpl
-						.replace('%1$d', String(Math.min(step, TOTAL_STEPS)))
-						.replace('%2$d', String(TOTAL_STEPS));
+						.replace('%1$d', String(Math.min(displayStep, totalVisible)))
+						.replace('%2$d', String(totalVisible));
 				}
 			}
 
 			if (backBtn) {
-				// Never show Back on step 1 or success — Close only on success.
 				backBtn.hidden = isSuccess || step <= 1;
 				backBtn.setAttribute('aria-hidden', isSuccess || step <= 1 ? 'true' : 'false');
 			}
@@ -444,13 +603,13 @@
 				footer.classList.toggle('quote-calculator__footer--center', isSuccess);
 			}
 
-			if (step === 2) {
+			if (step === 3) {
 				renderCalendar();
 			}
-			if (step === 3) {
+			if (step === 4) {
 				renderSlots();
 			}
-			if (step === 4) {
+			if (step === 5) {
 				readFields();
 				renderPrice();
 			}
@@ -462,7 +621,7 @@
 			root.dispatchEvent(
 				new CustomEvent('somvio:quote-step', {
 					bubbles: true,
-					detail: { step: step, root: root },
+					detail: { step: step, root: root, hasExtras: serviceHasExtras(state.service) },
 				})
 			);
 		}
@@ -517,7 +676,16 @@
 			readFields();
 
 			if (state.step === 1) {
-				if (!state.service || !state.property || !state.bedrooms || !state.bathrooms) {
+				var rooms = getRoomFieldsForService(state.service);
+				if (!state.service || !state.property) {
+					showError(i18n.required || 'Please complete the required fields.');
+					return false;
+				}
+				if (rooms.indexOf('bedrooms') !== -1 && !state.bedrooms) {
+					showError(i18n.required || 'Please complete the required fields.');
+					return false;
+				}
+				if (rooms.indexOf('bathrooms') !== -1 && !state.bathrooms) {
 					showError(i18n.required || 'Please complete the required fields.');
 					return false;
 				}
@@ -525,6 +693,10 @@
 			}
 
 			if (state.step === 2) {
+				return true;
+			}
+
+			if (state.step === 3) {
 				clearFieldErrors();
 				if (!state.date) {
 					showError(i18n.required || 'Please complete the required fields.');
@@ -533,7 +705,7 @@
 				return true;
 			}
 
-			if (state.step === 3) {
+			if (state.step === 4) {
 				clearFieldErrors();
 				if (!state.time) {
 					setFieldError('time', i18n.selectTime || 'Please select a time slot.');
@@ -543,7 +715,7 @@
 				return true;
 			}
 
-			if (state.step === 4) {
+			if (state.step === 5) {
 				var result = validateContact();
 				if (!result.valid && result.firstInvalid) {
 					result.firstInvalid.focus();
@@ -585,8 +757,12 @@
 			var payload = {
 				service: state.service,
 				property: state.property,
-				bedrooms: parseInt(state.bedrooms, 10),
-				bathrooms: parseInt(state.bathrooms, 10),
+				bedrooms: parseInt(state.bedrooms, 10) || 1,
+				bathrooms: parseInt(state.bathrooms, 10) || 1,
+				main_rooms: parseInt(state.main_rooms, 10) || 0,
+				linen_changes: parseInt(state.linen_changes, 10) || 0,
+				welcome_pack: state.welcome_pack === 'yes' ? 'yes' : 'no',
+				addons: serviceHasExtras(state.service) ? state.addons.slice() : [],
 				date: state.date,
 				time: state.time,
 				name: trim(state.name),
@@ -664,14 +840,23 @@
 			state.email = '';
 			state.phone = '';
 			state.comment = '';
+			state.addons = [];
+			state.welcome_pack = 'no';
 			state.quotedTotal = null;
 			state.calYear = today.getFullYear();
 			state.calMonth = today.getMonth();
 
-			['date', 'time', 'name', 'email', 'phone', 'comment'].forEach(function (key) {
+			['date', 'time', 'name', 'email', 'phone', 'comment', 'addons'].forEach(function (key) {
 				var el = field(key);
 				if (el) {
 					el.value = '';
+				}
+			});
+			root.querySelectorAll('[data-quote-field="welcome_pack"]').forEach(function (radio) {
+				radio.checked = radio.value === 'no';
+				var option = radio.closest('.quote-calculator__welcome-option');
+				if (option) {
+					option.classList.toggle('is-selected', radio.checked);
 				}
 			});
 			if (dateDisplay) {
@@ -679,6 +864,8 @@
 			}
 
 			renderSlots();
+			renderAddons();
+			syncRoomFields();
 			clearFieldErrors();
 			setStep(1);
 			readFields();
@@ -694,13 +881,110 @@
 			}
 		}
 
-		['service', 'property', 'bedrooms', 'bathrooms'].forEach(function (key) {
+		['service', 'property'].forEach(function (key) {
 			var el = field(key);
 			if (!el) {
 				return;
 			}
 			el.addEventListener('change', function () {
 				state.quotedTotal = null;
+				if (key === 'service') {
+					state.service = el.value;
+					if (!serviceHasExtras(state.service)) {
+						state.addons = [];
+					}
+					syncRoomFields();
+				}
+				readFields();
+				renderPrice();
+			});
+		});
+
+		root.querySelectorAll('[data-quote-counter]').forEach(function (wrap) {
+			var key = wrap.getAttribute('data-quote-counter');
+			var input = wrap.querySelector('[data-quote-field="' + key + '"]');
+			var dec = wrap.querySelector('[data-quote-counter-dec]');
+			var inc = wrap.querySelector('[data-quote-counter-inc]');
+			if (!input) {
+				return;
+			}
+			var min = parseInt(input.getAttribute('min'), 10);
+			var max = parseInt(input.getAttribute('max'), 10);
+			if (isNaN(min)) {
+				min = 0;
+			}
+			if (isNaN(max)) {
+				max = 10;
+			}
+
+			function syncButtons(n) {
+				if (dec) {
+					dec.disabled = n <= min;
+				}
+				if (inc) {
+					inc.disabled = n >= max;
+				}
+			}
+
+			function setVal(n) {
+				n = Math.max(min, Math.min(max, n));
+				input.value = String(n);
+				state[key] = String(n);
+				state.quotedTotal = null;
+				syncButtons(n);
+				if (state.service === 'regular-cleaning' && key === 'bedrooms') {
+					var labelEl = wrap.querySelector('[data-quote-counter-label]');
+					if (labelEl) {
+						labelEl.textContent = bedroomHomeLabel(n);
+					}
+				}
+				readFields();
+				renderPrice();
+			}
+
+			syncButtons(parseInt(input.value, 10) || min);
+
+			if (dec) {
+				dec.addEventListener('click', function () {
+					setVal((parseInt(input.value, 10) || 0) - 1);
+				});
+			}
+			if (inc) {
+				inc.addEventListener('click', function () {
+					setVal((parseInt(input.value, 10) || 0) + 1);
+				});
+			}
+		});
+
+		root.querySelectorAll('[data-quote-field="welcome_pack"]').forEach(function (radio) {
+			radio.addEventListener('change', function () {
+				if (!radio.checked) {
+					return;
+				}
+				state.welcome_pack = radio.value;
+				root.querySelectorAll('[data-quote-field="welcome_pack"]').forEach(function (el) {
+					var option = el.closest('.quote-calculator__welcome-option');
+					if (option) {
+						option.classList.toggle('is-selected', !!el.checked);
+					}
+				});
+				state.quotedTotal = null;
+				readFields();
+				renderPrice();
+			});
+		});
+
+		root.querySelectorAll('[data-quote-addon]').forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				var key = btn.getAttribute('data-quote-addon');
+				var idx = state.addons.indexOf(key);
+				if (idx === -1) {
+					state.addons.push(key);
+				} else {
+					state.addons.splice(idx, 1);
+				}
+				state.quotedTotal = null;
+				renderAddons();
 				readFields();
 				renderPrice();
 			});
@@ -784,14 +1068,14 @@
 					submitQuote();
 					return;
 				}
-				setStep(state.step + 1);
+				setStep(getNextStep(state.step));
 			});
 		}
 
 		if (backBtn) {
 			backBtn.addEventListener('click', function () {
 				if (state.step > 1 && state.step <= TOTAL_STEPS) {
-					setStep(state.step - 1);
+					setStep(getPrevStep(state.step));
 				}
 			});
 		}
@@ -804,6 +1088,8 @@
 
 		renderWeekdays();
 		readFields();
+		syncRoomFields();
+		renderAddons();
 		renderPrice();
 		setStep(1);
 

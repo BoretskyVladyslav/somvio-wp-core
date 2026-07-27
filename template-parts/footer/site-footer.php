@@ -20,7 +20,7 @@ $somvio_email    = function_exists( 'somvio_get_email' ) ? somvio_get_email() : 
 	'display' => 'Info@somvio.co.uk',
 	'href'    => 'mailto:Info@somvio.co.uk',
 );
-$somvio_location = function_exists( 'somvio_get_location' ) ? somvio_get_location() : __( 'London, United Kingdom', 'somvio' );
+$somvio_location = function_exists( 'somvio_get_location' ) ? somvio_get_location() : __( 'Glasgow, United Kingdom', 'somvio' );
 $somvio_whatsapp = function_exists( 'somvio_get_whatsapp_url' ) ? somvio_get_whatsapp_url() : 'https://wa.me/447402495410';
 $somvio_socials  = function_exists( 'somvio_get_social_links' ) ? somvio_get_social_links() : array();
 

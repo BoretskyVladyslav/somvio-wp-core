@@ -43,7 +43,13 @@ get_header();
 			 */
 			do_action( 'somvio_about_page_content' );
 
-			get_template_part( 'template-parts/sections/testimonials' );
+			/**
+			 * Testimonials / Social Proof — re-enable with:
+			 * add_filter( 'somvio_show_testimonials', '__return_true' );
+			 */
+			if ( (bool) apply_filters( 'somvio_show_testimonials', false ) ) {
+				get_template_part( 'template-parts/sections/testimonials' );
+			}
 
 			if ( generate_has_default_loop() ) {
 				while ( have_posts() ) :

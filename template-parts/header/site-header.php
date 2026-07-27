@@ -55,13 +55,6 @@ $somvio_whatsapp  = function_exists( 'somvio_get_whatsapp_url' ) ? somvio_get_wh
 
 					<div class="somvio-header__drawer-actions">
 						<a
-							class="somvio-header__phone"
-							href="<?php echo esc_url( $somvio_phone['href'] ); ?>"
-						>
-							<?php echo esc_html( $somvio_phone['display'] ); ?>
-						</a>
-
-						<a
 							class="btn btn--outline btn--sm somvio-header__whatsapp"
 							href="<?php echo esc_url( $somvio_whatsapp ); ?>"
 							target="_blank"
@@ -99,14 +92,16 @@ $somvio_whatsapp  = function_exists( 'somvio_get_whatsapp_url' ) ? somvio_get_wh
 				</a>
 
 				<a
-					class="somvio-header__icon-btn somvio-header__phone-btn"
-					href="<?php echo esc_url( $somvio_phone['href'] ); ?>"
-					aria-label="<?php echo esc_attr( sprintf( /* translators: %s: phone number */ __( 'Call %s', 'somvio' ), $somvio_phone['display'] ) ); ?>"
+					class="somvio-header__icon-btn somvio-header__phone-btn somvio-header__whatsapp-btn"
+					href="<?php echo esc_url( $somvio_whatsapp ); ?>"
+					target="_blank"
+					rel="noopener noreferrer"
+					aria-label="<?php esc_attr_e( 'WhatsApp Us', 'somvio' ); ?>"
 				>
 					<span class="somvio-header__icon-btn-icon" aria-hidden="true">
 						<?php
 						// Trusted local theme SVG from assets/icons/.
-						echo somvio_get_icon( 'icon-phone' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						echo somvio_get_icon( 'icon-whatsapp' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						?>
 					</span>
 				</a>

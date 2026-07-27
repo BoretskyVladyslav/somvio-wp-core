@@ -31,8 +31,38 @@ $somvio_qc_default = isset( $somvio_qc_args['default_service'] )
 $somvio_qc_services  = somvio_get_quote_service_options();
 $somvio_qc_props     = somvio_get_quote_property_options();
 $somvio_qc_rates     = somvio_get_quote_rates();
-$somvio_qc_slots = isset( $somvio_qc_rates['time_slots'] ) ? $somvio_qc_rates['time_slots'] : array();
-$somvio_qc_uid   = 'qc-' . wp_unique_id();
+$somvio_qc_slots     = isset( $somvio_qc_rates['time_slots'] ) ? $somvio_qc_rates['time_slots'] : array();
+$somvio_qc_addons    = isset( $somvio_qc_rates['addons'] ) && is_array( $somvio_qc_rates['addons'] ) ? $somvio_qc_rates['addons'] : array();
+$somvio_qc_symbol    = isset( $somvio_qc_rates['symbol'] ) ? (string) $somvio_qc_rates['symbol'] : '£';
+$somvio_qc_uid       = 'qc-' . wp_unique_id();
+$somvio_qc_icons_uri = get_stylesheet_directory_uri() . '/assets/icons/';
+
+$somvio_qc_counters = array(
+	'main_rooms'    => array(
+		'label' => __( 'Main rooms', 'somvio' ),
+		'min'   => 1,
+		'max'   => 10,
+		'value' => 1,
+	),
+	'bedrooms'      => array(
+		'label' => __( 'Bedrooms', 'somvio' ),
+		'min'   => 1,
+		'max'   => 5,
+		'value' => 1,
+	),
+	'bathrooms'     => array(
+		'label' => __( 'Bathrooms', 'somvio' ),
+		'min'   => 1,
+		'max'   => 4,
+		'value' => 1,
+	),
+	'linen_changes' => array(
+		'label' => __( 'No. of Linen Changes', 'somvio' ),
+		'min'   => 0,
+		'max'   => 10,
+		'value' => 0,
+	),
+);
 
 if ( ! isset( $somvio_qc_services[ $somvio_qc_default ] ) ) {
 	$somvio_qc_default = 'regular-cleaning';
@@ -68,7 +98,7 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 	</h2>
 
 	<form class="quote-card__form quote-calculator__form" data-quote-form novalidate>
-		<?php /* —— Step 1: Property details (Figma 300:1766) —— */ ?>
+		<?php /* —— Step 1: Property details —— */ ?>
 		<div class="quote-calculator__step" data-quote-step="1" data-quote-panel>
 			<div class="quote-card__field quote-card__field--full">
 				<label class="quote-card__label" for="<?php echo esc_attr( $somvio_qc_uid ); ?>-service">
@@ -94,7 +124,7 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 				</div>
 			</div>
 
-			<div class="quote-card__field quote-card__field--full">
+			<div class="quote-card__field quote-card__field--full" data-quote-property-wrap>
 				<label class="quote-card__label" for="<?php echo esc_attr( $somvio_qc_uid ); ?>-property">
 					<?php esc_html_e( 'Property Type:', 'somvio' ); ?>
 				</label>
@@ -118,59 +148,96 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 				</div>
 			</div>
 
-			<div class="quote-card__row">
-				<div class="quote-card__field">
-					<label class="quote-card__label" for="<?php echo esc_attr( $somvio_qc_uid ); ?>-bedrooms">
-						<?php esc_html_e( 'Bedrooms', 'somvio' ); ?>
-					</label>
-					<div class="quote-card__select-wrap">
-						<select
-							class="quote-card__select"
-							id="<?php echo esc_attr( $somvio_qc_uid ); ?>-bedrooms"
-							name="bedrooms"
-							data-quote-field="bedrooms"
-							required
+			<div class="quote-calculator__counters" data-quote-counters>
+				<?php foreach ( $somvio_qc_counters as $somvio_qc_ckey => $somvio_qc_counter ) : ?>
+					<div
+						class="quote-calculator__counter"
+						data-quote-counter="<?php echo esc_attr( $somvio_qc_ckey ); ?>"
+						hidden
+					>
+						<label
+							class="quote-card__label"
+							for="<?php echo esc_attr( $somvio_qc_uid . '-' . $somvio_qc_ckey ); ?>"
+							data-quote-counter-label
 						>
-							<?php for ( $i = 1; $i <= 5; $i++ ) : ?>
-								<option value="<?php echo esc_attr( (string) $i ); ?>" <?php selected( 1, $i ); ?>>
-									<?php echo esc_html( 5 === $i ? '5+' : (string) $i ); ?>
-								</option>
-							<?php endfor; ?>
-						</select>
-						<span class="quote-card__chevron" aria-hidden="true">
-							<?php echo somvio_get_icon( 'icon-chevron-down' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						</span>
+							<?php echo esc_html( $somvio_qc_counter['label'] ); ?>
+						</label>
+						<div class="quote-calculator__counter-control">
+							<button
+								type="button"
+								class="quote-calculator__counter-btn quote-calculator__counter-btn--minus"
+								data-quote-counter-dec
+								aria-label="<?php echo esc_attr( sprintf( /* translators: %s: room type */ __( 'Decrease %s', 'somvio' ), $somvio_qc_counter['label'] ) ); ?>"
+							>
+								<span aria-hidden="true"><?php echo somvio_get_icon( 'icon-minus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+							</button>
+							<input
+								type="number"
+								class="quote-calculator__counter-value"
+								id="<?php echo esc_attr( $somvio_qc_uid . '-' . $somvio_qc_ckey ); ?>"
+								name="<?php echo esc_attr( $somvio_qc_ckey ); ?>"
+								data-quote-field="<?php echo esc_attr( $somvio_qc_ckey ); ?>"
+								value="<?php echo esc_attr( (string) $somvio_qc_counter['value'] ); ?>"
+								min="<?php echo esc_attr( (string) $somvio_qc_counter['min'] ); ?>"
+								max="<?php echo esc_attr( (string) $somvio_qc_counter['max'] ); ?>"
+								readonly
+								aria-live="polite"
+							>
+							<button
+								type="button"
+								class="quote-calculator__counter-btn quote-calculator__counter-btn--plus"
+								data-quote-counter-inc
+								aria-label="<?php echo esc_attr( sprintf( /* translators: %s: room type */ __( 'Increase %s', 'somvio' ), $somvio_qc_counter['label'] ) ); ?>"
+							>
+								<span aria-hidden="true"><?php echo somvio_get_icon( 'icon-plus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+							</button>
+						</div>
 					</div>
-				</div>
-
-				<div class="quote-card__field">
-					<label class="quote-card__label" for="<?php echo esc_attr( $somvio_qc_uid ); ?>-bathrooms">
-						<?php esc_html_e( 'Bathrooms', 'somvio' ); ?>
-					</label>
-					<div class="quote-card__select-wrap">
-						<select
-							class="quote-card__select"
-							id="<?php echo esc_attr( $somvio_qc_uid ); ?>-bathrooms"
-							name="bathrooms"
-							data-quote-field="bathrooms"
-							required
-						>
-							<?php for ( $i = 1; $i <= 4; $i++ ) : ?>
-								<option value="<?php echo esc_attr( (string) $i ); ?>" <?php selected( 2, $i ); ?>>
-									<?php echo esc_html( 4 === $i ? '4+' : (string) $i ); ?>
-								</option>
-							<?php endfor; ?>
-						</select>
-						<span class="quote-card__chevron" aria-hidden="true">
-							<?php echo somvio_get_icon( 'icon-chevron-down' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						</span>
-					</div>
-				</div>
+				<?php endforeach; ?>
 			</div>
+
+			<fieldset class="quote-calculator__welcome" data-quote-welcome hidden>
+				<legend class="quote-card__label"><?php esc_html_e( 'Welcome Pack Required?', 'somvio' ); ?></legend>
+				<div class="quote-calculator__welcome-options" role="radiogroup" aria-label="<?php esc_attr_e( 'Welcome Pack Required?', 'somvio' ); ?>">
+					<label class="quote-calculator__welcome-option">
+						<input type="radio" name="<?php echo esc_attr( $somvio_qc_uid ); ?>-welcome_pack" data-quote-field="welcome_pack" value="yes">
+						<span><?php esc_html_e( 'Yes', 'somvio' ); ?></span>
+					</label>
+					<label class="quote-calculator__welcome-option is-selected">
+						<input type="radio" name="<?php echo esc_attr( $somvio_qc_uid ); ?>-welcome_pack" data-quote-field="welcome_pack" value="no" checked>
+						<span><?php esc_html_e( 'No', 'somvio' ); ?></span>
+					</label>
+				</div>
+			</fieldset>
 		</div>
 
-		<?php /* —— Step 2: Date (Figma 300:1852) —— */ ?>
+		<?php /* —— Step 2: Extra Services (Deep / EOT / After Builders only) —— */ ?>
 		<div class="quote-calculator__step" data-quote-step="2" data-quote-panel hidden>
+			<p class="quote-card__label"><?php esc_html_e( 'Extra Services', 'somvio' ); ?></p>
+			<div class="quote-calculator__addons" role="group" aria-label="<?php esc_attr_e( 'Extra services', 'somvio' ); ?>">
+				<?php foreach ( $somvio_qc_addons as $somvio_qc_akey => $somvio_qc_addon ) : ?>
+					<?php
+					$somvio_qc_alabel = isset( $somvio_qc_addon['label'] ) ? (string) $somvio_qc_addon['label'] : $somvio_qc_akey;
+					$somvio_qc_aprice = isset( $somvio_qc_addon['price'] ) ? (float) $somvio_qc_addon['price'] : 0;
+					?>
+					<button
+						type="button"
+						class="quote-calculator__addon"
+						data-quote-addon="<?php echo esc_attr( $somvio_qc_akey ); ?>"
+						aria-pressed="false"
+					>
+						<span class="quote-calculator__addon-label"><?php echo esc_html( $somvio_qc_alabel ); ?></span>
+						<span class="quote-calculator__addon-price">
+							<?php echo esc_html( $somvio_qc_symbol . number_format_i18n( $somvio_qc_aprice, 0 ) ); ?>
+						</span>
+					</button>
+				<?php endforeach; ?>
+			</div>
+			<input type="hidden" name="addons" data-quote-field="addons" value="">
+		</div>
+
+		<?php /* —— Step 3: Date —— */ ?>
+		<div class="quote-calculator__step" data-quote-step="3" data-quote-panel hidden>
 			<div class="quote-card__field quote-card__field--full">
 				<label class="quote-card__label" for="<?php echo esc_attr( $somvio_qc_uid ); ?>-date-display">
 					<?php esc_html_e( 'Preferred date:', 'somvio' ); ?>
@@ -227,8 +294,8 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 			</div>
 		</div>
 
-		<?php /* —— Step 3: Time slots (Figma 300:1818) —— */ ?>
-		<div class="quote-calculator__step" data-quote-step="3" data-quote-panel hidden>
+		<?php /* —— Step 4: Time slots —— */ ?>
+		<div class="quote-calculator__step" data-quote-step="4" data-quote-panel hidden>
 			<div
 				class="quote-calculator__slots"
 				data-quote-slots
@@ -257,8 +324,8 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 			<p class="quote-calculator__field-error" data-quote-field-error="time" hidden role="alert"></p>
 		</div>
 
-		<?php /* —— Step 4: Contact (Figma 300:1792) —— */ ?>
-		<div class="quote-calculator__step" data-quote-step="4" data-quote-panel hidden>
+		<?php /* —— Step 5: Contact —— */ ?>
+		<div class="quote-calculator__step" data-quote-step="5" data-quote-panel hidden>
 			<div class="quote-card__field quote-card__field--full">
 				<label class="quote-card__label" for="<?php echo esc_attr( $somvio_qc_uid ); ?>-name">
 					<?php esc_html_e( 'Full name', 'somvio' ); ?>
@@ -330,8 +397,8 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 			</div>
 		</div>
 
-		<?php /* —— Success (Figma 409:6039) —— */ ?>
-		<div class="quote-calculator__step quote-calculator__step--success" data-quote-step="5" data-quote-panel hidden>
+		<?php /* —— Success —— */ ?>
+		<div class="quote-calculator__step quote-calculator__step--success" data-quote-step="6" data-quote-panel hidden>
 			<div class="quote-calculator__success">
 				<span class="quote-calculator__success-icon" aria-hidden="true">
 					<?php echo somvio_get_icon( 'icon-check-circle' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>

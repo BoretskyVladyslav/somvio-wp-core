@@ -50,7 +50,7 @@ $somvio_pricing_rows = array(
 				<?php esc_html_e( 'Transparent Pricing', 'somvio' ); ?>
 			</h2>
 			<p class="service-pricing__subtitle reveal-on-scroll" style="--reveal-delay: 0.05s;">
-				<?php esc_html_e( 'Final pricing depends on property size and cleaning requirements.', 'somvio' ); ?>
+				<?php esc_html_e( 'Placeholder prices — final pricing depends on property size and cleaning requirements.', 'somvio' ); ?>
 			</p>
 		</header>
 

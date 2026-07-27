@@ -8578,9 +8578,178 @@ body.somvio-has-hero.single-post .site-main > * {
 }
 
 .quote-calculator[data-step="1"] [data-quote-back],
-.quote-calculator[data-step="5"] [data-quote-back],
+.quote-calculator[data-step="6"] [data-quote-back],
 .quote-calculator--success [data-quote-back] {
 	display: none !important;
+}
+
+.quote-calculator__counters {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+	gap: 12px;
+	width: 100%;
+}
+
+.quote-calculator__counter[hidden],
+.quote-calculator__welcome[hidden] {
+	display: none !important;
+}
+
+.quote-calculator__counter {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	min-width: 0;
+}
+
+.quote-calculator__counter-control {
+	display: inline-flex;
+	align-items: center;
+	width: 100%;
+	min-height: var(--somvio-touch-min, 44px);
+	border: 1px solid #c0c0c0;
+	border-radius: var(--somvio-radius, 4px);
+	overflow: hidden;
+	background: transparent;
+}
+
+.quote-calculator__counter-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 40px;
+	width: 40px;
+	height: 44px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+}
+
+.quote-calculator__counter-btn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.quote-calculator__counter-btn svg {
+	width: 16px;
+	height: 16px;
+}
+
+.quote-calculator__counter-value {
+	flex: 1 1 auto;
+	width: 100%;
+	min-width: 0;
+	height: 44px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	text-align: center;
+	font-family: var(--somvio-font-sans);
+	font-size: 16px;
+	font-weight: 600;
+	color: inherit;
+	-moz-appearance: textfield;
+}
+
+.quote-calculator__counter-value::-webkit-outer-spin-button,
+.quote-calculator__counter-value::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+.quote-calculator__welcome {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin: 4px 0 0;
+	padding: 0;
+	border: 0;
+}
+
+.quote-calculator__welcome-options {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.quote-calculator__welcome-option {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 40px;
+	padding: 6px 12px;
+	border: 1px solid #c0c0c0;
+	border-radius: 4px;
+	cursor: pointer;
+	font-family: var(--somvio-font-sans);
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.quote-calculator__welcome-option.is-selected,
+.quote-calculator__welcome-option:has(input:checked) {
+	border-color: var(--somvio-color-accent-mid, #33aca6);
+	background: rgba(51, 172, 166, 0.12);
+}
+
+.quote-calculator__welcome-option input {
+	margin: 0;
+	accent-color: var(--somvio-color-accent-mid, #33aca6);
+}
+
+.quote-calculator__addons {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 8px;
+	max-height: min(42vh, 320px);
+	overflow: auto;
+	padding-right: 2px;
+}
+
+.quote-calculator__addon {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	width: 100%;
+	min-height: 44px;
+	padding: 10px 12px;
+	border: 1px solid #c0c0c0;
+	border-radius: 4px;
+	background: transparent;
+	color: inherit;
+	text-align: left;
+	cursor: pointer;
+	font-family: var(--somvio-font-sans);
+}
+
+.quote-calculator__addon.is-selected {
+	border-color: var(--somvio-color-accent-mid, #33aca6);
+	background: rgba(51, 172, 166, 0.12);
+}
+
+.quote-calculator__addon-label {
+	flex: 1 1 auto;
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.3;
+}
+
+.quote-calculator__addon-price {
+	flex: 0 0 auto;
+	font-size: 14px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.quote-card--solid .quote-calculator__counter-control,
+.quote-card--solid .quote-calculator__welcome-option,
+.quote-card--solid .quote-calculator__addon {
+	border-color: rgba(132, 142, 149, 0.35);
 }
 
 .quote-calculator--success {
@@ -8599,6 +8768,18 @@ body.somvio-has-hero.single-post .site-main > * {
 .quote-calculator__textarea,
 .quote-calculator__date-input {
 	cursor: pointer;
+}
+
+.quote-card:not(.quote-card--solid) .quote-calculator__counter-control,
+.quote-card:not(.quote-card--solid) .quote-calculator__welcome-option,
+.quote-card:not(.quote-card--solid) .quote-calculator__addon {
+	border-color: rgba(255, 255, 255, 0.35);
+	color: #ffffff;
+}
+
+.quote-card:not(.quote-card--solid) .quote-calculator__counter-value,
+.quote-card:not(.quote-card--solid) .quote-calculator__counter-btn {
+	color: #ffffff;
 }
 
 .quote-calculator__input,

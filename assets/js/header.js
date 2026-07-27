@@ -1,5 +1,5 @@
 /**
- * Somvio header — sticky scroll state, responsive nav drawer & Services accordion.
+ * Somvio header — sticky scroll state, responsive nav drawer & Services dropdown.
  */
 ( () => {
 	const header = document.querySelector( '#masthead.site-header, .somvio-header' );
@@ -18,6 +18,7 @@
 	const nav = header.querySelector( '.somvio-header__nav' );
 	const backdrop = header.querySelector( '.somvio-header__backdrop' );
 	const mqDesktop = window.matchMedia( '(min-width: 1024px)' );
+	const mqFinePointer = window.matchMedia( '(hover: hover) and (pointer: fine)' );
 	const body = document.body;
 
 	if ( ! toggle || ! nav ) {
@@ -27,14 +28,50 @@
 	const labelOpen = toggle.getAttribute( 'aria-label' ) || 'Open menu';
 	const labelClose = 'Close menu';
 
-	const closeMobileSubmenus = () => {
+	const parentLinks = () => nav.querySelectorAll( '.menu-item-has-children > a' );
+
+	const setExpanded = ( link, expanded ) => {
+		if ( link ) {
+			link.setAttribute( 'aria-expanded', expanded ? 'true' : 'false' );
+		}
+	};
+
+	const closeSubmenus = ( exceptItem ) => {
 		nav.querySelectorAll( '.menu-item-has-children.is-submenu-open' ).forEach( ( item ) => {
-			item.classList.remove( 'is-submenu-open' );
-			const trigger = item.querySelector( ':scope > a' );
-			if ( trigger ) {
-				trigger.setAttribute( 'aria-expanded', 'false' );
+			if ( exceptItem && item === exceptItem ) {
+				return;
 			}
+			item.classList.remove( 'is-submenu-open' );
+			setExpanded( item.querySelector( ':scope > a' ), false );
 		} );
+	};
+
+	const toggleSubmenu = ( item, forceOpen ) => {
+		if ( ! item ) {
+			return;
+		}
+
+		const link = item.querySelector( ':scope > a' );
+		const submenu = item.querySelector( ':scope > .sub-menu' );
+		if ( ! link || ! submenu ) {
+			return;
+		}
+
+		const willOpen = typeof forceOpen === 'boolean'
+			? forceOpen
+			: ! item.classList.contains( 'is-submenu-open' );
+
+		closeSubmenus( item );
+		item.classList.toggle( 'is-submenu-open', willOpen );
+		setExpanded( link, willOpen );
+	};
+
+	const getTopLevelParent = ( node ) => {
+		if ( ! node || ! node.closest ) {
+			return null;
+		}
+		const item = node.closest( '.somvio-header__menu > .menu-item-has-children' );
+		return item && nav.contains( item ) ? item : null;
 	};
 
 	const setNavOpen = ( isOpen ) => {
@@ -55,7 +92,7 @@
 		}
 
 		if ( ! open ) {
-			closeMobileSubmenus();
+			closeSubmenus();
 		}
 	};
 
@@ -69,7 +106,7 @@
 				nav.inert = false;
 			}
 			body.classList.remove( 'somvio-no-scroll' );
-			closeMobileSubmenus();
+			closeSubmenus();
 			if ( backdrop ) {
 				backdrop.setAttribute( 'aria-hidden', 'true' );
 			}
@@ -80,8 +117,7 @@
 	};
 
 	toggle.addEventListener( 'click', () => {
-		const isOpen = header.classList.contains( 'somvio-header--nav-open' );
-		setNavOpen( ! isOpen );
+		setNavOpen( ! header.classList.contains( 'somvio-header--nav-open' ) );
 	} );
 
 	if ( backdrop ) {
@@ -90,44 +126,102 @@
 		} );
 	}
 
+	/* Parent link: expand/collapse submenu (mobile drawer + coarse desktop pointer). */
 	nav.addEventListener( 'click', ( event ) => {
-		if ( mqDesktop.matches ) {
-			return;
-		}
-
 		const link = event.target.closest( '.menu-item-has-children > a' );
 		if ( ! link || ! nav.contains( link ) ) {
 			return;
 		}
 
-		const item = link.parentElement;
-		const submenu = item && item.querySelector( ':scope > .sub-menu' );
-		if ( ! item || ! submenu ) {
+		const useClickToggle = ! mqDesktop.matches || ! mqFinePointer.matches;
+		if ( ! useClickToggle ) {
 			return;
 		}
 
 		event.preventDefault();
+		toggleSubmenu( link.parentElement );
+	} );
 
-		const willOpen = ! item.classList.contains( 'is-submenu-open' );
+	/* Fine-pointer desktop: mirror CSS hover into aria-expanded. */
+	nav.addEventListener( 'mouseover', ( event ) => {
+		if ( ! mqDesktop.matches || ! mqFinePointer.matches ) {
+			return;
+		}
+		const item = getTopLevelParent( event.target );
+		if ( item ) {
+			setExpanded( item.querySelector( ':scope > a' ), true );
+		}
+	} );
 
-		nav.querySelectorAll( '.menu-item-has-children.is-submenu-open' ).forEach( ( openItem ) => {
-			if ( openItem !== item ) {
-				openItem.classList.remove( 'is-submenu-open' );
-				const other = openItem.querySelector( ':scope > a' );
-				if ( other ) {
-					other.setAttribute( 'aria-expanded', 'false' );
-				}
+	nav.addEventListener( 'mouseout', ( event ) => {
+		if ( ! mqDesktop.matches || ! mqFinePointer.matches ) {
+			return;
+		}
+		const item = getTopLevelParent( event.target );
+		if ( ! item ) {
+			return;
+		}
+		const related = event.relatedTarget;
+		if ( related && item.contains( related ) ) {
+			return;
+		}
+		if ( ! item.classList.contains( 'is-submenu-open' ) ) {
+			setExpanded( item.querySelector( ':scope > a' ), false );
+		}
+	} );
+
+	nav.addEventListener( 'focusin', ( event ) => {
+		const item = getTopLevelParent( event.target );
+		if ( item ) {
+			setExpanded( item.querySelector( ':scope > a' ), true );
+		}
+	} );
+
+	nav.addEventListener( 'focusout', ( event ) => {
+		const item = getTopLevelParent( event.target );
+		if ( ! item ) {
+			return;
+		}
+		requestAnimationFrame( () => {
+			if ( ! item.contains( document.activeElement ) && ! item.classList.contains( 'is-submenu-open' ) ) {
+				setExpanded( item.querySelector( ':scope > a' ), false );
 			}
 		} );
+	} );
 
-		item.classList.toggle( 'is-submenu-open', willOpen );
-		link.setAttribute( 'aria-expanded', willOpen ? 'true' : 'false' );
+	/* Close drawer after choosing a submenu link. */
+	nav.addEventListener( 'click', ( event ) => {
+		const sublink = event.target.closest( '.somvio-header__sublink' );
+		if ( ! sublink || ! nav.contains( sublink ) ) {
+			return;
+		}
+
+		if ( ! mqDesktop.matches ) {
+			setNavOpen( false );
+			return;
+		}
+
+		closeSubmenus();
+		parentLinks().forEach( ( link ) => setExpanded( link, false ) );
 	} );
 
 	document.addEventListener( 'keydown', ( event ) => {
-		if ( event.key === 'Escape' ) {
-			setNavOpen( false );
+		if ( event.key !== 'Escape' ) {
+			return;
 		}
+		setNavOpen( false );
+		closeSubmenus();
+		parentLinks().forEach( ( link ) => setExpanded( link, false ) );
+	} );
+
+	document.addEventListener( 'click', ( event ) => {
+		if ( ! mqDesktop.matches || mqFinePointer.matches ) {
+			return;
+		}
+		if ( nav.contains( event.target ) ) {
+			return;
+		}
+		closeSubmenus();
 	} );
 
 	if ( typeof mqDesktop.addEventListener === 'function' ) {
@@ -136,8 +230,8 @@
 		window.addEventListener( 'resize', syncViewport );
 	}
 
-	nav.querySelectorAll( '.menu-item-has-children > a' ).forEach( ( link ) => {
-		link.setAttribute( 'aria-expanded', 'false' );
+	parentLinks().forEach( ( link ) => {
+		link.setAttribute( 'aria-expanded', link.getAttribute( 'aria-expanded' ) || 'false' );
 		link.setAttribute( 'aria-haspopup', 'true' );
 	} );
 

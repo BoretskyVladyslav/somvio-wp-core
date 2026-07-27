@@ -14,9 +14,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Whether Testimonials / Social Proof should render.
  *
+ * Disabled until real client reviews are available.
+ * Re-enable via: add_filter( 'somvio_show_testimonials', '__return_true' );
+ *
  * @return bool
  */
 function somvio_should_render_testimonials() {
+	/**
+	 * Master switch for fake/placeholder testimonials.
+	 *
+	 * @param bool $show Whether testimonials are enabled.
+	 */
+	if ( ! (bool) apply_filters( 'somvio_show_testimonials', false ) ) {
+		return false;
+	}
+
 	if ( function_exists( 'somvio_is_hero_page' ) && somvio_is_hero_page() ) {
 		return true;
 	}

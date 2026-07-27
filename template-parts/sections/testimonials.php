@@ -18,7 +18,7 @@ $somvio_testimonials = array(
 	array(
 		'title'  => __( 'Absolutely flawless deep clean!', 'somvio' ),
 		'quote'  => __( 'The team from Somvio did a deep clean of my living room and kitchen, and the results are incredible—everything looks brand new. The booking process was so easy with their online calculator, and I love that they use eco-friendly products safe for my pets. Will definitely be setting up a regular cleaning schedule!', 'somvio' ),
-		'author' => __( '– Sarah M., London (Verified Regular/Deep Clean Customer)', 'somvio' ),
+		'author' => __( '– Sarah M., Glasgow (Verified Regular/Deep Clean Customer)', 'somvio' ),
 		'offset' => false,
 	),
 	array(
