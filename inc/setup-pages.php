@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** @var int Bump to re-run page seeding on admin_init / theme switch. */
-const SOMVIO_CORE_PAGES_VERSION = 10;
+const SOMVIO_CORE_PAGES_VERSION = 11;
 
 /**
  * Core pages to ensure exist (slug => title).
@@ -486,6 +486,7 @@ function somvio_setup_core_pages() {
 		}
 
 		somvio_sync_primary_menu_service_links();
+		somvio_sync_primary_menu_structure();
 
 		update_option( 'somvio_core_pages_version', SOMVIO_CORE_PAGES_VERSION, false );
 	} finally {
@@ -610,6 +611,158 @@ function somvio_sync_primary_menu_service_links() {
 		++$position;
 	}
 }
+
+/**
+ * Align primary header menu top-level items to Figma:
+ * Home | Services | About Us | Blog | FAQ | Booking
+ *
+ * Removes Reviews / Contact; ensures Blog → /blog/.
+ *
+ * @return void
+ */
+function somvio_sync_primary_menu_structure() {
+	$locations = get_nav_menu_locations();
+
+	if ( empty( $locations['primary'] ) ) {
+		return;
+	}
+
+	$menu_id = (int) $locations['primary'];
+
+	if ( $menu_id <= 0 || ! is_nav_menu( $menu_id ) ) {
+		return;
+	}
+
+	$items = wp_get_nav_menu_items( $menu_id );
+
+	if ( ! is_array( $items ) ) {
+		$items = array();
+	}
+
+	$remove_titles = array( 'reviews', 'contact' );
+	$remove_paths  = array( '/reviews', '/contact' );
+	$has_blog      = false;
+
+	foreach ( $items as $item ) {
+		if ( ! $item instanceof WP_Post ) {
+			continue;
+		}
+
+		if ( (int) $item->menu_item_parent > 0 ) {
+			continue;
+		}
+
+		$title = strtolower( trim( (string) $item->title ) );
+		$path  = wp_parse_url( (string) $item->url, PHP_URL_PATH );
+		$path  = is_string( $path ) ? untrailingslashit( $path ) : '';
+
+		if ( in_array( $title, $remove_titles, true ) || in_array( $path, $remove_paths, true ) ) {
+			wp_delete_post( (int) $item->ID, true );
+			continue;
+		}
+
+		if ( 'blog' === $title || preg_match( '#/blog$#', $path ) ) {
+			$has_blog = true;
+
+			$blog_id = function_exists( 'somvio_get_page_id_by_slug' )
+				? (int) somvio_get_page_id_by_slug( 'blog' )
+				: 0;
+
+			if ( $blog_id > 0 ) {
+				wp_update_nav_menu_item(
+					$menu_id,
+					(int) $item->ID,
+					array(
+						'menu-item-object-id' => $blog_id,
+						'menu-item-object'    => 'page',
+						'menu-item-type'      => 'post_type',
+						'menu-item-status'    => 'publish',
+						'menu-item-parent-id' => 0,
+						'menu-item-title'     => __( 'Blog', 'somvio' ),
+					)
+				);
+			} else {
+				wp_update_nav_menu_item(
+					$menu_id,
+					(int) $item->ID,
+					array(
+						'menu-item-type'   => 'custom',
+						'menu-item-status' => 'publish',
+						'menu-item-parent-id' => 0,
+						'menu-item-title'  => __( 'Blog', 'somvio' ),
+						'menu-item-url'    => home_url( '/blog/' ),
+					)
+				);
+			}
+		}
+	}
+
+	if ( ! $has_blog ) {
+		$blog_id = function_exists( 'somvio_get_page_id_by_slug' )
+			? (int) somvio_get_page_id_by_slug( 'blog' )
+			: 0;
+
+		if ( $blog_id > 0 ) {
+			wp_update_nav_menu_item(
+				$menu_id,
+				0,
+				array(
+					'menu-item-object-id' => $blog_id,
+					'menu-item-object'    => 'page',
+					'menu-item-type'      => 'post_type',
+					'menu-item-status'    => 'publish',
+					'menu-item-parent-id' => 0,
+					'menu-item-title'     => __( 'Blog', 'somvio' ),
+				)
+			);
+		} else {
+			wp_update_nav_menu_item(
+				$menu_id,
+				0,
+				array(
+					'menu-item-type'      => 'custom',
+					'menu-item-status'    => 'publish',
+					'menu-item-parent-id' => 0,
+					'menu-item-title'     => __( 'Blog', 'somvio' ),
+					'menu-item-url'       => home_url( '/blog/' ),
+				)
+			);
+		}
+	}
+}
+
+/**
+ * Filter primary nav objects: drop Reviews/Contact until DB sync runs.
+ *
+ * @param WP_Post[] $items Menu items.
+ * @param stdClass  $args  wp_nav_menu() args.
+ * @return WP_Post[]
+ */
+function somvio_filter_primary_nav_structure( $items, $args ) {
+	if ( empty( $args->theme_location ) || 'primary' !== $args->theme_location || empty( $items ) ) {
+		return $items;
+	}
+
+	$remove_titles = array( 'reviews', 'contact' );
+	$remove_paths  = array( '/reviews', '/contact' );
+	$filtered      = array();
+
+	foreach ( $items as $item ) {
+		$parent = isset( $item->menu_item_parent ) ? (int) $item->menu_item_parent : 0;
+		$title  = strtolower( trim( (string) $item->title ) );
+		$path   = wp_parse_url( (string) $item->url, PHP_URL_PATH );
+		$path   = is_string( $path ) ? untrailingslashit( $path ) : '';
+
+		if ( 0 === $parent && ( in_array( $title, $remove_titles, true ) || in_array( $path, $remove_paths, true ) ) ) {
+			continue;
+		}
+
+		$filtered[] = $item;
+	}
+
+	return $filtered;
+}
+add_filter( 'wp_nav_menu_objects', 'somvio_filter_primary_nav_structure', 25, 2 );
 
 /**
  * Match a nav item to a single-service slug via title, path, or hash fragment.

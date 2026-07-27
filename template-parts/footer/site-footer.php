@@ -74,16 +74,16 @@ $somvio_quick_links = array(
 		'url'   => home_url( '/about-us/' ),
 	),
 	array(
-		'label' => __( 'Reviews', 'somvio' ),
-		'url'   => home_url( '/reviews/' ),
+		'label' => __( 'Blog', 'somvio' ),
+		'url'   => home_url( '/blog/' ),
 	),
 	array(
 		'label' => __( 'FAQ', 'somvio' ),
 		'url'   => home_url( '/faq/' ),
 	),
 	array(
-		'label' => __( 'Contact', 'somvio' ),
-		'url'   => home_url( '/contact/' ),
+		'label' => __( 'Booking', 'somvio' ),
+		'url'   => home_url( '/booking/' ),
 	),
 );
 

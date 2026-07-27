@@ -213,8 +213,8 @@ function somvio_header_menu_fallback( $args = array() ) {
 			'url'   => esc_url( home_url( '/about-us/' ) ),
 		),
 		array(
-			'label' => __( 'Reviews', 'somvio' ),
-			'url'   => esc_url( home_url( '/reviews/' ) ),
+			'label' => __( 'Blog', 'somvio' ),
+			'url'   => esc_url( home_url( '/blog/' ) ),
 		),
 		array(
 			'label' => __( 'FAQ', 'somvio' ),
@@ -223,10 +223,6 @@ function somvio_header_menu_fallback( $args = array() ) {
 		array(
 			'label' => __( 'Booking', 'somvio' ),
 			'url'   => esc_url( home_url( '/booking/' ) ),
-		),
-		array(
-			'label' => __( 'Contact', 'somvio' ),
-			'url'   => esc_url( home_url( '/contact/' ) ),
 		),
 	);
 
