@@ -231,9 +231,16 @@ function somvio_stripe_verify_payment_intent( $payment_intent_id, $expected_amou
 		);
 	}
 
-	$paid_minor = isset( $data['amount_received'] ) ? (int) $data['amount_received'] : (int) ( $data['amount'] ?? 0 );
+	$paid_minor     = isset( $data['amount_received'] ) ? (int) $data['amount_received'] : (int) ( $data['amount'] ?? 0 );
 	$expected_minor = (int) round( (float) $expected_amount * 100 );
-	if ( $expected_minor > 0 && abs( $paid_minor - $expected_minor ) > 1 ) {
+	// Online confirmation must always bind to a positive expected total.
+	if ( $expected_minor <= 0 ) {
+		return array(
+			'success' => false,
+			'error'   => 'expected_amount_missing',
+		);
+	}
+	if ( abs( $paid_minor - $expected_minor ) > 1 ) {
 		return array(
 			'success' => false,
 			'error'   => 'amount_mismatch',

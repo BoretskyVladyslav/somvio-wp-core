@@ -1393,10 +1393,46 @@
 			return new Promise(function (resolve, reject) {
 				var existing = document.querySelector('script[data-somvio-stripe]');
 				if (existing) {
-					existing.addEventListener('load', function () {
+					// Script tag already present — may have finished loading before listeners attach.
+					if (window.Stripe) {
 						resolve(window.Stripe);
+						return;
+					}
+					var settled = false;
+					function onReady() {
+						if (settled) {
+							return;
+						}
+						settled = true;
+						if (window.Stripe) {
+							resolve(window.Stripe);
+						} else {
+							reject(new Error('stripe_unavailable'));
+						}
+					}
+					existing.addEventListener('load', onReady);
+					existing.addEventListener('error', function () {
+						if (settled) {
+							return;
+						}
+						settled = true;
+						reject(new Error('stripe_load_failed'));
 					});
-					existing.addEventListener('error', reject);
+					// If load already fired, poll briefly then fail closed.
+					var attempts = 0;
+					var poll = setInterval(function () {
+						attempts += 1;
+						if (window.Stripe) {
+							clearInterval(poll);
+							onReady();
+						} else if (attempts >= 40) {
+							clearInterval(poll);
+							if (!settled) {
+								settled = true;
+								reject(new Error('stripe_load_timeout'));
+							}
+						}
+					}, 50);
 					return;
 				}
 				var script = document.createElement('script');
