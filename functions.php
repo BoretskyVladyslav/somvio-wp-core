@@ -44,21 +44,6 @@ require_once get_stylesheet_directory() . '/inc/booking/bootstrap.php';
 require_once get_stylesheet_directory() . '/inc/layout.php';
 
 /**
- * Output theme favicon when no Customizer site icon is set.
- *
- * @return void
- */
-function somvio_output_favicon() {
-	if ( function_exists( 'has_site_icon' ) && has_site_icon() ) {
-		return;
-	}
-
-	$favicon = get_stylesheet_directory_uri() . '/assets/images/favicon.svg';
-	echo '<link rel="icon" href="' . esc_url( $favicon ) . '" type="image/svg+xml">' . "\n";
-}
-add_action( 'wp_head', 'somvio_output_favicon', 1 );
-
-/**
  * Return inline SVG markup from assets/icons/ by icon name.
  *
  * Accepts a filename with or without the `.svg` extension
