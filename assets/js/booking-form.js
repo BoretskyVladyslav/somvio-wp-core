@@ -187,6 +187,7 @@
 		var successDialog = root.querySelector('.booking-form__success-dialog');
 		var previousFocus = null;
 		var isolationRecords = [];
+		var hasStepped = false;
 
 		var today = new Date();
 		today.setHours(0, 0, 0, 0);
@@ -979,6 +980,23 @@
 			);
 		}
 
+		function scrollFormToTop() {
+			if (!hasStepped) {
+				hasStepped = true;
+				return;
+			}
+			var header = document.querySelector('.somvio-header, .site-header, header');
+			var offset = 16;
+			if (header) {
+				offset += header.getBoundingClientRect().height || 0;
+			}
+			var rect = root.getBoundingClientRect();
+			var top = window.pageYOffset + rect.top - offset;
+			if (typeof window.scrollTo === 'function') {
+				window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+			}
+		}
+
 		function setStep(step) {
 			if (step === SUCCESS_STEP) {
 				openSuccessModal();
@@ -1018,9 +1036,7 @@
 				updateSlotsAvailability();
 			}
 
-			if (activePanel && typeof activePanel.scrollIntoView === 'function' && step !== 1) {
-				activePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-			}
+			scrollFormToTop();
 
 			root.dispatchEvent(
 				new CustomEvent('somvio:booking-step', {

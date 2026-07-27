@@ -19,8 +19,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 function somvio_get_quote_rates() {
 	delete_transient( 'somvio_quote_rates_v5' );
 	delete_transient( 'somvio_quote_rates_v6' );
+	delete_transient( 'somvio_quote_rates_v7' );
 
-	$cached = get_transient( 'somvio_quote_rates_v7' );
+	$cached = get_transient( 'somvio_quote_rates_v8' );
 	if ( false !== $cached && is_array( $cached ) ) {
 		return $cached;
 	}
@@ -73,32 +74,32 @@ function somvio_get_quote_rates() {
 			'kitchen-cupboards'         => array(
 				'label' => __( 'Inside All Kitchen Cupboards (empty)', 'somvio' ),
 				'price' => 39,
-				'icon'  => 'icon-addon-white-goods.svg',
+				'icon'  => 'icon-addon-cupboards.svg',
 			),
 			'kitchen-appliances'        => array(
 				'label' => __( 'Kitchen Appliances (Internal)', 'somvio' ),
 				'price' => 20,
-				'icon'  => 'icon-addon-white-goods.svg',
+				'icon'  => 'icon-addon-appliances.svg',
 			),
 			'washing-machine'           => array(
 				'label' => __( 'Washing Machine', 'somvio' ),
 				'price' => 20,
-				'icon'  => 'icon-addon-white-goods.svg',
+				'icon'  => 'icon-addon-washing.svg',
 			),
 			'dishwasher'                => array(
 				'label' => __( 'Dishwasher', 'somvio' ),
 				'price' => 20,
-				'icon'  => 'icon-addon-white-goods.svg',
+				'icon'  => 'icon-addon-dishwasher.svg',
 			),
 			'tumble-dryer'              => array(
 				'label' => __( 'Tumble Dryer', 'somvio' ),
 				'price' => 20,
-				'icon'  => 'icon-addon-white-goods.svg',
+				'icon'  => 'icon-addon-dryer.svg',
 			),
 			'microwave-air-fryer'       => array(
 				'label' => __( 'Microwave / Air Fryer Cleaning', 'somvio' ),
 				'price' => 15,
-				'icon'  => 'icon-addon-oven.svg',
+				'icon'  => 'icon-addon-microwave.svg',
 			),
 			'carpet-deep-clean'         => array(
 				'label' => __( 'Carpet Deep Cleaning (per room)', 'somvio' ),
@@ -108,12 +109,12 @@ function somvio_get_quote_rates() {
 			'venetian-blinds'           => array(
 				'label' => __( 'Venetian Blinds (per window)', 'somvio' ),
 				'price' => 12,
-				'icon'  => 'icon-addon-carpet.svg',
+				'icon'  => 'icon-addon-blinds.svg',
 			),
 			'balcony-patio'             => array(
 				'label' => __( 'Balcony / Patio Cleaning', 'somvio' ),
 				'price' => 25,
-				'icon'  => 'icon-addon-carpet.svg',
+				'icon'  => 'icon-addon-balcony.svg',
 			),
 		),
 		/* Services that include Extra Services step. */
@@ -131,7 +132,7 @@ function somvio_get_quote_rates() {
 	 */
 	$rates = apply_filters( 'somvio_quote_rates', $rates );
 
-	set_transient( 'somvio_quote_rates_v7', $rates, HOUR_IN_SECONDS );
+	set_transient( 'somvio_quote_rates_v8', $rates, HOUR_IN_SECONDS );
 
 	return $rates;
 }

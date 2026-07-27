@@ -1355,6 +1355,14 @@ body:not(.somvio-has-hero) {
 	line-height: 1.4;
 	color: var(--somvio-color-text);
 	cursor: default;
+	transition: all 0.2s ease;
+}
+
+.quote-card__select:focus,
+.quote-card__select-wrap:focus-within .quote-card__select {
+	border-color: var(--somvio-color-accent-mid, #33aca6);
+	outline: none;
+	box-shadow: 0 0 0 1px rgba(64, 215, 208, 0.35);
 }
 
 .quote-card__select:disabled {
@@ -8639,15 +8647,30 @@ body.somvio-has-hero.single-post .site-main > * {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	flex: 0 0 40px;
-	width: 40px;
-	height: 44px;
+	flex: 0 0 var(--somvio-touch-min, 44px);
+	width: var(--somvio-touch-min, 44px);
+	min-width: var(--somvio-touch-min, 44px);
+	height: var(--somvio-touch-min, 44px);
+	min-height: var(--somvio-touch-min, 44px);
 	margin: 0;
 	padding: 0;
 	border: 0;
 	background: transparent;
 	color: inherit;
 	cursor: pointer;
+	transition: all 0.2s ease;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.quote-calculator__counter-btn:hover:not(:disabled),
+.quote-calculator__counter-btn:focus-visible:not(:disabled) {
+	background: rgba(51, 172, 166, 0.18);
+	outline: none;
+}
+
+.quote-calculator__counter-btn:active:not(:disabled) {
+	background: rgba(64, 215, 208, 0.28);
+	transform: scale(0.94);
 }
 
 .quote-calculator__counter-btn:disabled {
@@ -8702,20 +8725,23 @@ body.somvio-has-hero.single-post .site-main > * {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	min-height: 40px;
-	padding: 6px 12px;
-	border: 1px solid #c0c0c0;
+	min-height: var(--somvio-touch-min, 44px);
+	padding: 8px 16px;
+	border: 2px solid #c0c0c0;
 	border-radius: 4px;
 	cursor: pointer;
 	font-family: var(--somvio-font-sans);
 	font-size: 14px;
 	font-weight: 600;
+	transition: all 0.2s ease;
+	-webkit-tap-highlight-color: transparent;
 }
 
 .quote-calculator__welcome-option.is-selected,
 .quote-calculator__welcome-option:has(input:checked) {
-	border-color: var(--somvio-color-accent-mid, #33aca6);
-	background: rgba(51, 172, 166, 0.12);
+	border-color: var(--somvio-color-accent, #40d7d0);
+	background: rgba(51, 172, 166, 0.18);
+	box-shadow: 0 0 0 1px rgba(64, 215, 208, 0.35);
 }
 
 .quote-calculator__welcome-option input {
@@ -8738,20 +8764,39 @@ body.somvio-has-hero.single-post .site-main > * {
 	justify-content: space-between;
 	gap: 12px;
 	width: 100%;
-	min-height: 44px;
+	min-height: var(--somvio-touch-min, 44px);
 	padding: 10px 12px;
-	border: 1px solid #c0c0c0;
+	border: 2px solid #c0c0c0;
 	border-radius: 4px;
 	background: transparent;
 	color: inherit;
 	text-align: left;
 	cursor: pointer;
 	font-family: var(--somvio-font-sans);
+	transition: all 0.2s ease;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.quote-calculator__addon:hover,
+.quote-calculator__addon:focus-visible {
+	border-color: rgba(51, 172, 166, 0.65);
+	background: rgba(51, 172, 166, 0.08);
+	outline: none;
 }
 
 .quote-calculator__addon.is-selected {
-	border-color: var(--somvio-color-accent-mid, #33aca6);
-	background: rgba(51, 172, 166, 0.12);
+	border-color: var(--somvio-color-accent, #40d7d0);
+	background: rgba(51, 172, 166, 0.16);
+	box-shadow: 0 0 0 1px rgba(64, 215, 208, 0.35);
+}
+
+.quote-calculator__addon-icon {
+	flex: 0 0 28px;
+	display: block;
+	width: 28px;
+	height: 28px;
+	object-fit: contain;
+	pointer-events: none;
 }
 
 .quote-calculator__addon-label {
@@ -9010,7 +9055,7 @@ body.somvio-has-hero.single-post .site-main > * {
 	width: 100%;
 	min-height: var(--somvio-touch-min);
 	padding: 10px;
-	border: 1px solid #c0c0c0;
+	border: 2px solid #c0c0c0;
 	border-radius: var(--somvio-radius);
 	background: transparent;
 	font-family: var(--somvio-font-sans);
@@ -9020,12 +9065,21 @@ body.somvio-has-hero.single-post .site-main > * {
 	color: var(--somvio-color-text);
 	cursor: pointer;
 	box-sizing: border-box;
+	transition: all 0.2s ease;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.quote-calculator__slot:hover:not(.is-selected):not([aria-checked="true"]),
+.quote-calculator__slot:focus-visible:not(.is-selected) {
+	border-color: var(--somvio-color-accent, #40d7d0);
+	outline: none;
 }
 
 .quote-calculator__slot.is-selected,
 .quote-calculator__slot[aria-checked="true"] {
-	border-color: transparent;
+	border-color: var(--somvio-color-accent, #40d7d0);
 	background: var(--somvio-color-accent-mid);
+	box-shadow: 0 0 0 1px rgba(64, 215, 208, 0.35);
 }
 
 .quote-calculator__slot:focus-visible {
@@ -9743,7 +9797,7 @@ body.somvio-has-hero.page-booking .site-main > * {
 	min-width: 0;
 	margin: 0;
 	padding: 0;
-	border: 1px solid rgba(132, 142, 149, 0.2);
+	border: 2px solid rgba(132, 142, 149, 0.2);
 	border-radius: 4px;
 	background-color: transparent;
 	color: inherit;
@@ -9751,7 +9805,8 @@ body.somvio-has-hero.page-booking .site-main > * {
 	cursor: pointer;
 	overflow: hidden;
 	box-sizing: border-box;
-	transition: border-color 0.2s ease;
+	transition: all 0.2s ease;
+	-webkit-tap-highlight-color: transparent;
 }
 
 /* Tablet 600–899px: 2 cols */
@@ -9779,18 +9834,30 @@ body.somvio-has-hero.page-booking .site-main > * {
 .booking-form__service:hover,
 .booking-form__service:focus-visible {
 	border-color: rgba(51, 172, 166, 0.65);
+	background: rgba(51, 172, 166, 0.06);
 	outline: none;
 }
 
 .booking-form__service.is-selected,
 .booking-form__addon.is-selected {
-	border-color: #33aca6;
+	border-color: #40d7d0;
+	box-shadow: 0 0 0 1px rgba(64, 215, 208, 0.45);
+	background: rgba(51, 172, 166, 0.1);
 }
 
 .booking-form__addon:hover,
 .booking-form__addon:focus-visible {
 	border-color: rgba(51, 172, 166, 0.65);
+	background: rgba(51, 172, 166, 0.06);
 	outline: none;
+}
+
+.booking-form__addon.is-selected:hover,
+.booking-form__addon.is-selected:focus-visible,
+.booking-form__service.is-selected:hover,
+.booking-form__service.is-selected:focus-visible {
+	border-color: #40d7d0;
+	background: rgba(51, 172, 166, 0.14);
 }
 
 /* Figma 418:6259 — Step 2 Extra Services */
@@ -9888,6 +9955,11 @@ body.booking-form-modal-open {
 	padding: 30px;
 	box-sizing: border-box;
 	background-color: #1a2e3b;
+	transition: background-color 0.2s ease;
+}
+
+.booking-form__addon.is-selected .booking-form__addon-top {
+	background-color: #1e3644;
 }
 
 .booking-form__addon-price {
@@ -9910,6 +9982,13 @@ body.booking-form-modal-open {
 	height: 60px;
 	object-fit: contain;
 	pointer-events: none;
+	transition: transform 0.2s ease;
+}
+
+.booking-form__addon:hover .booking-form__addon-icon,
+.booking-form__addon:focus-visible .booking-form__addon-icon,
+.booking-form__addon.is-selected .booking-form__addon-icon {
+	transform: scale(1.05);
 }
 
 .booking-form__addon-footer {
@@ -10046,7 +10125,7 @@ body.booking-form-modal-open {
 	gap: 8px;
 	min-height: var(--somvio-touch-min, 44px);
 	padding: 8px 16px;
-	border: 1px solid rgba(255, 255, 255, 0.18);
+	border: 2px solid rgba(255, 255, 255, 0.18);
 	border-radius: 4px;
 	cursor: pointer;
 	font-family: var(--somvio-font-sans);
@@ -10054,12 +10133,15 @@ body.booking-form-modal-open {
 	font-weight: 600;
 	color: #ffffff;
 	background: transparent;
+	transition: all 0.2s ease;
+	-webkit-tap-highlight-color: transparent;
 }
 
 .booking-form__welcome-option:has(input:checked),
 .booking-form__welcome-option.is-selected {
-	border-color: var(--somvio-color-accent-mid, #33aca6);
-	background: rgba(51, 172, 166, 0.18);
+	border-color: var(--somvio-color-accent, #40d7d0);
+	background: rgba(51, 172, 166, 0.22);
+	box-shadow: 0 0 0 1px rgba(64, 215, 208, 0.4);
 }
 
 .booking-form__welcome-option input {
@@ -10102,13 +10184,15 @@ body.booking-form-modal-open {
 	}
 
 	.booking-form__counter-btn {
-		width: 32px;
-		height: 32px;
+		width: var(--somvio-touch-min, 44px);
+		height: var(--somvio-touch-min, 44px);
+		min-width: var(--somvio-touch-min, 44px);
+		min-height: var(--somvio-touch-min, 44px);
 	}
 
 	.booking-form__counter-control {
-		min-height: 48px;
-		padding: 8px 10px;
+		min-height: 56px;
+		padding: 6px 8px;
 	}
 }
 
@@ -10128,17 +10212,19 @@ body.booking-form-modal-open {
 	justify-content: space-between;
 	gap: 10px;
 	width: 100%;
-	padding: 10px;
+	min-height: var(--somvio-touch-min, 44px);
+	padding: 6px 8px;
 	border: 1px solid #c0c0c0;
 	border-radius: 4px;
 	background-color: #091e2c;
 	box-sizing: border-box;
-	transition: border-color 0.2s ease;
+	transition: all 0.2s ease;
 }
 
 .booking-form__counter.is-active .booking-form__counter-control,
 .booking-form__counter-control:focus-within {
-	border-color: #33aca6;
+	border-color: #40d7d0;
+	box-shadow: 0 0 0 1px rgba(64, 215, 208, 0.35);
 }
 
 .booking-form__counter-btn {
@@ -10147,22 +10233,25 @@ body.booking-form-modal-open {
 	align-items: center;
 	justify-content: center;
 	flex-shrink: 0;
-	width: 26px;
-	height: 26px;
-	padding: 5px;
+	width: var(--somvio-touch-min, 44px);
+	height: var(--somvio-touch-min, 44px);
+	min-width: var(--somvio-touch-min, 44px);
+	min-height: var(--somvio-touch-min, 44px);
+	padding: 0;
 	border: 0;
 	border-radius: 500px;
 	background-color: #3a4b56;
 	background-image: none;
 	color: #ffffff;
 	cursor: pointer;
-	transition:
-		background-color 0.2s ease,
-		color 0.2s ease,
-		opacity 0.15s ease;
+	transition: all 0.2s ease;
+	-webkit-tap-highlight-color: transparent;
 }
 
-.booking-form__counter-btn::after,
+.booking-form__counter-btn::after {
+	content: none;
+}
+
 .booking-form__cal-nav::after {
 	content: '';
 	position: absolute;
@@ -10173,6 +10262,11 @@ body.booking-form-modal-open {
 .booking-form__counter-btn:focus-visible:not(:disabled) {
 	background-color: #465a67;
 	outline: none;
+}
+
+.booking-form__counter-btn:active:not(:disabled) {
+	transform: scale(0.92);
+	background-color: #33aca6;
 }
 
 .booking-form__counter-btn:disabled {
@@ -10343,6 +10437,14 @@ body.booking-form-modal-open {
 	caret-color: #ffffff;
 	color-scheme: dark;
 	box-sizing: border-box;
+	transition: all 0.2s ease;
+}
+
+.booking-form__input:focus,
+.booking-form__textarea:focus {
+	border-color: #40d7d0 !important;
+	outline: none;
+	box-shadow: 0 0 0 1px rgba(64, 215, 208, 0.35);
 }
 
 .booking-form__input--date {
@@ -10669,7 +10771,7 @@ body.booking-form-modal-open {
 	min-width: 0;
 	min-height: 44px;
 	padding: 10px;
-	border: 1px solid #c0c0c0;
+	border: 2px solid #c0c0c0;
 	border-radius: 4px;
 	background-color: #091e2c;
 	font-family: var(--somvio-font-sans);
@@ -10681,23 +10783,22 @@ body.booking-form-modal-open {
 	white-space: nowrap;
 	cursor: pointer;
 	box-sizing: border-box;
-	transition:
-		background-color 0.2s ease,
-		border-color 0.2s ease,
-		font-weight 0.15s ease;
+	transition: all 0.2s ease;
+	-webkit-tap-highlight-color: transparent;
 }
 
 .booking-form__slot:hover:not(.is-selected),
 .booking-form__slot:focus-visible:not(.is-selected) {
-	border-color: #33aca6;
+	border-color: #40d7d0;
 	outline: none;
 }
 
 .booking-form__slot.is-selected {
-	border-color: #33aca6;
+	border-color: #40d7d0;
 	background-color: #33aca6;
 	font-weight: 600;
 	color: #ffffff;
+	box-shadow: 0 0 0 1px rgba(64, 215, 208, 0.35);
 }
 
 @media (max-width: 899px) {

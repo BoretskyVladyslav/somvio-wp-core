@@ -211,6 +211,7 @@
 		var calNext = root.querySelector('[data-quote-cal-next]');
 		var priceTotal = root.querySelector('[data-price-total]');
 		var priceLive = root.querySelector('[data-price-live]');
+		var hasStepped = false;
 
 		var today = new Date();
 		today.setHours(0, 0, 0, 0);
@@ -618,12 +619,34 @@
 			showError('');
 			setLoading(false);
 
+			scrollQuoteToTop();
+
 			root.dispatchEvent(
 				new CustomEvent('somvio:quote-step', {
 					bubbles: true,
 					detail: { step: step, root: root, hasExtras: serviceHasExtras(state.service) },
 				})
 			);
+		}
+
+		function scrollQuoteToTop() {
+			if (state.step === SUCCESS_STEP) {
+				return;
+			}
+			if (!hasStepped) {
+				hasStepped = true;
+				return;
+			}
+			var header = document.querySelector('.somvio-header, .site-header, header');
+			var offset = 16;
+			if (header) {
+				offset += header.getBoundingClientRect().height || 0;
+			}
+			var rect = root.getBoundingClientRect();
+			var top = window.pageYOffset + rect.top - offset;
+			if (typeof window.scrollTo === 'function') {
+				window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+			}
 		}
 
 		/**

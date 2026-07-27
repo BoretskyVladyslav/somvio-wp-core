@@ -219,6 +219,15 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 					<?php
 					$somvio_qc_alabel = isset( $somvio_qc_addon['label'] ) ? (string) $somvio_qc_addon['label'] : $somvio_qc_akey;
 					$somvio_qc_aprice = isset( $somvio_qc_addon['price'] ) ? (float) $somvio_qc_addon['price'] : 0;
+					$somvio_qc_aicon  = isset( $somvio_qc_addon['icon'] ) ? (string) $somvio_qc_addon['icon'] : '';
+					$somvio_qc_auri   = '';
+					if ( '' !== $somvio_qc_aicon ) {
+						$somvio_qc_auri  = $somvio_qc_icons_uri . $somvio_qc_aicon;
+						$somvio_qc_apath = get_stylesheet_directory() . '/assets/icons/' . $somvio_qc_aicon;
+						if ( file_exists( $somvio_qc_apath ) ) {
+							$somvio_qc_auri .= '?v=' . rawurlencode( (string) filemtime( $somvio_qc_apath ) );
+						}
+					}
 					?>
 					<button
 						type="button"
@@ -226,6 +235,16 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 						data-quote-addon="<?php echo esc_attr( $somvio_qc_akey ); ?>"
 						aria-pressed="false"
 					>
+						<?php if ( '' !== $somvio_qc_auri ) : ?>
+							<img
+								class="quote-calculator__addon-icon"
+								src="<?php echo esc_url( $somvio_qc_auri ); ?>"
+								alt=""
+								width="28"
+								height="28"
+								decoding="async"
+							>
+						<?php endif; ?>
 						<span class="quote-calculator__addon-label"><?php echo esc_html( $somvio_qc_alabel ); ?></span>
 						<span class="quote-calculator__addon-price">
 							<?php echo esc_html( $somvio_qc_symbol . number_format_i18n( $somvio_qc_aprice, 0 ) ); ?>
