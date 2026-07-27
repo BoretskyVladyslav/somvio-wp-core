@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once get_stylesheet_directory() . '/inc/booking/emails.php';
 require_once get_stylesheet_directory() . '/inc/booking/latepoint.php';
+require_once get_stylesheet_directory() . '/inc/booking/latepoint-seed.php';
 require_once get_stylesheet_directory() . '/inc/booking/stripe.php';
 
 /**

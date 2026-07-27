@@ -2,6 +2,9 @@
 /**
  * Booking / quote HTML email notifications (admin + customer).
  *
+ * Transport: wp_mail() + HTML headers. Pair with an SMTP plugin (WP Mail SMTP, etc.)
+ * for reliable delivery; From/content-type filters stay compatible with those plugins.
+ *
  * @package Somvio_Child
  */
 
@@ -27,10 +30,10 @@ function somvio_get_booking_admin_email() {
  * @return string
  */
 function somvio_get_booking_mail_from_email() {
-	$from = apply_filters( 'somvio_booking_mail_from_email', somvio_get_booking_admin_email() );
+	$from = apply_filters( 'somvio_booking_mail_from_email', 'info@somvio.co.uk' );
 	$from = sanitize_email( (string) $from );
 
-	return $from ? $from : get_bloginfo( 'admin_email' );
+	return $from ? $from : 'info@somvio.co.uk';
 }
 
 /**
@@ -39,35 +42,196 @@ function somvio_get_booking_mail_from_email() {
  * @return string
  */
 function somvio_get_booking_mail_from_name() {
-	$name = apply_filters( 'somvio_booking_mail_from_name', get_bloginfo( 'name', 'display' ) );
+	$name = apply_filters( 'somvio_booking_mail_from_name', 'Somvio Cleaning' );
 	$name = sanitize_text_field( (string) $name );
 
-	return $name ? $name : 'Somvio';
+	return $name ? $name : 'Somvio Cleaning';
+}
+
+/**
+ * Whether the current wp_mail() call is a Somvio booking notification.
+ *
+ * @return bool
+ */
+function somvio_is_sending_booking_mail() {
+	return ! empty( $GLOBALS['somvio_sending_booking_mail'] );
 }
 
 /**
  * Force HTML content type for booking emails.
  *
+ * @param string $content_type Current content type.
  * @return string
  */
-function somvio_booking_mail_content_type() {
-	return 'text/html; charset=UTF-8';
+function somvio_booking_mail_content_type( $content_type = '' ) {
+	if ( somvio_is_sending_booking_mail() ) {
+		return 'text/html; charset=UTF-8';
+	}
+
+	return $content_type ? (string) $content_type : 'text/html; charset=UTF-8';
 }
 
 /**
- * Set From headers for booking mail via PHPMailer.
+ * Fallback From email for booking (and optionally site) mail.
+ *
+ * @param string $email Current from email.
+ * @return string
+ */
+function somvio_filter_wp_mail_from( $email ) {
+	if ( ! somvio_is_sending_booking_mail() ) {
+		return $email;
+	}
+
+	$from = somvio_get_booking_mail_from_email();
+
+	return $from ? $from : $email;
+}
+
+/**
+ * Fallback From name for booking mail.
+ *
+ * @param string $name Current from name.
+ * @return string
+ */
+function somvio_filter_wp_mail_from_name( $name ) {
+	if ( ! somvio_is_sending_booking_mail() ) {
+		return $name;
+	}
+
+	$from_name = somvio_get_booking_mail_from_name();
+
+	return $from_name ? $from_name : $name;
+}
+
+/**
+ * Ensure booking mail headers always include HTML Content-Type and Somvio From.
+ *
+ * @param array{to?:mixed,subject?:string,message?:string,headers?:mixed,attachments?:mixed} $args Mail args.
+ * @return array<string, mixed>
+ */
+function somvio_filter_wp_mail_args( $args ) {
+	if ( ! somvio_is_sending_booking_mail() || ! is_array( $args ) ) {
+		return $args;
+	}
+
+	$headers = array();
+	if ( isset( $args['headers'] ) ) {
+		if ( is_array( $args['headers'] ) ) {
+			$headers = $args['headers'];
+		} elseif ( is_string( $args['headers'] ) && '' !== $args['headers'] ) {
+			$headers = preg_split( '/\r\n|\r|\n/', $args['headers'] );
+			$headers = is_array( $headers ) ? $headers : array( $args['headers'] );
+		}
+	}
+
+	$has_content_type = false;
+	$has_from         = false;
+	foreach ( $headers as $header ) {
+		$header_l = strtolower( (string) $header );
+		if ( 0 === strpos( $header_l, 'content-type:' ) ) {
+			$has_content_type = true;
+		}
+		if ( 0 === strpos( $header_l, 'from:' ) ) {
+			$has_from = true;
+		}
+	}
+
+	if ( ! $has_content_type ) {
+		$headers[] = 'Content-Type: text/html; charset=UTF-8';
+	}
+	if ( ! $has_from ) {
+		$headers[] = sprintf(
+			'From: %s <%s>',
+			somvio_get_booking_mail_from_name(),
+			somvio_get_booking_mail_from_email()
+		);
+	}
+
+	/**
+	 * Filter booking mail headers before wp_mail().
+	 *
+	 * Useful for SMTP plugins / custom Reply-To.
+	 *
+	 * @param string[]             $headers Headers.
+	 * @param array<string, mixed> $args    wp_mail args.
+	 */
+	$headers = apply_filters( 'somvio_booking_mail_headers', $headers, $args );
+
+	$args['headers'] = array_values( array_filter( array_map( 'strval', (array) $headers ) ) );
+
+	return $args;
+}
+
+/**
+ * Set From headers for booking mail via PHPMailer (SMTP-plugin friendly).
  *
  * @param PHPMailer\PHPMailer\PHPMailer $phpmailer Mailer.
  * @return void
  */
 function somvio_booking_phpmailer_init( $phpmailer ) {
-	$phpmailer->setFrom(
-		somvio_get_booking_mail_from_email(),
-		somvio_get_booking_mail_from_name(),
-		false
-	);
-	$phpmailer->Sender = somvio_get_booking_mail_from_email();
+	if ( ! somvio_is_sending_booking_mail() ) {
+		return;
+	}
+
+	$from_email = somvio_get_booking_mail_from_email();
+	$from_name  = somvio_get_booking_mail_from_name();
+
+	try {
+		$phpmailer->setFrom( $from_email, $from_name, false );
+	} catch ( Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
+		// Leave existing From if PHPMailer rejects the address.
+	}
+	$phpmailer->Sender = $from_email;
+
+	/**
+	 * Let SMTP plugins / custom code adjust PHPMailer after Somvio defaults.
+	 *
+	 * @param PHPMailer\PHPMailer\PHPMailer $phpmailer Mailer instance.
+	 */
+	do_action( 'somvio_booking_phpmailer_init', $phpmailer );
 }
+
+/**
+ * Register global wp_mail filters used as booking-mail fallbacks.
+ *
+ * Priority 20 leaves room for SMTP plugins (often priority 10) while still
+ * correcting From / content-type when our booking flag is active.
+ *
+ * @return void
+ */
+function somvio_register_booking_mail_transport_filters() {
+	add_filter( 'wp_mail_from', 'somvio_filter_wp_mail_from', 20 );
+	add_filter( 'wp_mail_from_name', 'somvio_filter_wp_mail_from_name', 20 );
+	add_filter( 'wp_mail', 'somvio_filter_wp_mail_args', 20 );
+}
+add_action( 'init', 'somvio_register_booking_mail_transport_filters', 5 );
+
+/**
+ * Default Reply-To for booking mail (customer emails → admin inbox).
+ *
+ * @param string[]             $headers Headers.
+ * @param array<string, mixed> $args    Mail args.
+ * @return string[]
+ */
+function somvio_booking_mail_default_reply_to( $headers, $args ) {
+	unset( $args );
+	$headers = (array) $headers;
+
+	foreach ( $headers as $header ) {
+		if ( 0 === strpos( strtolower( (string) $header ), 'reply-to:' ) ) {
+			return $headers;
+		}
+	}
+
+	$headers[] = sprintf(
+		'Reply-To: %s <%s>',
+		somvio_get_booking_mail_from_name(),
+		somvio_get_booking_admin_email()
+	);
+
+	return $headers;
+}
+add_filter( 'somvio_booking_mail_headers', 'somvio_booking_mail_default_reply_to', 10, 2 );
 
 /**
  * Send an HTML email with booking mail defaults.
@@ -84,7 +248,7 @@ function somvio_send_html_mail( $to, $subject, $html, $headers = array() ) {
 		return false;
 	}
 
-	$headers = (array) $headers;
+	$headers   = (array) $headers;
 	$headers[] = 'Content-Type: text/html; charset=UTF-8';
 	$headers[] = sprintf(
 		'From: %s <%s>',
@@ -92,13 +256,37 @@ function somvio_send_html_mail( $to, $subject, $html, $headers = array() ) {
 		somvio_get_booking_mail_from_email()
 	);
 
+	/**
+	 * Fires immediately before a Somvio booking/quote email is sent.
+	 *
+	 * Hook SMTP plugins or logging here if needed.
+	 *
+	 * @param string   $to      Recipient.
+	 * @param string   $subject Subject.
+	 * @param string[] $headers Headers.
+	 */
+	do_action( 'somvio_before_booking_mail', $to, $subject, $headers );
+
+	$GLOBALS['somvio_sending_booking_mail'] = true;
+
 	add_filter( 'wp_mail_content_type', 'somvio_booking_mail_content_type' );
-	add_action( 'phpmailer_init', 'somvio_booking_phpmailer_init' );
+	add_action( 'phpmailer_init', 'somvio_booking_phpmailer_init', 20 );
 
 	$sent = wp_mail( $to, $subject, $html, $headers );
 
-	remove_action( 'phpmailer_init', 'somvio_booking_phpmailer_init' );
+	remove_action( 'phpmailer_init', 'somvio_booking_phpmailer_init', 20 );
 	remove_filter( 'wp_mail_content_type', 'somvio_booking_mail_content_type' );
+
+	$GLOBALS['somvio_sending_booking_mail'] = false;
+
+	/**
+	 * After a Somvio booking/quote email attempt.
+	 *
+	 * @param bool   $sent    Whether wp_mail reported success.
+	 * @param string $to      Recipient.
+	 * @param string $subject Subject.
+	 */
+	do_action( 'somvio_after_booking_mail', $sent, $to, $subject );
 
 	return (bool) $sent;
 }

@@ -105,9 +105,24 @@ function somvio_resolve_latepoint_service_id( $service_key ) {
 /**
  * First usable LatePoint agent ID.
  *
+ * Prefers seeded “Somvio Cleaning Team”, then filter override, then first active agent.
+ *
  * @return int
  */
 function somvio_get_latepoint_default_agent_id() {
+	if ( function_exists( 'somvio_latepoint_ensure_defaults' ) ) {
+		$defaults = somvio_latepoint_ensure_defaults( false );
+		if ( ! empty( $defaults['agent_id'] ) ) {
+			$seeded = absint( $defaults['agent_id'] );
+			/**
+			 * Filter LatePoint default agent ID.
+			 *
+			 * @param int $agent_id Agent ID.
+			 */
+			return absint( apply_filters( 'somvio_latepoint_default_agent_id', $seeded ) ) ?: $seeded;
+		}
+	}
+
 	$forced = absint( apply_filters( 'somvio_latepoint_default_agent_id', 0 ) );
 	if ( $forced > 0 ) {
 		return $forced;
@@ -132,9 +147,24 @@ function somvio_get_latepoint_default_agent_id() {
 /**
  * First usable LatePoint location ID.
  *
+ * Prefers seeded “Glasgow”, then filter override, then first location.
+ *
  * @return int
  */
 function somvio_get_latepoint_default_location_id() {
+	if ( function_exists( 'somvio_latepoint_ensure_defaults' ) ) {
+		$defaults = somvio_latepoint_ensure_defaults( false );
+		if ( ! empty( $defaults['location_id'] ) ) {
+			$seeded = absint( $defaults['location_id'] );
+			/**
+			 * Filter LatePoint default location ID.
+			 *
+			 * @param int $location_id Location ID.
+			 */
+			return absint( apply_filters( 'somvio_latepoint_default_location_id', $seeded ) ) ?: $seeded;
+		}
+	}
+
 	$forced = absint( apply_filters( 'somvio_latepoint_default_location_id', 0 ) );
 	if ( $forced > 0 ) {
 		return $forced;
@@ -290,6 +320,10 @@ function somvio_latepoint_create_booking( array $payload ) {
 			'success' => false,
 			'error'   => 'latepoint_unavailable',
 		);
+	}
+
+	if ( function_exists( 'somvio_latepoint_ensure_defaults' ) ) {
+		somvio_latepoint_ensure_defaults( false );
 	}
 
 	$service_id  = somvio_resolve_latepoint_service_id( (string) ( $payload['service'] ?? '' ) );
