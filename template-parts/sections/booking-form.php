@@ -573,7 +573,7 @@ $somvio_bf_counters = array(
 						<span class="somvio-required" aria-hidden="true">*</span>
 					</legend>
 					<div class="booking-form__payment-options" role="radiogroup" aria-required="true">
-						<label class="booking-form__payment-option">
+						<label class="booking-form__payment-option is-selected">
 							<input
 								type="radio"
 								name="payment_method"
@@ -583,8 +583,11 @@ $somvio_bf_counters = array(
 								checked
 							>
 							<span class="booking-form__payment-card">
-								<span class="booking-form__payment-title"><?php esc_html_e( 'Pay on completion / Cash', 'somvio' ); ?></span>
-								<span class="booking-form__payment-desc"><?php esc_html_e( 'Confirm now, pay after the clean.', 'somvio' ); ?></span>
+								<span class="booking-form__payment-indicator" aria-hidden="true"></span>
+								<span class="booking-form__payment-body">
+									<span class="booking-form__payment-title"><?php esc_html_e( 'Pay on completion / Cash', 'somvio' ); ?></span>
+									<span class="booking-form__payment-desc"><?php esc_html_e( 'Confirm now, pay after the clean.', 'somvio' ); ?></span>
+								</span>
 							</span>
 						</label>
 						<?php if ( function_exists( 'somvio_stripe_is_configured' ) && somvio_stripe_is_configured() ) : ?>
@@ -597,8 +600,11 @@ $somvio_bf_counters = array(
 								value="online"
 							>
 							<span class="booking-form__payment-card">
-								<span class="booking-form__payment-title"><?php esc_html_e( 'Pay online (Stripe)', 'somvio' ); ?></span>
-								<span class="booking-form__payment-desc"><?php esc_html_e( 'Secure card payment now.', 'somvio' ); ?></span>
+								<span class="booking-form__payment-indicator" aria-hidden="true"></span>
+								<span class="booking-form__payment-body">
+									<span class="booking-form__payment-title"><?php esc_html_e( 'Pay online (Stripe)', 'somvio' ); ?></span>
+									<span class="booking-form__payment-desc"><?php esc_html_e( 'Secure card payment now.', 'somvio' ); ?></span>
+								</span>
 							</span>
 						</label>
 						<?php endif; ?>

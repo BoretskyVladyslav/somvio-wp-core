@@ -110,7 +110,7 @@ function somvio_acf_phone_to_href( $phone ) {
 }
 
 /**
- * Register Somvio Settings options page.
+ * Register Somvio Settings options page (ACF Pro).
  *
  * @return void
  */
@@ -132,6 +132,100 @@ function somvio_acf_register_options_page() {
 	);
 }
 add_action( 'acf/init', 'somvio_acf_register_options_page' );
+
+/**
+ * Whether ACF Pro options pages are available.
+ *
+ * @return bool
+ */
+function somvio_acf_has_pro_options_page() {
+	return function_exists( 'acf_add_options_page' );
+}
+
+/**
+ * ACF Free fallback: top-level Somvio Settings menu via add_menu_page.
+ *
+ * @return void
+ */
+function somvio_acf_register_free_options_menu() {
+	if ( somvio_acf_has_pro_options_page() ) {
+		return;
+	}
+
+	add_menu_page(
+		__( 'Somvio Settings', 'somvio' ),
+		__( 'Somvio Settings', 'somvio' ),
+		'manage_options',
+		'somvio-settings',
+		'somvio_acf_render_free_options_page',
+		'dashicons-admin-generic',
+		59
+	);
+}
+add_action( 'admin_menu', 'somvio_acf_register_free_options_menu' );
+
+/**
+ * Load ACF form assets / process saves before admin HTML (Free options page).
+ *
+ * @return void
+ */
+function somvio_acf_free_options_form_head() {
+	if ( somvio_acf_has_pro_options_page() || ! function_exists( 'acf_form_head' ) ) {
+		return;
+	}
+
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only page slug check.
+	$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( (string) $_GET['page'] ) ) : '';
+	if ( 'somvio-settings' !== $page ) {
+		return;
+	}
+
+	acf_form_head();
+}
+add_action( 'admin_init', 'somvio_acf_free_options_form_head' );
+
+/**
+ * Render Somvio Settings for ACF Free (acf_form → options post_id).
+ *
+ * @return void
+ */
+function somvio_acf_render_free_options_page() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	if ( ! function_exists( 'acf_form' ) ) {
+		echo '<div class="wrap"><h1>' . esc_html__( 'Somvio Settings', 'somvio' ) . '</h1>';
+		echo '<div class="notice notice-error"><p>';
+		esc_html_e( 'Advanced Custom Fields is required to edit these settings.', 'somvio' );
+		echo '</p></div></div>';
+		return;
+	}
+
+	echo '<div class="wrap">';
+	echo '<h1>' . esc_html__( 'Somvio Settings', 'somvio' ) . '</h1>';
+	echo '<p class="description">' . esc_html__( 'Site options, Stripe keys, and quote calculator rates.', 'somvio' ) . '</p>';
+
+	acf_form(
+		array(
+			'id'              => 'somvio-settings-form',
+			'post_id'         => 'options',
+			'new_post'        => false,
+			'field_groups'    => array(
+				'group_somvio_general_settings',
+				'group_somvio_quote_rates',
+			),
+			'form'            => true,
+			'return'          => admin_url( 'admin.php?page=somvio-settings&updated=true' ),
+			'submit_value'    => __( 'Save Settings', 'somvio' ),
+			'updated_message' => __( 'Settings saved.', 'somvio' ),
+			'html_before_fields' => '',
+			'html_after_fields'  => '',
+		)
+	);
+
+	echo '</div>';
+}
 
 /**
  * Register all local field groups.

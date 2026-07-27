@@ -1101,10 +1101,13 @@
 			if (header) {
 				offset += header.getBoundingClientRect().height || 0;
 			}
-			var rect = root.getBoundingClientRect();
-			var top = window.pageYOffset + rect.top - offset;
-			if (typeof window.scrollTo === 'function') {
-				window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+			var target =
+				root.querySelector('[data-booking-step="' + state.step + '"]') ||
+				root.querySelector('.booking-form__stepper') ||
+				root;
+			if (target && typeof target.scrollIntoView === 'function') {
+				target.style.scrollMarginTop = offset + 'px';
+				target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 			}
 		}
 

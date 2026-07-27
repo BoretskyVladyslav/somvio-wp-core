@@ -642,10 +642,13 @@
 			if (header) {
 				offset += header.getBoundingClientRect().height || 0;
 			}
-			var rect = root.getBoundingClientRect();
-			var top = window.pageYOffset + rect.top - offset;
-			if (typeof window.scrollTo === 'function') {
-				window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+			var target =
+				root.querySelector('[data-quote-step="' + state.step + '"]') ||
+				root.querySelector('.quote-calculator__step-title') ||
+				root;
+			if (target && typeof target.scrollIntoView === 'function') {
+				target.style.scrollMarginTop = offset + 'px';
+				target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 			}
 		}
 
