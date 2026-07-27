@@ -186,7 +186,7 @@ $somvio_posts = array(
 						<img
 							class="blog-card__image"
 							src="<?php echo esc_url( $somvio_main_img['uri'] ); ?>"
-							alt=""
+							alt="<?php echo esc_attr( $somvio_featured_main['title'] ); ?>"
 							width="570"
 							height="320"
 							loading="eager"
@@ -220,7 +220,7 @@ $somvio_posts = array(
 								<img
 									class="blog-card__image"
 									src="<?php echo esc_url( $somvio_side_img['uri'] ); ?>"
-									alt=""
+									alt="<?php echo esc_attr( $somvio_side_post['title'] ); ?>"
 									width="285"
 									height="220"
 									loading="lazy"
@@ -230,11 +230,11 @@ $somvio_posts = array(
 						<?php endif; ?>
 						<div class="blog-card__body">
 							<p class="blog-card__date"><?php echo esc_html( $somvio_side_post['date'] ); ?></p>
-							<h3 class="blog-card__title">
+							<h2 class="blog-card__title">
 								<a href="<?php echo esc_url( $somvio_side_post['url'] ); ?>">
 									<?php echo esc_html( $somvio_side_post['title'] ); ?>
 								</a>
-							</h3>
+							</h2>
 							<p class="blog-card__excerpt"><?php echo esc_html( $somvio_side_post['excerpt'] ); ?></p>
 							<a class="blog-card__link" href="<?php echo esc_url( $somvio_side_post['url'] ); ?>">
 								<?php echo esc_html( $somvio_read_now ); ?>
@@ -280,7 +280,7 @@ $somvio_posts = array(
 							<img
 								class="blog-card__image"
 								src="<?php echo esc_url( $somvio_post_img['uri'] ); ?>"
-								alt=""
+								alt="<?php echo esc_attr( $somvio_post['title'] ); ?>"
 								width="370"
 								height="320"
 								loading="lazy"

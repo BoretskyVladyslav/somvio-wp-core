@@ -72,10 +72,11 @@ $somvio_faq_items = array(
 /**
  * Optional FAQ variant from get_template_part() $args.
  *
- * @var array{variant?: string} $args
+ * @var array{variant?: string, hide_title?: bool} $args
  */
-$somvio_faq_args    = ( isset( $args ) && is_array( $args ) ) ? $args : array();
-$somvio_faq_variant = isset( $somvio_faq_args['variant'] ) ? sanitize_key( (string) $somvio_faq_args['variant'] ) : 'default';
+$somvio_faq_args      = ( isset( $args ) && is_array( $args ) ) ? $args : array();
+$somvio_faq_variant   = isset( $somvio_faq_args['variant'] ) ? sanitize_key( (string) $somvio_faq_args['variant'] ) : 'default';
+$somvio_faq_hide_title = ! empty( $somvio_faq_args['hide_title'] );
 
 if ( 'airbnb' === $somvio_faq_variant ) {
 	$somvio_faq_items = array(
@@ -117,20 +118,24 @@ if ( 'airbnb' === $somvio_faq_variant ) {
 		),
 	);
 }
+
+$somvio_faq_labelledby = $somvio_faq_hide_title ? 'faq-hero-title' : 'faq-title';
 ?>
-<section class="faq" aria-labelledby="faq-title">
+<section class="faq" aria-labelledby="<?php echo esc_attr( $somvio_faq_labelledby ); ?>">
 	<div class="faq__inner">
-		<header class="faq__header reveal-on-scroll">
-			<h2 id="faq-title" class="faq__title">
-				<?php
-				echo esc_html(
-					'airbnb' === $somvio_faq_variant
-						? __( 'Airbnb Cleaning FAQ', 'somvio' )
-						: __( 'Frequently Asked Questions', 'somvio' )
-				);
-				?>
-			</h2>
-		</header>
+		<?php if ( ! $somvio_faq_hide_title ) : ?>
+			<header class="faq__header reveal-on-scroll">
+				<h2 id="faq-title" class="faq__title">
+					<?php
+					echo esc_html(
+						'airbnb' === $somvio_faq_variant
+							? __( 'Airbnb Cleaning FAQ', 'somvio' )
+							: __( 'Frequently Asked Questions', 'somvio' )
+					);
+					?>
+				</h2>
+			</header>
+		<?php endif; ?>
 
 		<div class="faq__accordion" data-accordion>
 			<?php foreach ( $somvio_faq_items as $index => $item ) : ?>

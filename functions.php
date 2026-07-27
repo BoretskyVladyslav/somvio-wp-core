@@ -18,6 +18,18 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @see https://docs.generatepress.com/article/child-theme-issues/
  */
 
+/**
+ * Theme supports for SEO plugins (Rank Math hooks document title via title-tag).
+ * Parent GeneratePress also declares this; re-declare so the child is self-sufficient.
+ * wp_head() / wp_footer() live in the parent header.php / footer.php (not overridden).
+ *
+ * @return void
+ */
+function somvio_theme_setup() {
+	add_theme_support( 'title-tag' );
+}
+add_action( 'after_setup_theme', 'somvio_theme_setup' );
+
 require_once get_stylesheet_directory() . '/inc/acf-fields.php';
 require_once get_stylesheet_directory() . '/inc/header.php';
 require_once get_stylesheet_directory() . '/inc/hero.php';

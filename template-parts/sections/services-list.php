@@ -104,11 +104,11 @@ $somvio_list_services = array(
 				</div>
 
 				<div class="services-list__body">
-					<h3 class="services-list__title">
+					<h2 class="services-list__title">
 						<a class="services-list__title-link" href="<?php echo $service_url; ?>">
 							<?php echo esc_html( $service['title'] ); ?>
 						</a>
-					</h3>
+					</h2>
 					<p class="services-list__price"><?php echo esc_html( $service['price'] ); ?></p>
 					<p class="services-list__text"><?php echo esc_html( $service['text'] ); ?></p>
 					<a class="btn btn--primary btn--sm btn--has-icon services-list__cta" href="<?php echo $service_url; ?>">

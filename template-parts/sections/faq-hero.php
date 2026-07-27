@@ -54,7 +54,7 @@ if ( file_exists( $somvio_bg_path ) ) {
 			</ol>
 		</nav>
 
-		<h1 class="faq-hero__title reveal-on-scroll" style="--reveal-delay: 0.05s;">
+		<h1 id="faq-hero-title" class="faq-hero__title reveal-on-scroll" style="--reveal-delay: 0.05s;">
 			<?php esc_html_e( 'Frequently Asked Questions', 'somvio' ); ?>
 		</h1>
 
