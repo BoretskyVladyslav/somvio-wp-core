@@ -98,9 +98,14 @@ $row = static function ( $label, $value ) {
 								<li><?php echo esc_html__( 'We’ll review your request and confirm availability.', 'somvio' ); ?></li>
 								<li>
 									<?php
-									echo $is_booking
-										? esc_html__( 'If you chose pay on completion, no card charge is taken now — you’ll pay after the clean.', 'somvio' )
-										: esc_html__( 'We’ll send a confirmed quote or follow up if we need more details.', 'somvio' );
+									$payment_method = isset( $payload['payment_method'] ) ? sanitize_key( (string) $payload['payment_method'] ) : 'cash';
+									if ( $is_booking && 'online' === $payment_method ) {
+										echo esc_html__( 'If you completed card payment, your booking is confirmed once payment succeeds — we’ll be in touch with final details.', 'somvio' );
+									} elseif ( $is_booking ) {
+										echo esc_html__( 'If you chose pay on completion, no card charge is taken now — you’ll pay after the clean.', 'somvio' );
+									} else {
+										echo esc_html__( 'We’ll send a confirmed quote or follow up if we need more details.', 'somvio' );
+									}
 									?>
 								</li>
 								<li>

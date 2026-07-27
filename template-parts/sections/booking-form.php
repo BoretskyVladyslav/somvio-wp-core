@@ -587,6 +587,7 @@ $somvio_bf_counters = array(
 								<span class="booking-form__payment-desc"><?php esc_html_e( 'Confirm now, pay after the clean.', 'somvio' ); ?></span>
 							</span>
 						</label>
+						<?php if ( function_exists( 'somvio_stripe_is_configured' ) && somvio_stripe_is_configured() ) : ?>
 						<label class="booking-form__payment-option">
 							<input
 								type="radio"
@@ -600,6 +601,7 @@ $somvio_bf_counters = array(
 								<span class="booking-form__payment-desc"><?php esc_html_e( 'Secure card payment now.', 'somvio' ); ?></span>
 							</span>
 						</label>
+						<?php endif; ?>
 					</div>
 					<p class="booking-form__field-error" data-booking-field-error="payment_method" hidden role="alert"></p>
 				</fieldset>

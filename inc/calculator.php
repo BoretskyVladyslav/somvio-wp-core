@@ -556,6 +556,10 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 		if ( ! in_array( $payment_method, array( 'cash', 'online' ), true ) ) {
 			return new WP_Error( 'invalid_payment', __( 'Please select a payment method.', 'somvio' ), array( 'status' => 400 ) );
 		}
+		// Unconfigured Stripe: force cash so bookings are never left payment_pending.
+		if ( 'online' === $payment_method && function_exists( 'somvio_stripe_is_configured' ) && ! somvio_stripe_is_configured() ) {
+			$payment_method = 'cash';
+		}
 	} else {
 		// Quick quote has no payment step.
 		$payment_method = 'cash';

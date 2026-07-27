@@ -43,6 +43,12 @@ function somvio_normalize_payment_method( $method ) {
  */
 function somvio_process_booking_submission( array $payload ) {
 	$payment_method = somvio_normalize_payment_method( $payload['payment_method'] ?? 'cash' );
+
+	// Unconfigured Stripe must never create payment_pending bookings.
+	if ( 'online' === $payment_method && function_exists( 'somvio_stripe_is_configured' ) && ! somvio_stripe_is_configured() ) {
+		$payment_method = 'cash';
+	}
+
 	$payload['payment_method'] = $payment_method;
 
 	$result = array(
@@ -124,28 +130,36 @@ add_action( 'somvio_quote_submitted', 'somvio_on_quote_submitted', 10, 1 );
 function somvio_rest_confirm_payment( WP_REST_Request $request ) {
 	$payment_intent_id = sanitize_text_field( (string) $request['payment_intent_id'] );
 	$booking_id        = absint( $request['booking_id'] ?? 0 );
-	$client_total      = isset( $request['client_total'] ) ? (float) $request['client_total'] : 0.0;
 
 	if ( '' === $payment_intent_id ) {
 		return new WP_Error( 'invalid_intent', __( 'Missing payment intent.', 'somvio' ), array( 'status' => 400 ) );
 	}
 
-	$expected = $client_total;
-	if ( $booking_id > 0 && class_exists( 'OsBookingModel' ) ) {
-		$booking = new OsBookingModel( $booking_id );
-		if ( ! empty( $booking->id ) && method_exists( $booking, 'get_meta_by_key' ) ) {
-			$stored_total = $booking->get_meta_by_key( 'somvio_server_total', '' );
-			if ( '' !== $stored_total ) {
-				$expected = (float) $stored_total;
-			}
-			$stored_intent = (string) $booking->get_meta_by_key( 'somvio_stripe_payment_intent', '' );
-			if ( $stored_intent && $stored_intent !== $payment_intent_id ) {
-				return new WP_Error( 'intent_mismatch', __( 'Payment intent does not match this booking.', 'somvio' ), array( 'status' => 400 ) );
-			}
-		}
+	if ( $booking_id < 1 ) {
+		return new WP_Error( 'invalid_booking', __( 'Missing booking ID.', 'somvio' ), array( 'status' => 400 ) );
 	}
 
-	$verify = somvio_stripe_verify_payment_intent( $payment_intent_id, $expected );
+	if ( ! class_exists( 'OsBookingModel' ) ) {
+		return new WP_Error( 'booking_unavailable', __( 'Booking system is unavailable.', 'somvio' ), array( 'status' => 503 ) );
+	}
+
+	$booking = new OsBookingModel( $booking_id );
+	if ( empty( $booking->id ) || ! method_exists( $booking, 'get_meta_by_key' ) ) {
+		return new WP_Error( 'booking_not_found', __( 'Booking not found.', 'somvio' ), array( 'status' => 404 ) );
+	}
+
+	$stored_intent = (string) $booking->get_meta_by_key( 'somvio_stripe_payment_intent', '' );
+	if ( '' === $stored_intent || $stored_intent !== $payment_intent_id ) {
+		return new WP_Error( 'intent_mismatch', __( 'Payment intent does not match this booking.', 'somvio' ), array( 'status' => 400 ) );
+	}
+
+	$stored_total = $booking->get_meta_by_key( 'somvio_server_total', '' );
+	if ( '' === $stored_total ) {
+		return new WP_Error( 'missing_total', __( 'Booking total could not be verified.', 'somvio' ), array( 'status' => 400 ) );
+	}
+
+	$expected = (float) $stored_total;
+	$verify   = somvio_stripe_verify_payment_intent( $payment_intent_id, $expected );
 	if ( empty( $verify['success'] ) ) {
 		return new WP_Error(
 			'payment_unverified',
@@ -157,9 +171,7 @@ function somvio_rest_confirm_payment( WP_REST_Request $request ) {
 		);
 	}
 
-	if ( $booking_id > 0 ) {
-		somvio_latepoint_mark_booking_paid( $booking_id );
-	}
+	somvio_latepoint_mark_booking_paid( $booking_id );
 
 	return rest_ensure_response(
 		array(
@@ -191,14 +203,9 @@ function somvio_register_booking_payment_rest_routes() {
 					'sanitize_callback' => 'sanitize_text_field',
 				),
 				'booking_id'        => array(
-					'required'          => false,
+					'required'          => true,
 					'type'              => 'integer',
-					'default'           => 0,
 					'sanitize_callback' => 'absint',
-				),
-				'client_total'      => array(
-					'required' => false,
-					'type'     => 'number',
 				),
 			),
 		)

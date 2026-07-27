@@ -391,7 +391,10 @@ function somvio_latepoint_ensure_defaults( $force = false ) {
 		'updated_at'  => time(),
 	);
 
-	update_option( somvio_latepoint_defaults_option_key(), $defaults, false );
+	// Persist only when fully valid — avoid caching zeros that force re-seed churn.
+	if ( somvio_latepoint_defaults_are_valid( $defaults ) ) {
+		update_option( somvio_latepoint_defaults_option_key(), $defaults, false );
+	}
 
 	/**
 	 * After LatePoint defaults are seeded/verified.
