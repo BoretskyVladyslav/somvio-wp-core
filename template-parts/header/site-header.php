@@ -2,7 +2,7 @@
 /**
  * Somvio site header markup.
  *
- * Figma: 300:1531 (desktop), 300:1533 (dropdown), 300:2716 (mobile).
+ * Figma: 300:1531 (desktop), 300:1533 (dropdown), 457:5369 (mobile open).
  *
  * @package Somvio_Child
  */
@@ -92,16 +92,14 @@ $somvio_whatsapp  = function_exists( 'somvio_get_whatsapp_url' ) ? somvio_get_wh
 				</a>
 
 				<a
-					class="somvio-header__icon-btn somvio-header__phone-btn somvio-header__whatsapp-btn"
-					href="<?php echo esc_url( $somvio_whatsapp ); ?>"
-					target="_blank"
-					rel="noopener noreferrer"
-					aria-label="<?php esc_attr_e( 'WhatsApp Us', 'somvio' ); ?>"
+					class="somvio-header__icon-btn somvio-header__phone-btn"
+					href="<?php echo esc_url( $somvio_phone['href'] ); ?>"
+					aria-label="<?php echo esc_attr( sprintf( /* translators: %s: phone number */ __( 'Call %s', 'somvio' ), $somvio_phone['display'] ) ); ?>"
 				>
 					<span class="somvio-header__icon-btn-icon" aria-hidden="true">
 						<?php
 						// Trusted local theme SVG from assets/icons/.
-						echo somvio_get_icon( 'icon-whatsapp' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						echo somvio_get_icon( 'icon-phone' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						?>
 					</span>
 				</a>
