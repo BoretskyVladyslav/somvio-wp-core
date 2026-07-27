@@ -6715,16 +6715,19 @@ body.somvio-has-hero.page-template-page-blog-php .site-main > * {
 body.somvio-has-hero.somvio-legal-page .site-content,
 body.somvio-has-hero.page-template-page-privacy-policy-php .site-content,
 body.somvio-has-hero.page-template-page-terms-of-use-php .site-content,
+body.somvio-has-hero.page-template-page-legal-php .site-content,
 body.somvio-has-hero.page-privacy-policy .site-content,
 body.somvio-has-hero.page-terms-of-use .site-content,
 body.somvio-has-hero.somvio-legal-page .content-area,
 body.somvio-has-hero.page-template-page-privacy-policy-php .content-area,
 body.somvio-has-hero.page-template-page-terms-of-use-php .content-area,
+body.somvio-has-hero.page-template-page-legal-php .content-area,
 body.somvio-has-hero.page-privacy-policy .content-area,
 body.somvio-has-hero.page-terms-of-use .content-area,
 body.somvio-has-hero.somvio-legal-page .site-main,
 body.somvio-has-hero.page-template-page-privacy-policy-php .site-main,
 body.somvio-has-hero.page-template-page-terms-of-use-php .site-main,
+body.somvio-has-hero.page-template-page-legal-php .site-main,
 body.somvio-has-hero.page-privacy-policy .site-main,
 body.somvio-has-hero.page-terms-of-use .site-main {
 	display: block !important;
@@ -6737,6 +6740,7 @@ body.somvio-has-hero.page-terms-of-use .site-main {
 body.somvio-has-hero.somvio-legal-page .site-main > *,
 body.somvio-has-hero.page-template-page-privacy-policy-php .site-main > *,
 body.somvio-has-hero.page-template-page-terms-of-use-php .site-main > *,
+body.somvio-has-hero.page-template-page-legal-php .site-main > *,
 body.somvio-has-hero.page-privacy-policy .site-main > *,
 body.somvio-has-hero.page-terms-of-use .site-main > * {
 	display: block;

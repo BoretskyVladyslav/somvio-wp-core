@@ -31,12 +31,17 @@ if ( ! $somvio_bf_privacy_url ) {
 	$somvio_bf_privacy_url = home_url( '/privacy-policy/' );
 }
 $somvio_bf_terms_id = 0;
-if ( function_exists( 'somvio_get_page_id_by_slug' ) ) {
-	$somvio_bf_terms_id = (int) somvio_get_page_id_by_slug( 'terms-of-use' );
+if ( function_exists( 'somvio_get_terms_conditions_page_id' ) ) {
+	$somvio_bf_terms_id = (int) somvio_get_terms_conditions_page_id();
+} elseif ( function_exists( 'somvio_get_page_id_by_slug' ) ) {
+	$somvio_bf_terms_id = (int) somvio_get_page_id_by_slug( 'terms-conditions' );
+	if ( $somvio_bf_terms_id <= 0 ) {
+		$somvio_bf_terms_id = (int) somvio_get_page_id_by_slug( 'terms-of-use' );
+	}
 }
 $somvio_bf_terms_url = $somvio_bf_terms_id > 0
 	? get_permalink( $somvio_bf_terms_id )
-	: home_url( '/terms-of-use/' );
+	: home_url( '/terms-conditions/' );
 
 $somvio_bf_counters = array(
 	'main_rooms'     => array(

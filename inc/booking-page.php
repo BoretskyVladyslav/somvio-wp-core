@@ -70,10 +70,10 @@ function somvio_enqueue_booking_form_assets() {
 	$privacy_url = function_exists( 'somvio_get_privacy_policy_page_id' )
 		? get_permalink( somvio_get_privacy_policy_page_id() )
 		: home_url( '/privacy-policy/' );
-	$terms_id    = function_exists( 'somvio_get_page_id_by_slug' )
-		? somvio_get_page_id_by_slug( 'terms-of-use' )
-		: 0;
-	$terms_url   = $terms_id > 0 ? get_permalink( $terms_id ) : home_url( '/terms-of-use/' );
+	$terms_id    = function_exists( 'somvio_get_terms_conditions_page_id' )
+		? somvio_get_terms_conditions_page_id()
+		: ( function_exists( 'somvio_get_page_id_by_slug' ) ? somvio_get_page_id_by_slug( 'terms-conditions' ) : 0 );
+	$terms_url   = $terms_id > 0 ? get_permalink( $terms_id ) : home_url( '/terms-conditions/' );
 
 	wp_localize_script(
 		'somvio-booking-form',
@@ -153,7 +153,7 @@ function somvio_enqueue_booking_form_assets() {
 				),
 			),
 			'privacyUrl' => esc_url_raw( $privacy_url ? (string) $privacy_url : home_url( '/privacy-policy/' ) ),
-			'termsUrl'   => esc_url_raw( $terms_url ? (string) $terms_url : home_url( '/terms-of-use/' ) ),
+			'termsUrl'   => esc_url_raw( $terms_url ? (string) $terms_url : home_url( '/terms-conditions/' ) ),
 		)
 	);
 }

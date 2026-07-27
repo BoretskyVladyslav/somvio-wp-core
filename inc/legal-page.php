@@ -1,8 +1,6 @@
 <?php
 /**
- * Legal pages — Privacy Policy / Terms of Use.
- *
- * Hero: 300:2218 / 300:2239. Article body: 300:2222 / 300:2243.
+ * Legal pages — registry, seeding, body class, redirects.
  *
  * @package Somvio_Child
  */
@@ -11,8 +9,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/** @var int Bump to force re-seed legal page post_content from Figma. */
-const SOMVIO_LEGAL_CONTENT_VERSION = 2;
+require_once get_stylesheet_directory() . '/inc/legal-content-seeds.php';
+
+/** @var int Bump to force re-seed all legal page post_content. */
+const SOMVIO_LEGAL_CONTENT_VERSION = 3;
 
 /**
  * Whether the current view is a legal page with a dark hero.
@@ -20,11 +20,23 @@ const SOMVIO_LEGAL_CONTENT_VERSION = 2;
  * @return bool
  */
 function somvio_is_legal_page() {
-	if ( is_page( 'privacy-policy' ) || is_page_template( 'page-privacy-policy.php' ) ) {
+	$registry = somvio_get_legal_pages_registry();
+
+	foreach ( array_keys( $registry ) as $slug ) {
+		if ( is_page( $slug ) ) {
+			return true;
+		}
+	}
+
+	if ( is_page( 'terms-of-use' ) ) {
 		return true;
 	}
 
-	if ( is_page( 'terms-of-use' ) || is_page_template( 'page-terms-of-use.php' ) ) {
+	if (
+		is_page_template( 'page-legal.php' )
+		|| is_page_template( 'page-privacy-policy.php' )
+		|| is_page_template( 'page-terms-of-use.php' )
+	) {
 		return true;
 	}
 
@@ -54,9 +66,6 @@ add_filter( 'body_class', 'somvio_legal_body_class' );
 
 /**
  * Resolve the canonical Privacy Policy page ID (incl. drafts / WP setting).
- *
- * Prefer `wp_page_for_privacy_policy`, then exact slug `privacy-policy`
- * regardless of status (avoids creating privacy-policy-2/-3 duplicates).
  *
  * @return int
  */
@@ -92,68 +101,20 @@ function somvio_get_privacy_policy_page_id() {
 }
 
 /**
- * Privacy Policy article HTML — Figma 300:2222 (exact copy).
+ * Canonical Terms & Conditions page ID.
  *
- * @return string
+ * @return int
  */
-function somvio_get_privacy_policy_seed_content() {
-	return <<<'HTML'
-<div class="legal-content__section">
-<h2>Introduction</h2>
-<p>At Somvio, we respect your privacy and are committed to protecting your personal information. This Privacy Policy explains how we collect, use and safeguard your data when you use our website and services.</p>
-</div>
-<div class="legal-content__section">
-<h2>Information We Collect</h2>
-<p>We may collect the following information:</p>
-<ul>
-<li>Full name</li>
-<li>Email address</li>
-<li>Phone number</li>
-<li>Property address</li>
-<li>Booking information</li>
-<li>Payment details</li>
-<li>Website usage data</li>
-<li>Device information</li>
-</ul>
-</div>
-<div class="legal-content__section">
-<h2>Cookies</h2>
-<p>Our website uses cookies to improve your browsing experience, remember preferences and analyse website performance.</p>
-</div>
-<div class="legal-content__section">
-<h2>Data Protection</h2>
-<p>We use industry-standard security measures including SSL encryption and secure payment gateways to protect your personal information.</p>
-</div>
-HTML;
-}
+function somvio_get_terms_conditions_page_id() {
+	if ( function_exists( 'somvio_get_page_id_by_slug' ) ) {
+		$id = somvio_get_page_id_by_slug( 'terms-conditions' );
+		if ( $id > 0 ) {
+			return $id;
+		}
+		return somvio_get_page_id_by_slug( 'terms-of-use' );
+	}
 
-/**
- * Terms of Use article HTML — Figma 300:2243.
- *
- * @return string
- */
-function somvio_get_terms_of_use_seed_content() {
-	return <<<'HTML'
-<div class="legal-content__section">
-<h2>Booking</h2>
-<p>All prices displayed on our website are transparent and include applicable taxes unless otherwise stated.</p>
-<p>Additional services requested during the appointment may result in extra charges.</p>
-</div>
-<div class="legal-content__section">
-<h2>Pricing</h2>
-<p>A booking becomes confirmed once payment has been successfully processed or written confirmation has been provided by Somvio.</p>
-</div>
-<div class="legal-content__section">
-<h2>Cancellation Policy</h2>
-<p>Customers may cancel or reschedule free of charge up to 24 hours before the scheduled appointment.</p>
-<p>Late cancellations may incur a cancellation fee.</p>
-</div>
-<div class="legal-content__section">
-<h2>Payments</h2>
-<p>Payments are securely processed through Stripe and PayPal.</p>
-<p>Somvio does not store your payment card details.</p>
-</div>
-HTML;
+	return 0;
 }
 
 /**
@@ -206,70 +167,98 @@ function somvio_seed_legal_page_content( $page_id, $html, $force = false ) {
 }
 
 /**
- * Force-overwrite Privacy Policy post_content from Figma 300:2222.
+ * Ensure a single legal page exists, has template + seeded content.
  *
- * Targets the canonical privacy page (WP setting / slug), publishes it,
- * assigns the legal template, and trashes duplicate privacy-policy-* pages.
- *
- * @return int Canonical page ID or 0.
+ * @param string $slug  Page slug.
+ * @param string $title Page title.
+ * @return int Page ID or 0.
  */
-function somvio_force_seed_privacy_policy_content() {
-	$page_id = somvio_get_privacy_policy_page_id();
+function somvio_ensure_legal_page( $slug, $title ) {
+	$slug  = sanitize_title( (string) $slug );
+	$title = (string) $title;
 
-	if ( $page_id <= 0 && function_exists( 'somvio_ensure_page' ) ) {
-		$page_id = somvio_ensure_page( 'privacy-policy', 'Privacy Policy' );
+	if ( '' === $slug || '' === $title || ! function_exists( 'somvio_ensure_page' ) ) {
+		return 0;
+	}
+
+	$page_id = 0;
+
+	if ( 'privacy-policy' === $slug ) {
+		$page_id = somvio_get_privacy_policy_page_id();
+	}
+
+	if ( $page_id <= 0 ) {
+		$page_id = somvio_ensure_page( $slug, $title );
 	}
 
 	if ( $page_id <= 0 ) {
 		return 0;
 	}
 
-	$page = get_post( $page_id );
-
 	$updates = array(
 		'ID'          => $page_id,
 		'post_status' => 'publish',
-		'post_title'  => 'Privacy Policy',
-		'post_name'   => 'privacy-policy',
+		'post_title'  => $title,
+		'post_name'   => $slug,
 	);
-
-	if ( $page instanceof WP_Post && 'privacy-policy' !== $page->post_name ) {
-		$updates['post_name'] = 'privacy-policy';
-	}
 
 	wp_update_post( $updates );
 
-	somvio_seed_legal_page_content( $page_id, somvio_get_privacy_policy_seed_content(), true );
+	update_post_meta( $page_id, '_wp_page_template', 'page-legal.php' );
 
-	update_post_meta( $page_id, '_wp_page_template', 'page-privacy-policy.php' );
+	$html = somvio_get_legal_page_seed_content( $slug );
+	if ( '' !== $html ) {
+		somvio_seed_legal_page_content( $page_id, $html, true );
+	}
 
-	if ( (int) get_option( 'wp_page_for_privacy_policy' ) !== $page_id ) {
+	if ( 'privacy-policy' === $slug && (int) get_option( 'wp_page_for_privacy_policy' ) !== $page_id ) {
 		update_option( 'wp_page_for_privacy_policy', $page_id );
 	}
 
-	// Trash duplicate slug variants created while the canonical page was draft.
-	$dupes = get_posts(
-		array(
-			'post_type'        => 'page',
-			'post_status'      => array( 'publish', 'draft', 'pending', 'private' ),
-			'numberposts'      => 20,
-			'suppress_filters' => true,
-			'exclude'          => array( $page_id ),
-		)
-	);
+	return $page_id;
+}
 
-	foreach ( $dupes as $dupe ) {
-		if ( ! ( $dupe instanceof WP_Post ) ) {
-			continue;
-		}
+/**
+ * Ensure / seed every registered legal page.
+ *
+ * Migrates legacy `terms-of-use` → `terms-conditions` when needed.
+ *
+ * @return array<string, int> Slug => page ID.
+ */
+function somvio_ensure_all_legal_pages() {
+	$ids = array();
 
-		$name = (string) $dupe->post_name;
-		if ( 0 === strpos( $name, 'privacy-policy-' ) || 'privacy-policy' === $name ) {
-			wp_trash_post( (int) $dupe->ID );
+	/* Prefer renaming legacy terms-of-use to terms-conditions when target missing. */
+	if ( function_exists( 'somvio_get_page_id_by_slug' ) ) {
+		$legacy = somvio_get_page_id_by_slug( 'terms-of-use' );
+		$modern = somvio_get_page_id_by_slug( 'terms-conditions' );
+		if ( $legacy > 0 && $modern <= 0 ) {
+			wp_update_post(
+				array(
+					'ID'         => $legacy,
+					'post_name'  => 'terms-conditions',
+					'post_title' => 'Terms & Conditions',
+				)
+			);
 		}
 	}
 
-	return $page_id;
+	foreach ( somvio_get_legal_pages_registry() as $slug => $meta ) {
+		$title       = isset( $meta['title'] ) ? (string) $meta['title'] : $slug;
+		$ids[ $slug ] = somvio_ensure_legal_page( $slug, $title );
+	}
+
+	return $ids;
+}
+
+/**
+ * Force-overwrite Privacy Policy (kept for older callers).
+ *
+ * @return int Canonical page ID or 0.
+ */
+function somvio_force_seed_privacy_policy_content() {
+	$ids = somvio_ensure_all_legal_pages();
+	return isset( $ids['privacy-policy'] ) ? (int) $ids['privacy-policy'] : 0;
 }
 
 /**
@@ -282,16 +271,67 @@ function somvio_maybe_force_seed_legal_content() {
 		return;
 	}
 
-	somvio_force_seed_privacy_policy_content();
-
-	if ( function_exists( 'somvio_get_page_id_by_slug' ) ) {
-		$terms_id = somvio_get_page_id_by_slug( 'terms-of-use' );
-		if ( $terms_id > 0 ) {
-			somvio_seed_legal_page_content( $terms_id, somvio_get_terms_of_use_seed_content(), true );
-			update_post_meta( $terms_id, '_wp_page_template', 'page-terms-of-use.php' );
-		}
-	}
-
+	somvio_ensure_all_legal_pages();
 	update_option( 'somvio_legal_content_seed_version', SOMVIO_LEGAL_CONTENT_VERSION, false );
 }
 add_action( 'init', 'somvio_maybe_force_seed_legal_content', 25 );
+
+/**
+ * Redirect legacy /terms-of-use/ → /terms-conditions/.
+ *
+ * @return void
+ */
+function somvio_redirect_legacy_terms_of_use() {
+	if ( is_admin() || ! is_page( 'terms-of-use' ) ) {
+		return;
+	}
+
+	$target = home_url( '/terms-conditions/' );
+	if ( function_exists( 'somvio_get_terms_conditions_page_id' ) ) {
+		$id = somvio_get_terms_conditions_page_id();
+		if ( $id > 0 ) {
+			$permalink = get_permalink( $id );
+			if ( $permalink ) {
+				$target = $permalink;
+			}
+		}
+	}
+
+	wp_safe_redirect( $target, 301 );
+	exit;
+}
+add_action( 'template_redirect', 'somvio_redirect_legacy_terms_of_use', 5 );
+
+/**
+ * Hero args for the current legal page.
+ *
+ * @return array{title:string,breadcrumb:string,lead:string,aria_label:string}
+ */
+function somvio_get_current_legal_hero_args() {
+	$slug     = '';
+	$post_obj = get_queried_object();
+
+	if ( $post_obj instanceof WP_Post ) {
+		$slug = (string) $post_obj->post_name;
+	}
+
+	if ( 'terms-of-use' === $slug ) {
+		$slug = 'terms-conditions';
+	}
+
+	$registry = somvio_get_legal_pages_registry();
+	$meta     = isset( $registry[ $slug ] ) ? $registry[ $slug ] : array();
+	$title    = isset( $meta['title'] ) ? (string) $meta['title'] : get_the_title();
+	$lead     = isset( $meta['lead'] ) ? (string) $meta['lead'] : '';
+
+	if ( '' === $title ) {
+		$title = __( 'Legal', 'somvio' );
+	}
+
+	return array(
+		'title'      => $title,
+		'breadcrumb' => $title,
+		'lead'       => $lead,
+		'aria_label' => $title,
+	);
+}

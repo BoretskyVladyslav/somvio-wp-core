@@ -102,11 +102,7 @@ function somvio_should_skip_cta_banner() {
 		return true;
 	}
 
-	if ( is_page( 'privacy-policy' ) || is_page_template( 'page-privacy-policy.php' ) ) {
-		return true;
-	}
-
-	if ( is_page( 'terms-of-use' ) || is_page_template( 'page-terms-of-use.php' ) ) {
+	if ( function_exists( 'somvio_is_legal_page' ) && somvio_is_legal_page() ) {
 		return true;
 	}
 

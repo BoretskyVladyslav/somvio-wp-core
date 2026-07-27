@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** @var int Bump to re-run page seeding on admin_init / theme switch. */
-const SOMVIO_CORE_PAGES_VERSION = 11;
+const SOMVIO_CORE_PAGES_VERSION = 12;
 
 /**
  * Core pages to ensure exist (slug => title).
@@ -18,7 +18,7 @@ const SOMVIO_CORE_PAGES_VERSION = 11;
  * @return array<string, string>
  */
 function somvio_get_core_pages() {
-	return array(
+	$pages = array(
 		'home'           => 'Home',
 		'services'       => 'Services',
 		'about-us'       => 'About Us',
@@ -28,8 +28,16 @@ function somvio_get_core_pages() {
 		'contact'        => 'Contact',
 		'blog'           => 'Blog',
 		'privacy-policy' => 'Privacy Policy',
-		'terms-of-use'   => 'Terms of Use',
+		'terms-conditions' => 'Terms & Conditions',
 	);
+
+	if ( function_exists( 'somvio_get_legal_pages_registry' ) ) {
+		foreach ( somvio_get_legal_pages_registry() as $slug => $meta ) {
+			$pages[ $slug ] = isset( $meta['title'] ) ? (string) $meta['title'] : $slug;
+		}
+	}
+
+	return $pages;
 }
 
 /**
@@ -295,16 +303,13 @@ function somvio_ensure_blog_page() {
 }
 
 /**
- * Ensure the Privacy Policy page exists with its template + Figma content.
- *
- * Uses the canonical privacy page (WP setting / draft slug) so we never
- * create privacy-policy-2 while the official page stays as WP filler.
+ * Ensure the Privacy Policy page exists with its template + Legal Pack content.
  *
  * @return int Page ID or 0.
  */
 function somvio_ensure_privacy_policy_page() {
-	if ( function_exists( 'somvio_force_seed_privacy_policy_content' ) ) {
-		return somvio_force_seed_privacy_policy_content();
+	if ( function_exists( 'somvio_ensure_legal_page' ) ) {
+		return somvio_ensure_legal_page( 'privacy-policy', 'Privacy Policy' );
 	}
 
 	$page_id = somvio_ensure_page( 'privacy-policy', 'Privacy Policy' );
@@ -313,60 +318,39 @@ function somvio_ensure_privacy_policy_page() {
 		return 0;
 	}
 
-	$page = get_post( $page_id );
-
-	if ( $page instanceof WP_Post && 'publish' !== $page->post_status ) {
-		wp_update_post(
-			array(
-				'ID'          => $page_id,
-				'post_status' => 'publish',
-			)
-		);
-	}
-
-	$template = get_post_meta( $page_id, '_wp_page_template', true );
-
-	if ( 'page-privacy-policy.php' !== $template ) {
-		update_post_meta( $page_id, '_wp_page_template', 'page-privacy-policy.php' );
-	}
+	update_post_meta( $page_id, '_wp_page_template', 'page-legal.php' );
 
 	return $page_id;
 }
 
 /**
- * Ensure the Terms of Use page exists with its template.
+ * Ensure the Terms & Conditions page exists with its template.
  *
  * @return int Page ID or 0.
  */
 function somvio_ensure_terms_of_use_page() {
-	$page_id = somvio_ensure_page( 'terms-of-use', 'Terms of Use' );
+	if ( function_exists( 'somvio_ensure_legal_page' ) ) {
+		return somvio_ensure_legal_page( 'terms-conditions', 'Terms & Conditions' );
+	}
+
+	$page_id = somvio_ensure_page( 'terms-conditions', 'Terms & Conditions' );
 
 	if ( $page_id <= 0 ) {
 		return 0;
 	}
 
-	$page = get_post( $page_id );
-
-	if ( $page instanceof WP_Post && 'publish' !== $page->post_status ) {
-		wp_update_post(
-			array(
-				'ID'          => $page_id,
-				'post_status' => 'publish',
-			)
-		);
-	}
-
-	$template = get_post_meta( $page_id, '_wp_page_template', true );
-
-	if ( 'page-terms-of-use.php' !== $template ) {
-		update_post_meta( $page_id, '_wp_page_template', 'page-terms-of-use.php' );
-	}
-
-	if ( function_exists( 'somvio_seed_legal_page_content' ) && function_exists( 'somvio_get_terms_of_use_seed_content' ) ) {
-		somvio_seed_legal_page_content( $page_id, somvio_get_terms_of_use_seed_content() );
-	}
+	update_post_meta( $page_id, '_wp_page_template', 'page-legal.php' );
 
 	return $page_id;
+}
+
+/**
+ * Ensure Terms & Conditions (canonical slug).
+ *
+ * @return int Page ID or 0.
+ */
+function somvio_ensure_terms_conditions_page() {
+	return somvio_ensure_terms_of_use_page();
 }
 
 /**
@@ -455,12 +439,25 @@ function somvio_setup_core_pages() {
 				continue;
 			}
 
-			if ( 'terms-of-use' === $slug ) {
-				$page_ids[ $slug ] = somvio_ensure_terms_of_use_page();
+			if ( 'terms-conditions' === $slug || 'terms-of-use' === $slug ) {
+				$page_ids['terms-conditions'] = somvio_ensure_terms_conditions_page();
 				continue;
 			}
 
+			if ( function_exists( 'somvio_get_legal_pages_registry' ) ) {
+				$legal = somvio_get_legal_pages_registry();
+				if ( isset( $legal[ $slug ] ) && function_exists( 'somvio_ensure_legal_page' ) ) {
+					$title             = isset( $legal[ $slug ]['title'] ) ? (string) $legal[ $slug ]['title'] : $title;
+					$page_ids[ $slug ] = somvio_ensure_legal_page( $slug, $title );
+					continue;
+				}
+			}
+
 			$page_ids[ $slug ] = somvio_ensure_page( $slug, $title );
+		}
+
+		if ( function_exists( 'somvio_ensure_all_legal_pages' ) ) {
+			somvio_ensure_all_legal_pages();
 		}
 
 		$home_id     = isset( $page_ids['home'] ) ? (int) $page_ids['home'] : 0;
