@@ -11513,3 +11513,125 @@ body.booking-form-modal-open {
 	}
 }
 
+/* -------------------------------------------------------------------------
+   Cookie consent banner — Figma 450:5227
+   z-index above footer/header, below quote modal (10000) / booking success (9999)
+   ------------------------------------------------------------------------- */
+.cookie-consent {
+	position: fixed;
+	z-index: 9000;
+	left: 20px;
+	right: 20px;
+	bottom: 20px;
+	width: auto;
+	max-width: 558px;
+	margin: 0;
+	pointer-events: none;
+	opacity: 0;
+	transform: translateY(16px);
+	transition:
+		opacity 0.32s ease,
+		transform 0.32s ease;
+}
+
+.cookie-consent.is-visible {
+	opacity: 1;
+	transform: translateY(0);
+	pointer-events: auto;
+}
+
+.cookie-consent[hidden] {
+	display: none !important;
+}
+
+.cookie-consent.is-visible[hidden] {
+	display: block !important;
+}
+
+.cookie-consent__panel {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 20px;
+	padding: 20px;
+	border-radius: var(--somvio-radius, 4px);
+	background-color: var(--somvio-color-surface-dark, #091e2c);
+	box-shadow: 0 12px 40px rgba(0, 5, 14, 0.45);
+}
+
+.cookie-consent__title {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.cookie-consent__text {
+	margin: 0;
+	max-width: 518px;
+	font-family: "Montserrat", "Segoe UI", system-ui, -apple-system, sans-serif;
+	font-size: 1rem;
+	font-weight: 400;
+	line-height: 1.4;
+	color: #ffffff;
+	word-break: break-word;
+}
+
+.cookie-consent__link {
+	color: var(--somvio-color-accent, #40d7d0);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.cookie-consent__link:hover,
+.cookie-consent__link:focus-visible {
+	color: #ffffff;
+	outline: none;
+}
+
+.cookie-consent__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	gap: 20px;
+}
+
+.cookie-consent__btn {
+	flex: 0 0 auto;
+	min-height: 44px;
+	padding: 10px 20px;
+}
+
+@media (max-width: 767px) {
+	.cookie-consent {
+		left: 16px;
+		right: 16px;
+		bottom: 16px;
+		max-width: none;
+	}
+
+	.cookie-consent__actions {
+		flex-direction: column;
+		align-items: stretch;
+		width: 100%;
+		gap: 12px;
+	}
+
+	.cookie-consent__btn {
+		width: 100%;
+		justify-content: center;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cookie-consent {
+		transition: none;
+		transform: none;
+	}
+}
+
