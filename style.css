@@ -1326,6 +1326,13 @@ body:not(.somvio-has-hero) {
 	color: var(--somvio-color-text);
 }
 
+.somvio-required {
+	margin-left: 0.15em;
+	color: #ef4444;
+	font-weight: 600;
+	line-height: 1;
+}
+
 .quote-card__select-wrap {
 	position: relative;
 	display: flex;

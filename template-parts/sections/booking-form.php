@@ -426,8 +426,9 @@ $somvio_bf_counters = array(
 
 				<div class="booking-form__contact-grid">
 					<div class="booking-form__field">
-						<label class="booking-form__label" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-first">
+						<label class="booking-form__label is-required" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-first">
 							<?php esc_html_e( 'First Name', 'somvio' ); ?>
+							<span class="somvio-required" aria-hidden="true">*</span>
 						</label>
 						<input
 							type="text"
@@ -442,8 +443,9 @@ $somvio_bf_counters = array(
 						<p class="booking-form__field-error" data-booking-field-error="first_name" hidden role="alert"></p>
 					</div>
 					<div class="booking-form__field">
-						<label class="booking-form__label" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-last">
+						<label class="booking-form__label is-required" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-last">
 							<?php esc_html_e( 'Last Name', 'somvio' ); ?>
+							<span class="somvio-required" aria-hidden="true">*</span>
 						</label>
 						<input
 							type="text"
@@ -458,8 +460,9 @@ $somvio_bf_counters = array(
 						<p class="booking-form__field-error" data-booking-field-error="last_name" hidden role="alert"></p>
 					</div>
 					<div class="booking-form__field">
-						<label class="booking-form__label" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-phone">
+						<label class="booking-form__label is-required" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-phone">
 							<?php esc_html_e( 'Phone', 'somvio' ); ?>
+							<span class="somvio-required" aria-hidden="true">*</span>
 						</label>
 						<input
 							type="tel"
@@ -475,8 +478,9 @@ $somvio_bf_counters = array(
 						<p class="booking-form__field-error" data-booking-field-error="phone" hidden role="alert"></p>
 					</div>
 					<div class="booking-form__field">
-						<label class="booking-form__label" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-email">
+						<label class="booking-form__label is-required" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-email">
 							<?php esc_html_e( 'Email', 'somvio' ); ?>
+							<span class="somvio-required" aria-hidden="true">*</span>
 						</label>
 						<input
 							type="email"
@@ -492,8 +496,9 @@ $somvio_bf_counters = array(
 						<p class="booking-form__field-error" data-booking-field-error="email" hidden role="alert"></p>
 					</div>
 					<div class="booking-form__field booking-form__field--full">
-						<label class="booking-form__label" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-address">
+						<label class="booking-form__label is-required" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-address">
 							<?php esc_html_e( 'Street Address', 'somvio' ); ?>
+							<span class="somvio-required" aria-hidden="true">*</span>
 						</label>
 						<input
 							type="text"

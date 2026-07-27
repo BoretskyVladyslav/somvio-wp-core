@@ -327,8 +327,9 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 		<?php /* —— Step 5: Contact —— */ ?>
 		<div class="quote-calculator__step" data-quote-step="5" data-quote-panel hidden>
 			<div class="quote-card__field quote-card__field--full">
-				<label class="quote-card__label" for="<?php echo esc_attr( $somvio_qc_uid ); ?>-name">
+				<label class="quote-card__label is-required" for="<?php echo esc_attr( $somvio_qc_uid ); ?>-name">
 					<?php esc_html_e( 'Full name', 'somvio' ); ?>
+					<span class="somvio-required" aria-hidden="true">*</span>
 				</label>
 				<input
 					type="text"
@@ -344,8 +345,9 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 			</div>
 
 			<div class="quote-card__field quote-card__field--full">
-				<label class="quote-card__label" for="<?php echo esc_attr( $somvio_qc_uid ); ?>-email">
+				<label class="quote-card__label is-required" for="<?php echo esc_attr( $somvio_qc_uid ); ?>-email">
 					<?php esc_html_e( 'Email', 'somvio' ); ?>
+					<span class="somvio-required" aria-hidden="true">*</span>
 				</label>
 				<input
 					type="email"
@@ -362,8 +364,9 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 			</div>
 
 			<div class="quote-card__field quote-card__field--full">
-				<label class="quote-card__label" for="<?php echo esc_attr( $somvio_qc_uid ); ?>-phone">
+				<label class="quote-card__label is-required" for="<?php echo esc_attr( $somvio_qc_uid ); ?>-phone">
 					<?php esc_html_e( 'Phone', 'somvio' ); ?>
+					<span class="somvio-required" aria-hidden="true">*</span>
 				</label>
 				<input
 					type="tel"
