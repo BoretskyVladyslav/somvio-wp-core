@@ -80,9 +80,13 @@ function somvio_enqueue_booking_form_assets() {
 		'somvioBookingForm',
 		array(
 			'restUrl' => esc_url_raw( rest_url( 'somvio/v1/quote/submit' ) ),
+			'confirmPaymentUrl' => esc_url_raw( rest_url( 'somvio/v1/booking/confirm-payment' ) ),
 			'nonce'   => wp_create_nonce( 'wp_rest' ),
 			'rates'   => function_exists( 'somvio_get_quote_rates' ) ? somvio_get_quote_rates() : array(),
 			'services'=> function_exists( 'somvio_get_quote_service_options' ) ? somvio_get_quote_service_options() : array(),
+			'stripePublishableKey' => function_exists( 'somvio_get_stripe_publishable_key' )
+				? somvio_get_stripe_publishable_key()
+				: '',
 			'i18n'    => array(
 				'stepOf'                => __( 'Step %1$d of %2$d', 'somvio' ),
 				'selectDatePlaceholder' => __( 'Select date', 'somvio' ),
@@ -107,9 +111,13 @@ function somvio_enqueue_booking_form_assets() {
 				'invalidName'           => __( 'Please enter your name.', 'somvio' ),
 				'invalidAddress'        => __( 'Please enter your street address.', 'somvio' ),
 				'termsRequired'         => __( 'Please accept the Terms & Conditions and Privacy Policy.', 'somvio' ),
+				'selectPayment'         => __( 'Please select a payment method.', 'somvio' ),
 				'completeContact'       => __( 'Complete required fields and accept the terms to continue', 'somvio' ),
 				'requiredField'         => __( 'This field is required.', 'somvio' ),
 				'submitError'           => __( 'Something went wrong. Please try again.', 'somvio' ),
+				'paymentError'          => __( 'Payment could not be completed. Please try again.', 'somvio' ),
+				'paymentSuccess'        => __( 'Payment successful — your booking is confirmed.', 'somvio' ),
+				'paying'                => __( 'Processing payment…', 'somvio' ),
 				'backHome'              => __( 'Back to Home', 'somvio' ),
 				'estimatedTotal'        => __( 'Estimated total', 'somvio' ),
 				'none'                  => __( 'None', 'somvio' ),

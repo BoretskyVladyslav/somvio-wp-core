@@ -11259,6 +11259,104 @@ body.booking-form-modal-open {
 	color: #33aca6;
 }
 
+.booking-form__payment {
+	margin: 0 0 8px;
+	padding: 0;
+	border: 0;
+	min-inline-size: 0;
+}
+
+.booking-form__payment-options {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 12px;
+	margin-top: 10px;
+}
+
+@media (min-width: 640px) {
+	.booking-form__payment-options {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+.booking-form__payment-option {
+	display: block;
+	cursor: pointer;
+}
+
+.booking-form__payment-input {
+	position: absolute;
+	opacity: 0;
+	width: 1px;
+	height: 1px;
+}
+
+.booking-form__payment-card {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-height: 72px;
+	padding: 14px 16px;
+	border: 1px solid rgba(9, 30, 44, 0.18);
+	border-radius: var(--somvio-radius, 4px);
+	background: #fff;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.booking-form__payment-option.is-selected .booking-form__payment-card,
+.booking-form__payment-input:checked + .booking-form__payment-card {
+	border-color: var(--somvio-color-accent, #40d7d0);
+	box-shadow: 0 0 0 1px var(--somvio-color-accent, #40d7d0);
+}
+
+.booking-form__payment-input:focus-visible + .booking-form__payment-card {
+	outline: 2px solid #33aca6;
+	outline-offset: 2px;
+}
+
+.booking-form__payment-title {
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--somvio-color-text, #00050e);
+}
+
+.booking-form__payment-desc {
+	font-size: 0.875rem;
+	line-height: 1.4;
+	color: #5a6b76;
+}
+
+.booking-form__stripe {
+	display: grid;
+	gap: 12px;
+	width: 100%;
+	margin: 8px 0 16px;
+	padding: 16px;
+	border: 1px solid rgba(9, 30, 44, 0.12);
+	border-radius: var(--somvio-radius, 4px);
+	background: #f8fbfc;
+	text-align: left;
+}
+
+.booking-form__stripe[hidden] {
+	display: none !important;
+}
+
+.booking-form__stripe-title {
+	margin: 0;
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--somvio-color-text, #00050e);
+}
+
+.booking-form__stripe-element {
+	min-height: 48px;
+}
+
+.booking-form__stripe-pay {
+	justify-self: start;
+}
+
 .booking-form__field-error,
 .booking-form__error {
 	margin: 0;

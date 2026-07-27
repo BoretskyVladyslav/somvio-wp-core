@@ -567,6 +567,43 @@ $somvio_bf_counters = array(
 					</div>
 				</div>
 
+				<fieldset class="booking-form__payment">
+					<legend class="booking-form__label is-required">
+						<?php esc_html_e( 'Payment method', 'somvio' ); ?>
+						<span class="somvio-required" aria-hidden="true">*</span>
+					</legend>
+					<div class="booking-form__payment-options" role="radiogroup" aria-required="true">
+						<label class="booking-form__payment-option">
+							<input
+								type="radio"
+								name="payment_method"
+								class="booking-form__payment-input"
+								data-booking-field="payment_method"
+								value="cash"
+								checked
+							>
+							<span class="booking-form__payment-card">
+								<span class="booking-form__payment-title"><?php esc_html_e( 'Pay on completion / Cash', 'somvio' ); ?></span>
+								<span class="booking-form__payment-desc"><?php esc_html_e( 'Confirm now, pay after the clean.', 'somvio' ); ?></span>
+							</span>
+						</label>
+						<label class="booking-form__payment-option">
+							<input
+								type="radio"
+								name="payment_method"
+								class="booking-form__payment-input"
+								data-booking-field="payment_method"
+								value="online"
+							>
+							<span class="booking-form__payment-card">
+								<span class="booking-form__payment-title"><?php esc_html_e( 'Pay online (Stripe)', 'somvio' ); ?></span>
+								<span class="booking-form__payment-desc"><?php esc_html_e( 'Secure card payment now.', 'somvio' ); ?></span>
+							</span>
+						</label>
+					</div>
+					<p class="booking-form__field-error" data-booking-field-error="payment_method" hidden role="alert"></p>
+				</fieldset>
+
 				<label class="booking-form__terms">
 					<input
 						type="checkbox"
@@ -644,6 +681,15 @@ $somvio_bf_counters = array(
 					<p class="booking-form__success-text">
 						<?php esc_html_e( 'We’ll contact you shortly to confirm the details.', 'somvio' ); ?>
 					</p>
+
+					<div class="booking-form__stripe" data-booking-stripe hidden>
+						<p class="booking-form__stripe-title"><?php esc_html_e( 'Complete secure payment', 'somvio' ); ?></p>
+						<div class="booking-form__stripe-element" data-booking-stripe-element></div>
+						<p class="booking-form__field-error" data-booking-stripe-error hidden role="alert"></p>
+						<button type="button" class="booking-form__stripe-pay btn btn--primary" data-booking-stripe-pay>
+							<span class="btn__label"><?php esc_html_e( 'Pay now', 'somvio' ); ?></span>
+						</button>
+					</div>
 
 					<dl class="booking-form__success-recap" data-booking-success-recap>
 						<div class="booking-form__success-row">

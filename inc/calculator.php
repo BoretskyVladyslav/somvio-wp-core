@@ -469,6 +469,9 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	$addons    = somvio_rest_sanitize_string_list( $request['addons'] ?? array() );
 	$terms     = rest_sanitize_boolean( $request['terms_accepted'] ?? false );
 	$source    = sanitize_key( (string) ( $request['source'] ?? 'quote' ) );
+	$payment_method = function_exists( 'somvio_normalize_payment_method' )
+		? somvio_normalize_payment_method( (string) ( $request['payment_method'] ?? 'cash' ) )
+		: 'cash';
 
 	if ( '' === $property ) {
 		$property = 'house';
@@ -550,6 +553,12 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 		if ( ! $terms ) {
 			return new WP_Error( 'terms_required', __( 'Please accept the Terms & Conditions and Privacy Policy.', 'somvio' ), array( 'status' => 400 ) );
 		}
+		if ( ! in_array( $payment_method, array( 'cash', 'online' ), true ) ) {
+			return new WP_Error( 'invalid_payment', __( 'Please select a payment method.', 'somvio' ), array( 'status' => 400 ) );
+		}
+	} else {
+		// Quick quote has no payment step.
+		$payment_method = 'cash';
 	}
 
 	$extras_services = isset( $rates['extras_services'] ) && is_array( $rates['extras_services'] )
@@ -604,8 +613,17 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 		'addons'          => $addons,
 		'terms_accepted'  => $terms,
 		'source'          => $source,
+		'payment_method'  => $payment_method,
 		'total'           => $server_total,
 	);
+
+	$process = array();
+	if ( function_exists( 'somvio_process_booking_submission' ) ) {
+		$process = somvio_process_booking_submission( $payload );
+		$payload['booking_id'] = isset( $process['booking_id'] ) ? (int) $process['booking_id'] : 0;
+		$payload['order_id']   = isset( $process['order_id'] ) ? (int) $process['order_id'] : 0;
+		$payload['_processed'] = true;
+	}
 
 	/**
 	 * Fired after a quote passes validation (email/CRM hooks).
@@ -614,14 +632,52 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	 */
 	do_action( 'somvio_quote_submitted', $payload );
 
-	return rest_ensure_response(
-		array(
-			'success' => true,
-			'total'   => $server_total,
-			'symbol'  => $rates['symbol'],
-			'message' => __( 'Thank you! Your request has been sent.', 'somvio' ),
-		)
+	$response = array(
+		'success'    => true,
+		'total'      => $server_total,
+		'symbol'     => $rates['symbol'],
+		'booking_id' => isset( $process['booking_id'] ) ? (int) $process['booking_id'] : 0,
+		'order_id'   => isset( $process['order_id'] ) ? (int) $process['order_id'] : 0,
+		'payment_method' => $payment_method,
+		'message'    => __( 'Thank you! Your request has been sent.', 'somvio' ),
 	);
+
+	if (
+		'online' === $payment_method &&
+		isset( $process['payment'] ) &&
+		is_array( $process['payment'] )
+	) {
+		$payment = $process['payment'];
+		if ( ! empty( $payment['success'] ) ) {
+			$response['requires_payment'] = true;
+			$response['payment']          = array(
+				'client_secret'     => (string) ( $payment['client_secret'] ?? '' ),
+				'payment_intent_id' => (string) ( $payment['payment_intent_id'] ?? '' ),
+				'publishable_key'   => (string) ( $payment['publishable_key'] ?? '' ),
+			);
+			$response['message'] = __( 'Booking created. Please complete your online payment.', 'somvio' );
+		} else {
+			$response['requires_payment'] = true;
+			$response['payment_error']    = (string) ( $payment['error'] ?? 'stripe_failed' );
+			$response['message']          = __( 'Booking saved, but online payment could not be started. We’ll contact you to arrange payment.', 'somvio' );
+		}
+	}
+
+	if (
+		'cash' === $payment_method &&
+		'booking' === $source &&
+		! empty( $process['latepoint']['success'] )
+	) {
+		$response['message'] = __( 'Thank you! Your booking is confirmed — pay on completion.', 'somvio' );
+		$response['booking_status'] = isset( $process['latepoint']['status'] )
+			? (string) $process['latepoint']['status']
+			: 'approved';
+		$response['payment_status'] = isset( $process['latepoint']['payment_status'] )
+			? (string) $process['latepoint']['payment_status']
+			: 'not_paid';
+	}
+
+	return rest_ensure_response( $response );
 }
 
 /**
@@ -752,6 +808,12 @@ function somvio_register_quote_rest_routes() {
 					'required'          => false,
 					'type'              => 'string',
 					'default'           => 'quote',
+					'sanitize_callback' => 'sanitize_key',
+				),
+				'payment_method'  => array(
+					'required'          => false,
+					'type'              => 'string',
+					'default'           => 'cash',
 					'sanitize_callback' => 'sanitize_key',
 				),
 				'client_total'    => array(

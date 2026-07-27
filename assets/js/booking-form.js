@@ -211,6 +211,7 @@
 			address: '',
 			comment: '',
 			terms_accepted: false,
+			payment_method: 'cash',
 			previewTotal: 0,
 			quotedTotal: null,
 			confirmedTotal: null,
@@ -279,6 +280,7 @@
 				'time',
 				'date',
 				'terms_accepted',
+				'payment_method',
 			].forEach(function (name) {
 				setFieldError(name, '');
 			});
@@ -297,6 +299,8 @@
 			state.welcome_pack = welcomeEl ? welcomeEl.value : 'no';
 			var termsEl = field('terms_accepted');
 			state.terms_accepted = !!(termsEl && termsEl.checked);
+			var paymentEl = root.querySelector('[data-booking-field="payment_method"]:checked');
+			state.payment_method = paymentEl && paymentEl.value === 'online' ? 'online' : 'cash';
 			state.previewTotal = getPreviewTotal(state);
 		}
 
@@ -372,7 +376,8 @@
 				isValidEmail(state.email) &&
 				isValidPhone(state.phone) &&
 				isValidAddress(state.address) &&
-				!!state.terms_accepted
+				!!state.terms_accepted &&
+				(state.payment_method === 'cash' || state.payment_method === 'online')
 			);
 		}
 
@@ -415,6 +420,11 @@
 				return state.terms_accepted
 					? ''
 					: i18n.termsRequired || 'Please accept the Terms & Conditions and Privacy Policy.';
+			}
+			if (key === 'payment_method') {
+				return state.payment_method === 'cash' || state.payment_method === 'online'
+					? ''
+					: i18n.selectPayment || 'Please select a payment method.';
 			}
 			return '';
 		}
@@ -1154,12 +1164,12 @@
 
 			var firstInvalid = null;
 			var hasError = false;
-			['first_name', 'last_name', 'phone', 'email', 'address', 'terms_accepted'].forEach(function (key) {
+			['first_name', 'last_name', 'phone', 'email', 'address', 'payment_method', 'terms_accepted'].forEach(function (key) {
 				var msg = getContactFieldError(key);
 				if (msg) {
 					setFieldError(key, msg);
 					if (!firstInvalid) {
-						firstInvalid = field(key);
+						firstInvalid = field(key) || root.querySelector('[data-booking-field="' + key + '"]');
 					}
 					hasError = true;
 				}
@@ -1273,6 +1283,7 @@
 				comment: trim(state.comment),
 				addons: serviceHasExtras(state.service) ? state.addons.slice() : [],
 				terms_accepted: true,
+				payment_method: state.payment_method === 'online' ? 'online' : 'cash',
 				source: 'booking',
 				client_total: state.quotedTotal != null ? state.quotedTotal : state.previewTotal,
 			};
@@ -1328,14 +1339,201 @@
 					root.dispatchEvent(
 						new CustomEvent('somvio:booking-success', {
 							bubbles: true,
-							detail: { total: state.previewTotal },
+							detail: {
+								total: state.previewTotal,
+								booking_id: result.data.booking_id || 0,
+								payment_method: result.data.payment_method || state.payment_method,
+							},
 						})
 					);
+
+					if (
+						result.data.requires_payment &&
+						result.data.payment &&
+						result.data.payment.client_secret
+					) {
+						initStripePayment(result.data);
+					} else if (result.data.payment_error) {
+						showStripeError(
+							result.data.message ||
+								i18n.paymentError ||
+								'Payment could not be completed. Please try again.'
+						);
+					}
 				})
 				.catch(function () {
 					state.submitting = false;
 					setLoading(false);
 					showError(i18n.submitError || 'Something went wrong. Please try again.');
+				});
+		}
+
+		function showStripeError(msg) {
+			var errEl = root.querySelector('[data-booking-stripe-error]');
+			var wrap = root.querySelector('[data-booking-stripe]');
+			if (wrap) {
+				wrap.hidden = false;
+			}
+			if (!errEl) {
+				return;
+			}
+			if (!msg) {
+				errEl.hidden = true;
+				errEl.textContent = '';
+				return;
+			}
+			errEl.hidden = false;
+			errEl.textContent = msg;
+		}
+
+		function loadStripeJs() {
+			if (window.Stripe) {
+				return Promise.resolve(window.Stripe);
+			}
+			return new Promise(function (resolve, reject) {
+				var existing = document.querySelector('script[data-somvio-stripe]');
+				if (existing) {
+					existing.addEventListener('load', function () {
+						resolve(window.Stripe);
+					});
+					existing.addEventListener('error', reject);
+					return;
+				}
+				var script = document.createElement('script');
+				script.src = 'https://js.stripe.com/v3/';
+				script.async = true;
+				script.setAttribute('data-somvio-stripe', '1');
+				script.onload = function () {
+					resolve(window.Stripe);
+				};
+				script.onerror = reject;
+				document.head.appendChild(script);
+			});
+		}
+
+		function initStripePayment(data) {
+			var wrap = root.querySelector('[data-booking-stripe]');
+			var mountEl = root.querySelector('[data-booking-stripe-element]');
+			var payBtn = root.querySelector('[data-booking-stripe-pay]');
+			if (!wrap || !mountEl || !data.payment) {
+				return;
+			}
+
+			wrap.hidden = false;
+			showStripeError('');
+
+			var pubKey = data.payment.publishable_key || cfg.stripePublishableKey || '';
+			var clientSecret = data.payment.client_secret;
+			var intentId = data.payment.payment_intent_id || '';
+			var bookingId = data.booking_id || 0;
+
+			loadStripeJs()
+				.then(function (StripeFactory) {
+					if (!StripeFactory || !pubKey) {
+						throw new Error('stripe_unavailable');
+					}
+					var stripe = StripeFactory(pubKey);
+					var elements = stripe.elements({
+						clientSecret: clientSecret,
+						appearance: {
+							theme: 'stripe',
+							variables: {
+								colorPrimary: '#40d7d0',
+								borderRadius: '4px',
+							},
+						},
+					});
+					var paymentElement = elements.create('payment');
+					paymentElement.mount(mountEl);
+
+					if (!payBtn) {
+						return;
+					}
+
+					payBtn.onclick = function () {
+						if (payBtn.disabled) {
+							return;
+						}
+						payBtn.disabled = true;
+						var label = payBtn.querySelector('.btn__label');
+						if (label) {
+							label.textContent = i18n.paying || 'Processing payment…';
+						}
+						showStripeError('');
+
+						stripe
+							.confirmPayment({
+								elements: elements,
+								redirect: 'if_required',
+								confirmParams: {
+									return_url: window.location.href,
+								},
+							})
+							.then(function (result) {
+								if (result.error) {
+									payBtn.disabled = false;
+									if (label) {
+										label.textContent = i18n.complete || 'Pay now';
+									}
+									showStripeError(result.error.message || i18n.paymentError);
+									return;
+								}
+
+								return fetch(cfg.confirmPaymentUrl || '', {
+									method: 'POST',
+									credentials: 'same-origin',
+									headers: {
+										'Content-Type': 'application/json',
+										'X-WP-Nonce': cfg.nonce || '',
+									},
+									body: JSON.stringify({
+										payment_intent_id: intentId || (result.paymentIntent && result.paymentIntent.id) || '',
+										booking_id: bookingId,
+										client_total: state.confirmedTotal != null ? state.confirmedTotal : state.previewTotal,
+									}),
+								}).then(function (res) {
+									return res.json().then(function (body) {
+										return { ok: res.ok, body: body };
+									});
+								});
+							})
+							.then(function (confirmResult) {
+								if (!confirmResult) {
+									return;
+								}
+								payBtn.disabled = false;
+								if (label) {
+									label.textContent = i18n.complete || 'Pay now';
+								}
+								if (!confirmResult.ok || !confirmResult.body || !confirmResult.body.success) {
+									showStripeError(
+										(confirmResult.body && confirmResult.body.message) ||
+											i18n.paymentError ||
+											'Payment could not be completed. Please try again.'
+									);
+									return;
+								}
+								wrap.hidden = true;
+								var subtitle = root.querySelector('.booking-form__success-subtitle');
+								var text = root.querySelector('.booking-form__success-text');
+								if (subtitle) {
+									subtitle.textContent = i18n.paymentSuccess || 'Payment successful — your booking is confirmed.';
+								}
+								if (text) {
+									text.textContent = i18n.paymentSuccess || 'Payment successful — your booking is confirmed.';
+								}
+							})
+							.catch(function () {
+								payBtn.disabled = false;
+								if (label) {
+									label.textContent = i18n.complete || 'Pay now';
+								}
+								showStripeError(i18n.paymentError || 'Payment could not be completed. Please try again.');
+							});
+					};
+				})
+				.catch(function () {
+					showStripeError(i18n.paymentError || 'Payment could not be completed. Please try again.');
 				});
 		}
 
@@ -1619,6 +1817,21 @@
 				updateNextAvailability();
 			});
 		}
+
+		root.querySelectorAll('[data-booking-field="payment_method"]').forEach(function (radio) {
+			radio.addEventListener('change', function () {
+				state.payment_method = radio.value === 'online' ? 'online' : 'cash';
+				root.querySelectorAll('.booking-form__payment-option').forEach(function (opt) {
+					var input = opt.querySelector('[data-booking-field="payment_method"]');
+					opt.classList.toggle('is-selected', !!(input && input.checked));
+				});
+				setFieldError('payment_method', '');
+				updateNextAvailability();
+			});
+			if (radio.checked) {
+				radio.dispatchEvent(new Event('change'));
+			}
+		});
 
 		if (formEl) {
 			formEl.addEventListener('submit', function (event) {
