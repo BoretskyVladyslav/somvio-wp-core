@@ -3837,15 +3837,21 @@ a.site-footer__contact-text:focus-visible {
 @media (max-width: 767px) {
 	.site-footer {
 		padding: 56px 20px 16px;
+		overflow-x: clip;
 	}
 
 	.site-footer__inner {
 		gap: 32px;
+		max-width: 100%;
+		min-width: 0;
 	}
 
 	.site-footer__grid {
-		grid-template-columns: repeat(2, 1fr);
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 32px 24px;
+		width: 100%;
+		max-width: 100%;
+		min-width: 0;
 	}
 
 	.site-footer__col--brand,
@@ -3853,9 +3859,21 @@ a.site-footer__contact-text:focus-visible {
 		grid-column: 1 / -1;
 	}
 
+	.site-footer__col--nav,
+	.site-footer__col--legal {
+		min-width: 0;
+	}
+
 	.site-footer__col--brand {
 		gap: 24px;
 		align-items: flex-start;
+	}
+
+	.site-footer__heading,
+	.site-footer__link,
+	.site-footer__contact-text {
+		overflow-wrap: anywhere;
+		word-break: break-word;
 	}
 
 	.site-footer__list {
@@ -3878,12 +3896,19 @@ a.site-footer__contact-text:focus-visible {
 		align-items: flex-start;
 		gap: 16px;
 		padding: 24px 0;
+		max-width: 100%;
+		min-width: 0;
 	}
 
 	.site-footer__copyright,
 	.site-footer__legal,
 	.somvio-developer-credit {
 		justify-self: auto;
+		max-width: 100%;
+	}
+
+	.site-footer__legal {
+		flex-wrap: wrap;
 	}
 }
 
@@ -8826,6 +8851,7 @@ body.somvio-has-hero.single-post .site-main > * {
 	padding: 0;
 	border: none !important;
 	border-radius: 0;
+	outline: none !important;
 	background: transparent !important;
 	box-shadow: none !important;
 	text-align: center;
@@ -8840,6 +8866,13 @@ body.somvio-has-hero.single-post .site-main > * {
 	appearance: none;
 	-webkit-appearance: none;
 	-moz-appearance: textfield;
+}
+
+.quote-calculator__counter-value:focus,
+.quote-calculator__counter-value:focus-visible {
+	border: none !important;
+	outline: none !important;
+	box-shadow: none !important;
 }
 
 .quote-calculator__counter-value::-webkit-outer-spin-button,
@@ -10612,6 +10645,7 @@ body.booking-form-modal-open {
 	padding: 0;
 	border: none !important;
 	border-radius: 0;
+	outline: none !important;
 	background: transparent !important;
 	background-color: transparent !important;
 	box-shadow: none !important;
@@ -10628,6 +10662,13 @@ body.booking-form-modal-open {
 	appearance: none;
 	-webkit-appearance: none;
 	-moz-appearance: textfield;
+}
+
+.booking-form__counter-value:focus,
+.booking-form__counter-value:focus-visible {
+	border: none !important;
+	outline: none !important;
+	box-shadow: none !important;
 }
 
 /* Force dark UA form controls inside booking (counters, contact, selects) */
@@ -10649,11 +10690,19 @@ body.booking-form-modal-open {
 
 .booking-form input.booking-form__counter-value[type='number'] {
 	border: none !important;
+	outline: none !important;
 	background: transparent !important;
 	background-color: transparent !important;
 	box-shadow: none !important;
 	border-radius: 0;
 	padding: 0;
+}
+
+.booking-form input.booking-form__counter-value[type='number']:focus,
+.booking-form input.booking-form__counter-value[type='number']:focus-visible {
+	border: none !important;
+	outline: none !important;
+	box-shadow: none !important;
 }
 
 .booking-form input:-webkit-autofill,
