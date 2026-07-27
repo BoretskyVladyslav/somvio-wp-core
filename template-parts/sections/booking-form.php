@@ -436,7 +436,7 @@ $somvio_bf_counters = array(
 							name="first_name"
 							data-booking-field="first_name"
 							autocomplete="given-name"
-							placeholder="<?php esc_attr_e( 'John', 'somvio' ); ?>"
+							placeholder="<?php esc_attr_e( 'Full Name', 'somvio' ); ?>"
 							required
 						>
 						<p class="booking-form__field-error" data-booking-field-error="first_name" hidden role="alert"></p>
@@ -452,7 +452,7 @@ $somvio_bf_counters = array(
 							name="last_name"
 							data-booking-field="last_name"
 							autocomplete="family-name"
-							placeholder="<?php esc_attr_e( 'Smith', 'somvio' ); ?>"
+							placeholder="<?php esc_attr_e( 'Last Name', 'somvio' ); ?>"
 							required
 						>
 						<p class="booking-form__field-error" data-booking-field-error="last_name" hidden role="alert"></p>
@@ -486,7 +486,7 @@ $somvio_bf_counters = array(
 							data-booking-field="email"
 							autocomplete="email"
 							inputmode="email"
-							placeholder="<?php esc_attr_e( 'john@example.com', 'somvio' ); ?>"
+							placeholder="<?php esc_attr_e( 'name@example.com', 'somvio' ); ?>"
 							required
 						>
 						<p class="booking-form__field-error" data-booking-field-error="email" hidden role="alert"></p>
@@ -502,7 +502,7 @@ $somvio_bf_counters = array(
 							name="address"
 							data-booking-field="address"
 							autocomplete="street-address"
-							placeholder="<?php esc_attr_e( '123 Main St, Postcode', 'somvio' ); ?>"
+							placeholder="<?php esc_attr_e( 'Postal Code / Address', 'somvio' ); ?>"
 							required
 						>
 						<p class="booking-form__field-error" data-booking-field-error="address" hidden role="alert"></p>
@@ -517,7 +517,7 @@ $somvio_bf_counters = array(
 							name="comment"
 							data-booking-field="comment"
 							rows="5"
-							placeholder="<?php esc_attr_e( 'Any special instructions for our team...', 'somvio' ); ?>"
+							placeholder="<?php esc_attr_e( 'Any special instructions or comments...', 'somvio' ); ?>"
 						></textarea>
 					</div>
 				</div>

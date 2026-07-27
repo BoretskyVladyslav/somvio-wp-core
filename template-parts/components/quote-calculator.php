@@ -337,6 +337,7 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 					name="name"
 					data-quote-field="name"
 					autocomplete="name"
+					placeholder="<?php esc_attr_e( 'Full Name', 'somvio' ); ?>"
 					required
 				>
 				<p class="quote-calculator__field-error" data-quote-field-error="name" hidden role="alert"></p>
@@ -354,6 +355,7 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 					data-quote-field="email"
 					autocomplete="email"
 					inputmode="email"
+					placeholder="<?php esc_attr_e( 'name@example.com', 'somvio' ); ?>"
 					required
 				>
 				<p class="quote-calculator__field-error" data-quote-field-error="email" hidden role="alert"></p>
@@ -371,6 +373,7 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 					data-quote-field="phone"
 					autocomplete="tel"
 					inputmode="tel"
+					placeholder="<?php esc_attr_e( '+44 7000 000000', 'somvio' ); ?>"
 					required
 				>
 				<p class="quote-calculator__field-error" data-quote-field-error="phone" hidden role="alert"></p>
@@ -386,6 +389,7 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 					name="comment"
 					data-quote-field="comment"
 					rows="5"
+					placeholder="<?php esc_attr_e( 'Any special instructions or comments...', 'somvio' ); ?>"
 				></textarea>
 			</div>
 

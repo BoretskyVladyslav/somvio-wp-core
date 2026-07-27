@@ -4593,12 +4593,19 @@ a.site-footer__contact-text:focus-visible {
 	}
 
 	.about-story__content {
+		align-items: center;
 		gap: 24px;
+		text-align: center;
+	}
+
+	.about-story__badge {
+		margin: 0 auto;
 	}
 
 	.about-story__title,
 	.about-story__copy {
 		max-width: none;
+		text-align: center;
 	}
 }
 
@@ -5178,17 +5185,25 @@ a.site-footer__contact-text:focus-visible {
 	}
 
 	.service-story__content {
+		align-items: center;
 		gap: 20px;
+		text-align: center;
+	}
+
+	.service-story__badge {
+		margin: 0 auto;
 	}
 
 	.service-story__title {
 		max-width: none;
 		font-size: 28px;
+		text-align: center;
 	}
 
 	.service-story__copy {
 		max-width: none;
 		font-size: 16px;
+		text-align: center;
 	}
 
 	.service-story__features {
@@ -10350,6 +10365,24 @@ body.booking-form-modal-open {
 .booking-form__textarea::placeholder {
 	color: #a0aec0;
 	-webkit-text-fill-color: #a0aec0;
+	opacity: 1;
+}
+
+.quote-calculator__input::placeholder,
+.quote-calculator__textarea::placeholder,
+.quote-calculator .quote-card__select::placeholder,
+.quote-calculator__date-input::placeholder {
+	color: #a0aec0;
+	-webkit-text-fill-color: #a0aec0;
+	opacity: 1;
+}
+
+.quote-card:not(.quote-card--solid) .quote-calculator__input::placeholder,
+.quote-card:not(.quote-card--solid) .quote-calculator__textarea::placeholder,
+.quote-card:not(.quote-card--solid) .quote-calculator .quote-card__select::placeholder,
+.quote-card:not(.quote-card--solid) .quote-calculator__date-input::placeholder {
+	color: rgba(255, 255, 255, 0.5);
+	-webkit-text-fill-color: rgba(255, 255, 255, 0.5);
 	opacity: 1;
 }
 
