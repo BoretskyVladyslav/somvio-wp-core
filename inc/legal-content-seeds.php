@@ -12,10 +12,29 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Effective date shown on legal pages.
  *
+ * Prefers ACF `somvio_legal_effective_date` on the current/queried legal page.
+ *
+ * @param int $post_id Optional post ID. Defaults to queried object on singular.
  * @return string
  */
-function somvio_get_legal_effective_date() {
-	return '27 July 2026';
+function somvio_get_legal_effective_date( $post_id = 0 ) {
+	$default = '27 July 2026';
+
+	if ( function_exists( 'get_field' ) ) {
+		$post_id = absint( $post_id );
+		if ( $post_id <= 0 && is_singular() ) {
+			$post_id = absint( get_queried_object_id() );
+		}
+
+		if ( $post_id > 0 ) {
+			$from_page = get_field( 'somvio_legal_effective_date', $post_id );
+			if ( is_string( $from_page ) && '' !== trim( $from_page ) ) {
+				return sanitize_text_field( $from_page );
+			}
+		}
+	}
+
+	return $default;
 }
 
 /**

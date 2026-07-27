@@ -18,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @see https://docs.generatepress.com/article/child-theme-issues/
  */
 
+require_once get_stylesheet_directory() . '/inc/acf-fields.php';
 require_once get_stylesheet_directory() . '/inc/header.php';
 require_once get_stylesheet_directory() . '/inc/hero.php';
 require_once get_stylesheet_directory() . '/inc/services-page.php';

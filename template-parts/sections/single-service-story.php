@@ -20,6 +20,26 @@ $somvio_story_features = array(
 	__( 'Fully Insured & Reliable', 'somvio' ),
 	__( 'Satisfaction Guarantee', 'somvio' ),
 );
+
+$somvio_story_badge = __( 'Our Story', 'somvio' );
+$somvio_story_title = __( 'Keep Your Home Fresh, Clean & Comfortable Every Week', 'somvio' );
+$somvio_story_desc  = '';
+
+if ( function_exists( 'get_field' ) ) {
+	$acf_badge = get_field( 'somvio_service_story_badge' );
+	$acf_title = get_field( 'somvio_service_story_title' );
+	$acf_desc  = get_field( 'somvio_service_story_description' );
+
+	if ( is_string( $acf_badge ) && '' !== trim( $acf_badge ) ) {
+		$somvio_story_badge = $acf_badge;
+	}
+	if ( is_string( $acf_title ) && '' !== trim( $acf_title ) ) {
+		$somvio_story_title = $acf_title;
+	}
+	if ( is_string( $acf_desc ) && '' !== trim( $acf_desc ) ) {
+		$somvio_story_desc = $acf_desc;
+	}
+}
 ?>
 <section class="service-story" aria-labelledby="service-story-title">
 	<div class="service-story__inner">
@@ -43,29 +63,33 @@ $somvio_story_features = array(
 			</figure>
 
 			<div class="service-story__content">
-				<p class="service-story__badge reveal-on-scroll"><?php esc_html_e( 'Our Story', 'somvio' ); ?></p>
+				<p class="service-story__badge reveal-on-scroll"><?php echo esc_html( $somvio_story_badge ); ?></p>
 
 				<h2 id="service-story-title" class="service-story__title reveal-on-scroll" style="--reveal-delay: 0.05s;">
-					<?php esc_html_e( 'Keep Your Home Fresh, Clean & Comfortable Every Week', 'somvio' ); ?>
+					<?php echo esc_html( $somvio_story_title ); ?>
 				</h2>
 
 				<div class="service-story__copy reveal-on-scroll" style="--reveal-delay: 0.1s;">
-					<p>
-						<?php
-						esc_html_e(
-							"A clean home shouldn't take up all your free time. Our Regular Cleaning service is designed to keep your home consistently spotless with flexible weekly, bi-weekly, or monthly visits. Whether you live in an apartment, house, or rental property, our experienced cleaners deliver reliable results using professional equipment and eco-friendly products.",
-							'somvio'
-						);
-						?>
-					</p>
-					<p>
-						<?php
-						esc_html_e(
-							'We take care of everyday cleaning tasks, so you can enjoy more time doing what matters most. Every visit follows a detailed checklist to ensure every room is cleaned to the highest standard.',
-							'somvio'
-						);
-						?>
-					</p>
+					<?php if ( '' !== $somvio_story_desc ) : ?>
+						<?php echo wp_kses_post( $somvio_story_desc ); ?>
+					<?php else : ?>
+						<p>
+							<?php
+							esc_html_e(
+								"A clean home shouldn't take up all your free time. Our Regular Cleaning service is designed to keep your home consistently spotless with flexible weekly, bi-weekly, or monthly visits. Whether you live in an apartment, house, or rental property, our experienced cleaners deliver reliable results using professional equipment and eco-friendly products.",
+								'somvio'
+							);
+							?>
+						</p>
+						<p>
+							<?php
+							esc_html_e(
+								'We take care of everyday cleaning tasks, so you can enjoy more time doing what matters most. Every visit follows a detailed checklist to ensure every room is cleaned to the highest standard.',
+								'somvio'
+							);
+							?>
+						</p>
+					<?php endif; ?>
 				</div>
 			</div>
 		</div>
