@@ -16,10 +16,22 @@ $somvio_bf_slots    = isset( $somvio_bf_rates['time_slots'] ) && is_array( $somv
 $somvio_bf_symbol   = isset( $somvio_bf_rates['symbol'] ) ? (string) $somvio_bf_rates['symbol'] : '£';
 $somvio_bf_uid      = 'bf-' . wp_unique_id();
 
-$somvio_bf_img_path = get_stylesheet_directory() . '/assets/images/booking/service-card.jpg';
-$somvio_bf_img_uri  = get_stylesheet_directory_uri() . '/assets/images/booking/service-card.jpg';
-if ( file_exists( $somvio_bf_img_path ) ) {
-	$somvio_bf_img_uri .= '?v=' . rawurlencode( (string) filemtime( $somvio_bf_img_path ) );
+$somvio_bf_images_dir = get_stylesheet_directory() . '/assets/images';
+$somvio_bf_images_uri = get_stylesheet_directory_uri() . '/assets/images';
+
+/* Match homepage services-grid assets per service key (unique services only). */
+$somvio_bf_service_images = array(
+	'regular-cleaning' => 'service-regular-cleaning.png',
+	'deep-cleaning'    => 'service-deep-cleaning.png',
+	'end-of-tenancy'   => 'service-end-of-tenancy.png',
+	'airbnb-cleaning'  => 'service-airbnb-cleaning.png',
+	'after-builders'   => 'service-after-builders.png',
+);
+
+$somvio_bf_img_fallback_path = $somvio_bf_images_dir . '/booking/service-card.jpg';
+$somvio_bf_img_fallback_uri  = $somvio_bf_images_uri . '/booking/service-card.jpg';
+if ( file_exists( $somvio_bf_img_fallback_path ) ) {
+	$somvio_bf_img_fallback_uri .= '?v=' . rawurlencode( (string) filemtime( $somvio_bf_img_fallback_path ) );
 }
 
 $somvio_bf_icons_uri = get_stylesheet_directory_uri() . '/assets/icons/';
@@ -42,6 +54,8 @@ if ( function_exists( 'somvio_get_terms_conditions_page_id' ) ) {
 $somvio_bf_terms_url = $somvio_bf_terms_id > 0
 	? get_permalink( $somvio_bf_terms_id )
 	: home_url( '/terms-conditions/' );
+
+$somvio_bf_stripe_ok = function_exists( 'somvio_stripe_is_configured' ) && somvio_stripe_is_configured();
 
 $somvio_bf_counters = array(
 	'main_rooms'     => array(
@@ -124,6 +138,19 @@ $somvio_bf_counters = array(
 					aria-required="true"
 				>
 					<?php foreach ( $somvio_bf_services as $somvio_bf_key => $somvio_bf_label ) : ?>
+						<?php
+						$somvio_bf_service_file = isset( $somvio_bf_service_images[ $somvio_bf_key ] )
+							? (string) $somvio_bf_service_images[ $somvio_bf_key ]
+							: '';
+						$somvio_bf_service_path = '' !== $somvio_bf_service_file
+							? $somvio_bf_images_dir . '/' . $somvio_bf_service_file
+							: '';
+						$somvio_bf_service_src  = $somvio_bf_img_fallback_uri;
+						if ( '' !== $somvio_bf_service_path && file_exists( $somvio_bf_service_path ) ) {
+							$somvio_bf_service_src = $somvio_bf_images_uri . '/' . $somvio_bf_service_file
+								. '?v=' . rawurlencode( (string) filemtime( $somvio_bf_service_path ) );
+						}
+						?>
 						<button
 							type="button"
 							class="booking-form__service"
@@ -135,8 +162,8 @@ $somvio_bf_counters = array(
 							<span class="booking-form__service-media">
 								<img
 									class="booking-form__service-img"
-									src="<?php echo esc_url( $somvio_bf_img_uri ); ?>"
-									alt=""
+									src="<?php echo esc_url( $somvio_bf_service_src ); ?>"
+									alt="<?php echo esc_attr( $somvio_bf_label ); ?>"
 									width="240"
 									height="200"
 									loading="lazy"
@@ -164,6 +191,56 @@ $somvio_bf_counters = array(
 							</span>
 						</button>
 					<?php endforeach; ?>
+					<?php
+					/* Figma 6th card — duplicate Regular Cleaning with hallway alt image. */
+					$somvio_bf_alt_file  = 'service-regular-cleaning-alt.png';
+					$somvio_bf_alt_path  = $somvio_bf_images_dir . '/' . $somvio_bf_alt_file;
+					$somvio_bf_alt_label = __( 'Regular Cleaning', 'somvio' );
+					$somvio_bf_alt_src   = $somvio_bf_img_fallback_uri;
+					if ( file_exists( $somvio_bf_alt_path ) ) {
+						$somvio_bf_alt_src = $somvio_bf_images_uri . '/' . $somvio_bf_alt_file
+							. '?v=' . rawurlencode( (string) filemtime( $somvio_bf_alt_path ) );
+					}
+					?>
+					<button
+						type="button"
+						class="booking-form__service"
+						data-booking-service="regular-cleaning"
+						role="radio"
+						aria-checked="false"
+						tabindex="-1"
+					>
+						<span class="booking-form__service-media">
+							<img
+								class="booking-form__service-img"
+								src="<?php echo esc_url( $somvio_bf_alt_src ); ?>"
+								alt="<?php echo esc_attr( $somvio_bf_alt_label ); ?>"
+								width="240"
+								height="200"
+								loading="lazy"
+								decoding="async"
+							>
+						</span>
+						<span class="booking-form__service-footer">
+							<span class="booking-form__service-check" aria-hidden="true">
+								<img
+									class="booking-form__service-check-img booking-form__service-check-img--off"
+									src="<?php echo esc_url( $somvio_bf_icons_uri . 'icon-check-circle-outline.svg' ); ?>"
+									alt=""
+									width="24"
+									height="24"
+								>
+								<img
+									class="booking-form__service-check-img booking-form__service-check-img--on"
+									src="<?php echo esc_url( $somvio_bf_icons_uri . 'icon-check-circle-filled.svg' ); ?>"
+									alt=""
+									width="24"
+									height="24"
+								>
+							</span>
+							<span class="booking-form__service-label"><?php echo esc_html( $somvio_bf_alt_label ); ?></span>
+						</span>
+					</button>
 				</div>
 				<input type="hidden" name="service" data-booking-field="service" value="">
 
@@ -580,76 +657,102 @@ $somvio_bf_counters = array(
 								name="payment_method"
 								class="booking-form__payment-input"
 								data-booking-field="payment_method"
-								value="cash"
+								value="online"
 								checked
 							>
 							<span class="booking-form__payment-card">
 								<span class="booking-form__payment-indicator" aria-hidden="true"></span>
 								<span class="booking-form__payment-body">
-									<span class="booking-form__payment-title"><?php esc_html_e( 'Pay on completion / Cash', 'somvio' ); ?></span>
-									<span class="booking-form__payment-desc"><?php esc_html_e( 'Confirm now, pay after the clean.', 'somvio' ); ?></span>
+									<span class="booking-form__payment-title"><?php esc_html_e( 'Pay Online (Card / Stripe)', 'somvio' ); ?></span>
+									<span class="booking-form__payment-desc"><?php esc_html_e( 'Secure card payment via Stripe after you confirm.', 'somvio' ); ?></span>
 								</span>
 							</span>
 						</label>
-						<?php if ( function_exists( 'somvio_stripe_is_configured' ) && somvio_stripe_is_configured() ) : ?>
 						<label class="booking-form__payment-option">
 							<input
 								type="radio"
 								name="payment_method"
 								class="booking-form__payment-input"
 								data-booking-field="payment_method"
-								value="online"
+								value="cash"
 							>
 							<span class="booking-form__payment-card">
 								<span class="booking-form__payment-indicator" aria-hidden="true"></span>
 								<span class="booking-form__payment-body">
-									<span class="booking-form__payment-title"><?php esc_html_e( 'Pay online (Stripe)', 'somvio' ); ?></span>
-									<span class="booking-form__payment-desc"><?php esc_html_e( 'Secure card payment now.', 'somvio' ); ?></span>
+									<span class="booking-form__payment-title"><?php esc_html_e( 'Pay After Cleaning (Cash / Local)', 'somvio' ); ?></span>
+									<span class="booking-form__payment-desc"><?php esc_html_e( 'Confirm now, pay after the clean.', 'somvio' ); ?></span>
 								</span>
 							</span>
 						</label>
-						<?php endif; ?>
+					</div>
+					<div class="booking-form__online-panel" data-booking-online-panel>
+						<p class="booking-form__online-panel-text">
+							<?php if ( $somvio_bf_stripe_ok ) : ?>
+								<?php esc_html_e( 'After you complete booking, the Stripe card form will open so you can pay securely (test card: 4242 4242 4242 4242).', 'somvio' ); ?>
+							<?php else : ?>
+								<?php esc_html_e( 'Pay Online is available to select. Card checkout activates once Stripe keys are set in Somvio Settings.', 'somvio' ); ?>
+							<?php endif; ?>
+						</p>
+						<?php
+						get_template_part(
+							'template-parts/components/payment',
+							'icons',
+							array(
+								'variant' => 'sm',
+								'class'   => 'booking-form__online-panel-icons',
+							)
+						);
+						?>
 					</div>
 					<p class="booking-form__field-error" data-booking-field-error="payment_method" hidden role="alert"></p>
 				</fieldset>
 
-				<label class="booking-form__terms">
-					<input
-						type="checkbox"
-						class="booking-form__terms-input"
-						name="terms_accepted"
-						data-booking-field="terms_accepted"
-						value="1"
-						required
-					>
-					<span class="booking-form__terms-box" aria-hidden="true"></span>
-					<span class="booking-form__terms-text">
-						<?php
-						echo wp_kses(
-							sprintf(
-								/* translators: 1: terms URL, 2: privacy URL */
-								__( 'I have read and accepted the <a href="%1$s" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</a> and <a href="%2$s" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.', 'somvio' ),
-								esc_url( (string) $somvio_bf_terms_url ),
-								esc_url( (string) $somvio_bf_privacy_url )
-							),
-							array(
-								'a' => array(
-									'href'   => array(),
-									'target' => array(),
-									'rel'    => array(),
+				<div class="booking-form__terms-wrap" data-booking-terms-wrap>
+					<label class="booking-form__terms">
+						<input
+							type="checkbox"
+							class="booking-form__terms-input"
+							name="terms_accepted"
+							data-booking-field="terms_accepted"
+							value="1"
+							required
+						>
+						<span class="booking-form__terms-box" aria-hidden="true"></span>
+						<span class="booking-form__terms-text">
+							<?php
+							echo wp_kses(
+								sprintf(
+									/* translators: 1: terms URL, 2: privacy URL */
+									__( 'I have read and accepted the <a href="%1$s" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</a> and <a href="%2$s" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.', 'somvio' ),
+									esc_url( (string) $somvio_bf_terms_url ),
+									esc_url( (string) $somvio_bf_privacy_url )
 								),
-							)
-						);
-						?>
-					</span>
-				</label>
-				<p class="booking-form__field-error" data-booking-field-error="terms_accepted" hidden role="alert"></p>
+								array(
+									'a' => array(
+										'href'   => array(),
+										'target' => array(),
+										'rel'    => array(),
+									),
+								)
+							);
+							?>
+						</span>
+					</label>
+					<p class="booking-form__field-error booking-form__terms-notice" data-booking-field-error="terms_accepted" hidden role="alert"></p>
+				</div>
+
+				<div class="booking-form__summary" data-booking-summary>
+					<p class="booking-form__summary-label"><?php esc_html_e( 'Total Price', 'somvio' ); ?></p>
+					<p class="booking-form__summary-total" data-booking-total aria-hidden="false">£0.00</p>
+					<p class="booking-form__summary-note"><?php esc_html_e( 'Preview only — final price confirmed on submit.', 'somvio' ); ?></p>
+					<p class="sr-only" data-booking-price-live aria-live="polite" aria-atomic="true"></p>
+				</div>
 
 				<div class="booking-form__footer">
 					<button type="button" class="booking-form__back btn btn--outline" data-booking-back>
 						<span class="btn__label"><?php esc_html_e( 'Back', 'somvio' ); ?></span>
 					</button>
-					<button type="button" class="booking-form__next btn btn--primary btn--has-icon" data-booking-next disabled aria-disabled="true" aria-busy="false" title="<?php esc_attr_e( 'Complete required fields and accept the terms to continue', 'somvio' ); ?>">
+					<button type="button" class="booking-form__next btn btn--primary btn--has-icon" data-booking-next disabled aria-disabled="true" aria-busy="false" title="<?php esc_attr_e( 'Complete the required fields to continue', 'somvio' ); ?>">
 						<span class="booking-form__spinner" data-booking-spinner hidden aria-hidden="true"></span>
 						<span class="btn__label" data-booking-next-label><?php esc_html_e( 'Complete Booking', 'somvio' ); ?></span>
 						<span class="btn__icon" data-booking-next-icon aria-hidden="true">

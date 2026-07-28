@@ -184,19 +184,45 @@ add_filter( 'nav_menu_link_attributes', 'somvio_nav_menu_link_attributes', 10, 4
 function somvio_header_menu_fallback( $args = array() ) {
 	$home_url      = esc_url( home_url( '/' ) );
 	$services_url  = esc_url( home_url( '/services/' ) );
-	$service_pages = function_exists( 'somvio_get_single_service_pages' )
-		? somvio_get_single_service_pages()
+	$service_pages = function_exists( 'somvio_get_services_menu_entries' )
+		? somvio_get_services_menu_entries()
 		: array(
-			'regular-cleaning' => __( 'Regular Cleaning', 'somvio' ),
-			'deep-cleaning'    => __( 'Deep Cleaning', 'somvio' ),
-			'end-of-tenancy'   => __( 'End of Tenancy', 'somvio' ),
-			'airbnb-cleaning'  => __( 'Airbnb Cleaning', 'somvio' ),
-			'after-builders'   => __( 'After Builders', 'somvio' ),
+			array(
+				'slug'  => 'regular-cleaning',
+				'title' => __( 'Regular Cleaning', 'somvio' ),
+			),
+			array(
+				'slug'  => 'deep-cleaning',
+				'title' => __( 'Deep Cleaning', 'somvio' ),
+			),
+			array(
+				'slug'  => 'end-of-tenancy',
+				'title' => __( 'End of Tenancy', 'somvio' ),
+			),
+			array(
+				'slug'  => 'airbnb-cleaning',
+				'title' => __( 'Airbnb Cleaning', 'somvio' ),
+			),
+			array(
+				'slug'  => 'after-builders',
+				'title' => __( 'After Builders', 'somvio' ),
+			),
+			array(
+				'slug'  => 'regular-cleaning',
+				'title' => __( 'Regular Cleaning', 'somvio' ),
+			),
 		);
 
 	$children = array();
 
-	foreach ( $service_pages as $slug => $label ) {
+	foreach ( $service_pages as $entry ) {
+		$slug  = isset( $entry['slug'] ) ? (string) $entry['slug'] : '';
+		$label = isset( $entry['title'] ) ? (string) $entry['title'] : '';
+
+		if ( '' === $slug ) {
+			continue;
+		}
+
 		$url = function_exists( 'somvio_get_service_page_url' )
 			? somvio_get_service_page_url( $slug )
 			: home_url( '/services/' . $slug . '/' );
@@ -207,31 +233,46 @@ function somvio_header_menu_fallback( $args = array() ) {
 		);
 	}
 
+	$contact_url = function_exists( 'somvio_get_contact_url' )
+		? somvio_get_contact_url()
+		: home_url( '/contact/' );
+
 	$items = array(
 		array(
 			'label' => __( 'Home', 'somvio' ),
 			'url'   => $home_url,
+			'slug'  => 'home',
 		),
 		array(
 			'label'    => __( 'Services', 'somvio' ),
 			'url'      => $services_url,
+			'slug'     => 'services',
 			'children' => $children,
 		),
 		array(
 			'label' => __( 'About Us', 'somvio' ),
 			'url'   => esc_url( home_url( '/about-us/' ) ),
+			'slug'  => 'about-us',
 		),
 		array(
 			'label' => __( 'Blog', 'somvio' ),
 			'url'   => esc_url( home_url( '/blog/' ) ),
+			'slug'  => 'blog',
 		),
 		array(
 			'label' => __( 'FAQ', 'somvio' ),
 			'url'   => esc_url( home_url( '/faq/' ) ),
+			'slug'  => 'faq',
 		),
 		array(
 			'label' => __( 'Booking', 'somvio' ),
 			'url'   => esc_url( home_url( '/booking/' ) ),
+			'slug'  => 'booking',
+		),
+		array(
+			'label' => __( 'Contact', 'somvio' ),
+			'url'   => esc_url( $contact_url ),
+			'slug'  => 'contact',
 		),
 	);
 
@@ -248,13 +289,27 @@ function somvio_header_menu_fallback( $args = array() ) {
 	foreach ( $items as $item ) {
 		$has_children = ! empty( $item['children'] );
 		$li_class     = 'menu-item';
+		$slug         = isset( $item['slug'] ) ? (string) $item['slug'] : '';
 
 		if ( $has_children ) {
 			$li_class .= ' menu-item-has-children';
 		}
 
+		$is_current = false;
+		if ( 'home' === $slug && is_front_page() ) {
+			$is_current = true;
+		} elseif ( 'contact' === $slug && function_exists( 'somvio_is_contact_page' ) && somvio_is_contact_page() ) {
+			$is_current = true;
+		} elseif ( '' !== $slug && 'home' !== $slug && is_page( $slug ) ) {
+			$is_current = true;
+		}
+
+		if ( $is_current ) {
+			$li_class .= ' current-menu-item';
+		}
+
 		echo '<li class="' . esc_attr( $li_class ) . '">';
-		echo '<a class="somvio-header__link" href="' . esc_url( $item['url'] ) . '">';
+		echo '<a class="somvio-header__link" href="' . esc_url( $item['url'] ) . '"' . ( $is_current ? ' aria-current="page"' : '' ) . '>';
 		echo esc_html( $item['label'] );
 
 		if ( $has_children ) {

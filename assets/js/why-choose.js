@@ -1,5 +1,8 @@
 /**
- * Why Choose Somvio — mobile carousel (scroll-snap + arrows + touch swipe).
+ * Why Choose Somvio — mobile carousel.
+ *
+ * Native CSS scroll-snap on the viewport. JS only moves by index and reflects
+ * the nearest slide in the arrow disabled states.
  */
 (function () {
 	'use strict';
@@ -11,56 +14,68 @@
 	 * @returns {void}
 	 */
 	function initCarousel(root) {
+		var viewport = root.querySelector('[data-why-choose-viewport]');
 		var track = root.querySelector('[data-why-choose-track]');
-		var slides = root.querySelectorAll('[data-why-choose-slide]');
+		var slides = Array.prototype.slice.call(root.querySelectorAll('[data-why-choose-slide]'));
 		var controls = root.querySelector('[data-why-choose-controls]');
 		var prevBtn = root.querySelector('[data-why-choose-prev]');
 		var nextBtn = root.querySelector('[data-why-choose-next]');
 		var mq = window.matchMedia(MOBILE_MQ);
 		var index = 0;
-		var drag = null;
+		var scrollRaf = 0;
 
-		if (!track || !slides.length) {
+		if (!viewport || !track || !slides.length) {
 			return;
 		}
 
 		/**
+		 * @param {number} next
 		 * @returns {number}
 		 */
-		function slideStep() {
-			var first = slides[0];
-			if (!first) {
-				return track.clientWidth;
-			}
-			var style = window.getComputedStyle(track);
-			var gap = parseFloat(style.columnGap || style.gap) || 0;
-			return first.getBoundingClientRect().width + gap;
+		function clampIndex(next) {
+			return Math.max(0, Math.min(slides.length - 1, next));
 		}
 
 		/**
+		 * Slide offsets are measured relative to the first slide, whose native
+		 * start-snap position is exactly scrollLeft 0.
+		 *
 		 * @param {number} next
 		 * @param {ScrollBehavior} [behavior]
 		 * @returns {void}
 		 */
 		function goTo(next, behavior) {
-			index = Math.max(0, Math.min(slides.length - 1, next));
-			track.scrollTo({
-				left: index * slideStep(),
+			index = clampIndex(next);
+			var left = Math.max(0, slides[index].offsetLeft - slides[0].offsetLeft);
+
+			viewport.scrollTo({
+				left: left,
 				behavior: behavior || 'smooth',
 			});
+
 			updateControls();
 		}
 
 		/**
+		 * Nearest card start edge to the scrollport left.
+		 *
 		 * @returns {void}
 		 */
 		function syncIndexFromScroll() {
-			var step = slideStep();
-			if (step <= 0) {
-				return;
+			var scrollLeft = viewport.scrollLeft;
+			var best = 0;
+			var bestDist = Infinity;
+
+			for (var i = 0; i < slides.length; i++) {
+				var target = Math.max(0, slides[i].offsetLeft - slides[0].offsetLeft);
+				var dist = Math.abs(target - scrollLeft);
+				if (dist < bestDist) {
+					bestDist = dist;
+					best = i;
+				}
 			}
-			index = Math.round(track.scrollLeft / step);
-			index = Math.max(0, Math.min(slides.length - 1, index));
+
+			index = best;
 			updateControls();
 		}
 
@@ -71,8 +86,16 @@
 			if (!prevBtn || !nextBtn) {
 				return;
 			}
-			prevBtn.disabled = index <= 0;
-			nextBtn.disabled = index >= slides.length - 1;
+
+			var atStart = index <= 0;
+			var atEnd = index >= slides.length - 1;
+
+			prevBtn.disabled = atStart;
+			nextBtn.disabled = atEnd;
+			prevBtn.setAttribute('aria-disabled', atStart ? 'true' : 'false');
+			nextBtn.setAttribute('aria-disabled', atEnd ? 'true' : 'false');
+			prevBtn.classList.toggle('is-disabled', atStart);
+			nextBtn.classList.toggle('is-disabled', atEnd);
 		}
 
 		/**
@@ -81,105 +104,56 @@
 		function setMode() {
 			var isMobile = mq.matches;
 
+			root.classList.toggle('why-choose--carousel', isMobile);
+
 			if (controls) {
 				controls.hidden = !isMobile;
 			}
 
-			root.classList.toggle('why-choose--carousel', isMobile);
-
 			if (!isMobile) {
-				track.scrollLeft = 0;
 				index = 0;
 				updateControls();
-			} else {
-				goTo(index, 'auto');
+				return;
 			}
+
+			window.requestAnimationFrame(function () {
+				syncIndexFromScroll();
+			});
 		}
 
 		if (prevBtn) {
-			prevBtn.addEventListener('click', function () {
+			prevBtn.addEventListener('click', function (event) {
+				event.preventDefault();
+				if (!mq.matches || prevBtn.disabled) {
+					return;
+				}
 				goTo(index - 1);
 			});
 		}
 
 		if (nextBtn) {
-			nextBtn.addEventListener('click', function () {
+			nextBtn.addEventListener('click', function (event) {
+				event.preventDefault();
+				if (!mq.matches || nextBtn.disabled) {
+					return;
+				}
 				goTo(index + 1);
 			});
 		}
 
-		track.addEventListener(
+		viewport.addEventListener(
 			'scroll',
 			function () {
 				if (!mq.matches) {
 					return;
 				}
-				window.requestAnimationFrame(syncIndexFromScroll);
-			},
-			{ passive: true }
-		);
-
-		track.addEventListener(
-			'touchstart',
-			function (event) {
-				if (!mq.matches || !event.touches.length) {
-					return;
+				if (scrollRaf) {
+					window.cancelAnimationFrame(scrollRaf);
 				}
-				drag = {
-					startX: event.touches[0].clientX,
-					startY: event.touches[0].clientY,
-					scrollLeft: track.scrollLeft,
-					locked: null,
-				};
-			},
-			{ passive: true }
-		);
-
-		track.addEventListener(
-			'touchmove',
-			function (event) {
-				if (!drag || !mq.matches || !event.touches.length) {
-					return;
-				}
-
-				var dx = event.touches[0].clientX - drag.startX;
-				var dy = event.touches[0].clientY - drag.startY;
-
-				if (drag.locked === null) {
-					drag.locked = Math.abs(dx) > Math.abs(dy);
-				}
-
-				if (!drag.locked) {
-					return;
-				}
-
-				track.scrollLeft = drag.scrollLeft - dx;
-			},
-			{ passive: true }
-		);
-
-		track.addEventListener(
-			'touchend',
-			function () {
-				if (!drag || !mq.matches) {
-					drag = null;
-					return;
-				}
-
-				if (drag.locked) {
+				scrollRaf = window.requestAnimationFrame(function () {
+					scrollRaf = 0;
 					syncIndexFromScroll();
-					goTo(index);
-				}
-
-				drag = null;
-			},
-			{ passive: true }
-		);
-
-		track.addEventListener(
-			'touchcancel',
-			function () {
-				drag = null;
+				});
 			},
 			{ passive: true }
 		);
@@ -190,10 +164,14 @@
 			mq.addListener(setMode);
 		}
 
+		var resizeTimer = 0;
 		window.addEventListener('resize', function () {
-			if (mq.matches) {
-				goTo(index, 'auto');
-			}
+			window.clearTimeout(resizeTimer);
+			resizeTimer = window.setTimeout(function () {
+				if (mq.matches) {
+					syncIndexFromScroll();
+				}
+			}, 100);
 		});
 
 		setMode();

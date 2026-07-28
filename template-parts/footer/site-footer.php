@@ -51,6 +51,11 @@ $somvio_nav_links = array(
 		'label' => __( 'Booking', 'somvio' ),
 		'url'   => home_url( '/booking/' ),
 	),
+	array(
+		'label' => __( 'Contact', 'somvio' ),
+		'url'   => function_exists( 'somvio_get_contact_url' ) ? somvio_get_contact_url() : home_url( '/contact/' ),
+		'mod'   => 'contact',
+	),
 );
 
 $somvio_legal_links = array(
@@ -119,14 +124,44 @@ $somvio_year         = (int) gmdate( 'Y' );
 						<?php endforeach; ?>
 					</ul>
 				<?php endif; ?>
+				<?php
+				get_template_part(
+					'template-parts/components/payment',
+					'icons',
+					array(
+						'variant' => 'sm',
+						'class'   => 'site-footer__payments',
+					)
+				);
+				?>
 			</div>
 
 			<nav class="site-footer__col site-footer__col--nav" aria-label="<?php esc_attr_e( 'Footer navigation', 'somvio' ); ?>">
 				<p class="site-footer__heading"><?php esc_html_e( 'Navigation', 'somvio' ); ?></p>
 				<ul class="site-footer__list">
 					<?php foreach ( $somvio_nav_links as $item ) : ?>
-						<li class="site-footer__list-item">
-							<a class="site-footer__link" href="<?php echo esc_url( $item['url'] ); ?>">
+						<?php
+						$somvio_nav_path = wp_parse_url( (string) $item['url'], PHP_URL_PATH );
+						$somvio_nav_path = is_string( $somvio_nav_path ) ? untrailingslashit( $somvio_nav_path ) : '';
+						$somvio_is_current = (
+							( function_exists( 'somvio_is_contact_page' ) && somvio_is_contact_page() && preg_match( '#/contacts?$#', $somvio_nav_path ) )
+							|| ( is_page() && '' !== $somvio_nav_path && preg_match( '#/' . preg_quote( get_post_field( 'post_name' ), '#' ) . '$#', $somvio_nav_path ) )
+						);
+						$somvio_item_mod = isset( $item['mod'] ) ? sanitize_html_class( (string) $item['mod'] ) : '';
+						$somvio_li_class = 'site-footer__list-item';
+						if ( $somvio_is_current ) {
+							$somvio_li_class .= ' current-menu-item';
+						}
+						if ( '' !== $somvio_item_mod ) {
+							$somvio_li_class .= ' site-footer__list-item--' . $somvio_item_mod;
+						}
+						?>
+						<li class="<?php echo esc_attr( $somvio_li_class ); ?>">
+							<a
+								class="site-footer__link"
+								href="<?php echo esc_url( $item['url'] ); ?>"
+								<?php echo $somvio_is_current ? ' aria-current="page"' : ''; ?>
+							>
 								<?php echo esc_html( $item['label'] ); ?>
 							</a>
 						</li>
@@ -148,7 +183,14 @@ $somvio_year         = (int) gmdate( 'Y' );
 			</nav>
 
 			<div class="site-footer__col site-footer__col--contact">
-				<p class="site-footer__heading"><?php esc_html_e( 'Contact', 'somvio' ); ?></p>
+				<p class="site-footer__heading site-footer__heading--contact">
+					<span class="site-footer__heading-label site-footer__heading-label--desktop">
+						<?php esc_html_e( 'Contact', 'somvio' ); ?>
+					</span>
+					<span class="site-footer__heading-label site-footer__heading-label--mobile">
+						<?php esc_html_e( 'Get in Touch', 'somvio' ); ?>
+					</span>
+				</p>
 				<ul class="site-footer__contact">
 					<li class="site-footer__contact-item">
 						<span class="site-footer__contact-icon" aria-hidden="true">

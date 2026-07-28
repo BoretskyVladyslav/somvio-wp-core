@@ -87,8 +87,9 @@ function somvio_enqueue_booking_form_assets() {
 			'stripePublishableKey' => function_exists( 'somvio_get_stripe_publishable_key' )
 				? somvio_get_stripe_publishable_key()
 				: '',
+			'stripeEnabled' => function_exists( 'somvio_stripe_is_configured' ) && somvio_stripe_is_configured(),
 			'i18n'    => array(
-				'stepOf'                => __( 'Step %1$d of %2$d', 'somvio' ),
+				'stepOf'                => __( 'Step {current} of {total}', 'somvio' ),
 				'selectDatePlaceholder' => __( 'Select date', 'somvio' ),
 				'selectTime'            => __( 'Please select a time slot.', 'somvio' ),
 				'selectDate'            => __( 'Please select a valid date.', 'somvio' ),
@@ -110,9 +111,11 @@ function somvio_enqueue_booking_form_assets() {
 				'invalidPhone'          => __( 'Please enter a valid phone number.', 'somvio' ),
 				'invalidName'           => __( 'Please enter your name.', 'somvio' ),
 				'invalidAddress'        => __( 'Please enter your street address.', 'somvio' ),
-				'termsRequired'         => __( 'Please accept the Terms & Conditions and Privacy Policy.', 'somvio' ),
+				'termsRequired'         => __( 'You must accept the Terms & Conditions and Privacy Policy to complete your booking.', 'somvio' ),
 				'selectPayment'         => __( 'Please select a payment method.', 'somvio' ),
-				'completeContact'       => __( 'Complete required fields and accept the terms to continue', 'somvio' ),
+				'onlinePaymentUnavailable' => __( 'Stripe API keys are missing. Cannot process online payment.', 'somvio' ),
+				'stripeKeysMissing'     => __( 'Stripe API keys are missing. Cannot process online payment.', 'somvio' ),
+				'completeContact'       => __( 'Complete the required fields to continue', 'somvio' ),
 				'requiredField'         => __( 'This field is required.', 'somvio' ),
 				'submitError'           => __( 'Something went wrong. Please try again.', 'somvio' ),
 				'paymentError'          => __( 'Payment could not be completed. Please try again.', 'somvio' ),
@@ -120,6 +123,7 @@ function somvio_enqueue_booking_form_assets() {
 				'paying'                => __( 'Processing payment…', 'somvio' ),
 				'backHome'              => __( 'Back to Home', 'somvio' ),
 				'estimatedTotal'        => __( 'Estimated total', 'somvio' ),
+				'totalPrice'            => __( 'Total Price', 'somvio' ),
 				'none'                  => __( 'None', 'somvio' ),
 				'notSelected'           => __( 'Not selected', 'somvio' ),
 				'months'         => array(

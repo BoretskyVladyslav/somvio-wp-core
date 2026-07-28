@@ -44,7 +44,7 @@ function somvio_normalize_payment_method( $method ) {
 function somvio_process_booking_submission( array $payload ) {
 	$payment_method = somvio_normalize_payment_method( $payload['payment_method'] ?? 'cash' );
 
-	// Unconfigured Stripe must never create payment_pending bookings.
+	// REST layer must reject online without keys; never silently downgrade to cash here.
 	if ( 'online' === $payment_method && function_exists( 'somvio_stripe_is_configured' ) && ! somvio_stripe_is_configured() ) {
 		$payment_method = 'cash';
 	}

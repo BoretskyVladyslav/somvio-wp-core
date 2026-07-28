@@ -211,13 +211,14 @@
 			address: '',
 			comment: '',
 			terms_accepted: false,
-			payment_method: 'cash',
+			payment_method: 'online',
 			previewTotal: 0,
 			quotedTotal: null,
 			confirmedTotal: null,
 			calYear: today.getFullYear(),
 			calMonth: today.getMonth(),
 			submitting: false,
+			serviceBtn: null,
 		};
 
 		function field(name) {
@@ -263,8 +264,15 @@
 				}
 				if (name === 'terms_accepted') {
 					var termsLabel = inputEl.closest('.booking-form__terms');
+					var termsWrap = inputEl.closest('[data-booking-terms-wrap]') || inputEl.closest('.booking-form__terms-wrap');
 					if (termsLabel) {
 						termsLabel.classList.toggle('is-invalid', !!msg);
+					}
+					if (termsWrap) {
+						termsWrap.classList.toggle('is-invalid', !!msg);
+						if (!msg) {
+							termsWrap.classList.remove('is-attention');
+						}
 					}
 				}
 			}
@@ -284,6 +292,60 @@
 			].forEach(function (name) {
 				setFieldError(name, '');
 			});
+		}
+
+		/**
+		 * Scroll to an invalid field without jumping to the step top.
+		 * Terms use a visually-hidden checkbox — scroll the visible label instead.
+		 *
+		 * @param {string} key
+		 * @param {HTMLElement|null} el
+		 * @returns {void}
+		 */
+		function scrollToFieldError(key, el) {
+			var header = document.querySelector('.somvio-header, .site-header, header');
+			var offset = 16;
+			if (header) {
+				offset += header.getBoundingClientRect().height || 0;
+			}
+
+			var target = el;
+			if (key === 'terms_accepted' && el) {
+				target =
+					el.closest('[data-booking-terms-wrap]') ||
+					el.closest('.booking-form__terms-wrap') ||
+					el.closest('.booking-form__terms') ||
+					el;
+			} else if (key === 'payment_method') {
+				target =
+					root.querySelector('.booking-form__payment') ||
+					(el && el.closest('.booking-form__payment-options')) ||
+					el;
+			}
+
+			if (!target) {
+				return;
+			}
+
+			target.style.scrollMarginTop = offset + 'px';
+			if (typeof target.scrollIntoView === 'function') {
+				target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			}
+
+			if (key === 'terms_accepted' && target.classList) {
+				target.classList.remove('is-attention');
+				/* Retrigger highlight animation. */
+				void target.offsetWidth;
+				target.classList.add('is-attention');
+			}
+
+			if (el && typeof el.focus === 'function') {
+				try {
+					el.focus({ preventScroll: true });
+				} catch (err) {
+					el.focus();
+				}
+			}
 		}
 
 		function readFields() {
@@ -306,6 +368,23 @@
 
 		function syncState() {
 			readFields();
+			renderPrice();
+		}
+
+		function renderPrice() {
+			var amount =
+				state.confirmedTotal != null
+					? state.confirmedTotal
+					: state.quotedTotal != null
+						? state.quotedTotal
+						: state.previewTotal;
+			var text = formatMoney(amount);
+			root.querySelectorAll('[data-booking-total]').forEach(function (el) {
+				el.textContent = text;
+			});
+			root.querySelectorAll('[data-booking-price-live]').forEach(function (el) {
+				el.textContent = (i18n.totalPrice || 'Total Price') + ' ' + text;
+			});
 		}
 
 		function invalidateServerQuote() {
@@ -314,9 +393,24 @@
 		}
 
 		function renderServiceCards() {
-			root.querySelectorAll('[data-booking-service]').forEach(function (btn, index) {
+			var buttons = root.querySelectorAll('[data-booking-service]');
+			var matched = null;
+			buttons.forEach(function (btn) {
 				var val = btn.getAttribute('data-booking-service');
-				var selected = !!state.service && state.service === val;
+				if (!!state.service && state.service === val) {
+					if (state.serviceBtn === btn || (!state.serviceBtn && !matched)) {
+						matched = btn;
+					}
+				}
+			});
+			if (matched) {
+				state.serviceBtn = matched;
+			} else if (state.serviceBtn && state.serviceBtn.getAttribute('data-booking-service') !== state.service) {
+				state.serviceBtn = null;
+			}
+
+			buttons.forEach(function (btn, index) {
+				var selected = state.serviceBtn === btn;
 				btn.classList.toggle('is-selected', selected);
 				btn.setAttribute('aria-checked', selected ? 'true' : 'false');
 				btn.tabIndex = selected || (!state.service && index === 0) ? 0 : -1;
@@ -376,7 +470,6 @@
 				isValidEmail(state.email) &&
 				isValidPhone(state.phone) &&
 				isValidAddress(state.address) &&
-				!!state.terms_accepted &&
 				(state.payment_method === 'cash' || state.payment_method === 'online')
 			);
 		}
@@ -419,9 +512,17 @@
 			if (key === 'terms_accepted') {
 				return state.terms_accepted
 					? ''
-					: i18n.termsRequired || 'Please accept the Terms & Conditions and Privacy Policy.';
+					: i18n.termsRequired ||
+							'You must accept the Terms & Conditions and Privacy Policy to complete your booking.';
 			}
 			if (key === 'payment_method') {
+				if (state.payment_method === 'online' && !cfg.stripeEnabled) {
+					return (
+						i18n.stripeKeysMissing ||
+						i18n.onlinePaymentUnavailable ||
+						'Stripe API keys are missing. Cannot process online payment.'
+					);
+				}
 				return state.payment_method === 'cash' || state.payment_method === 'online'
 					? ''
 					: i18n.selectPayment || 'Please select a payment method.';
@@ -782,14 +883,46 @@
 			}
 		}
 
+		/**
+		 * Format "Step X of Y" for the footer label.
+		 * Supports {current}/{total} and legacy %1$d/%2$d / %d placeholders.
+		 *
+		 * @param {number} current Display step in the active sequence (1-based).
+		 * @param {number} total   Length of the active sequence (3 or 4).
+		 * @returns {string}
+		 */
+		function formatStepOf(current, total) {
+			var tpl = (i18n && i18n.stepOf) || 'Step {current} of {total}';
+			var cur = String(current);
+			var tot = String(total);
+			if (tpl.indexOf('{current}') !== -1 || tpl.indexOf('{total}') !== -1) {
+				return tpl.replace(/\{current\}/g, cur).replace(/\{total\}/g, tot);
+			}
+			/* Legacy gettext-style placeholders from older localize strings. */
+			if (/%1\$?d/.test(tpl) || /%2\$?d/.test(tpl)) {
+				return tpl
+					.replace(/%1\$d/g, cur)
+					.replace(/%2\$d/g, tot)
+					.replace(/%1\$s/g, cur)
+					.replace(/%2\$s/g, tot)
+					.replace(/%1d/g, cur)
+					.replace(/%2d/g, tot);
+			}
+			var once = 0;
+			return tpl.replace(/%d/g, function () {
+				once += 1;
+				return once === 1 ? cur : tot;
+			});
+		}
+
 		function updateStepLabels(step) {
 			var visible = getVisibleSteps();
-			var displayStep = Math.max(1, visible.indexOf(step) + 1);
-			var total = visible.length;
-			var tpl = i18n.stepOf || 'Step %1$d of %2$d';
-			var label = tpl
-				.replace('%1$d', String(Math.min(displayStep, total)))
-				.replace('%2$d', String(total));
+			var idx = visible.indexOf(step);
+			/* Remap to the visible sequence (e.g. 1,3,4 → 1,2,3 of 3). */
+			var displayStep = idx === -1 ? 1 : idx + 1;
+			var total = Math.max(1, visible.length);
+			var label = formatStepOf(displayStep, total);
+
 			root.querySelectorAll('[data-booking-step-label]').forEach(function (el) {
 				el.hidden = step === SUCCESS_STEP;
 				if (step !== SUCCESS_STEP) {
@@ -1190,6 +1323,7 @@
 			showError('');
 
 			var firstInvalid = null;
+			var firstInvalidKey = '';
 			var hasError = false;
 			['first_name', 'last_name', 'phone', 'email', 'address', 'payment_method', 'terms_accepted'].forEach(function (key) {
 				var msg = getContactFieldError(key);
@@ -1197,16 +1331,31 @@
 					setFieldError(key, msg);
 					if (!firstInvalid) {
 						firstInvalid = field(key) || root.querySelector('[data-booking-field="' + key + '"]');
+						firstInvalidKey = key;
 					}
 					hasError = true;
 				}
 			});
 
 			if (hasError) {
-				showError(i18n.required || 'Please complete the required fields.');
+				if (firstInvalidKey === 'terms_accepted') {
+					showError(
+						i18n.termsRequired ||
+							'You must accept the Terms & Conditions and Privacy Policy to complete your booking.'
+					);
+				} else if (firstInvalidKey === 'payment_method') {
+					var payMsg = getContactFieldError('payment_method');
+					showError(
+						payMsg ||
+							i18n.selectPayment ||
+							'Please select a payment method.'
+					);
+				} else {
+					showError(i18n.required || 'Please complete the required fields.');
+				}
 			}
 
-			return { valid: !hasError, firstInvalid: firstInvalid };
+			return { valid: !hasError, firstInvalid: firstInvalid, firstInvalidKey: firstInvalidKey };
 		}
 
 		function validateStep() {
@@ -1257,8 +1406,8 @@
 
 			if (state.step === 4) {
 				var result = validateContact();
-				if (!result.valid && result.firstInvalid) {
-					result.firstInvalid.focus();
+				if (!result.valid) {
+					scrollToFieldError(result.firstInvalidKey, result.firstInvalid);
 				}
 				return result.valid;
 			}
@@ -1273,16 +1422,30 @@
 
 			var validation = validateContact();
 			if (!validation.valid) {
-				if (validation.firstInvalid) {
-					validation.firstInvalid.focus();
-				}
+				scrollToFieldError(validation.firstInvalidKey, validation.firstInvalid);
+				return Promise.resolve();
+			}
+
+			readFields();
+			syncState();
+
+			if (state.payment_method === 'online' && !cfg.stripeEnabled) {
+				var stripeMsg =
+					i18n.stripeKeysMissing ||
+					i18n.onlinePaymentUnavailable ||
+					'Stripe API keys are missing. Cannot process online payment.';
+				setFieldError('payment_method', stripeMsg);
+				showError(stripeMsg);
+				scrollToFieldError(
+					'payment_method',
+					root.querySelector('[data-booking-field="payment_method"]:checked') ||
+						root.querySelector('[data-booking-field="payment_method"]')
+				);
 				return Promise.resolve();
 			}
 
 			state.submitting = true;
 			setLoading(true);
-			readFields();
-			syncState();
 
 			if (!cfg.restUrl || !cfg.nonce) {
 				state.submitting = false;
@@ -1500,93 +1663,103 @@
 			var clientSecret = data.payment.client_secret;
 			var intentId = data.payment.payment_intent_id || '';
 			var bookingId = data.booking_id || 0;
+			var mounted = false;
 
-			loadStripeJs()
-				.then(function (StripeFactory) {
-					if (!StripeFactory || !pubKey) {
-						throw new Error('stripe_unavailable');
-					}
-					var stripe = StripeFactory(pubKey);
-					var elements = stripe.elements({
-						clientSecret: clientSecret,
-						appearance: {
-							theme: 'stripe',
-							variables: {
-								colorPrimary: '#40d7d0',
-								borderRadius: '4px',
+			function mountPaymentElement() {
+				if (mounted) {
+					return;
+				}
+				mounted = true;
+
+				loadStripeJs()
+					.then(function (StripeFactory) {
+						if (!StripeFactory || !pubKey) {
+							throw new Error('stripe_unavailable');
+						}
+						var stripe = StripeFactory(pubKey);
+						var elements = stripe.elements({
+							clientSecret: clientSecret,
+							appearance: {
+								theme: 'stripe',
+								variables: {
+									colorPrimary: '#40d7d0',
+									borderRadius: '4px',
+								},
 							},
-						},
-					});
-					var paymentElement = elements.create('payment');
-					paymentElement.mount(mountEl);
+						});
+						var paymentElement = elements.create('payment');
+						mountEl.innerHTML = '';
+						paymentElement.mount(mountEl);
 
-					if (!payBtn) {
-						return;
-					}
-
-					payBtn.onclick = function () {
-						if (payBtn.disabled) {
+						if (!payBtn) {
 							return;
 						}
-						payBtn.disabled = true;
-						var label = payBtn.querySelector('.btn__label');
-						if (label) {
-							label.textContent = i18n.paying || 'Processing payment…';
-						}
-						showStripeError('');
 
-						stripe
-							.confirmPayment({
-								elements: elements,
-								redirect: 'if_required',
-								confirmParams: {
-									return_url: window.location.href,
-								},
-							})
-							.then(function (result) {
-								if (result.error) {
+						payBtn.onclick = function () {
+							if (payBtn.disabled) {
+								return;
+							}
+							payBtn.disabled = true;
+							var label = payBtn.querySelector('.btn__label');
+							if (label) {
+								label.textContent = i18n.paying || 'Processing payment…';
+							}
+							showStripeError('');
+
+							stripe
+								.confirmPayment({
+									elements: elements,
+									redirect: 'if_required',
+									confirmParams: {
+										return_url: window.location.href,
+									},
+								})
+								.then(function (result) {
+									if (result.error) {
+										payBtn.disabled = false;
+										if (label) {
+											label.textContent = i18n.complete || 'Pay now';
+										}
+										showStripeError(result.error.message || i18n.paymentError);
+										return;
+									}
+
+									return fetch(cfg.confirmPaymentUrl || '', {
+										method: 'POST',
+										credentials: 'same-origin',
+										headers: {
+											'Content-Type': 'application/json',
+											'X-WP-Nonce': cfg.nonce || '',
+										},
+										body: JSON.stringify({
+											payment_intent_id:
+												intentId || (result.paymentIntent && result.paymentIntent.id) || '',
+											booking_id: bookingId,
+											client_total:
+												state.confirmedTotal != null ? state.confirmedTotal : state.previewTotal,
+										}),
+									}).then(function (res) {
+										return res.json().then(function (body) {
+											return { ok: res.ok, body: body };
+										});
+									});
+								})
+								.then(function (confirmResult) {
+									if (!confirmResult) {
+										return;
+									}
 									payBtn.disabled = false;
 									if (label) {
 										label.textContent = i18n.complete || 'Pay now';
 									}
-									showStripeError(result.error.message || i18n.paymentError);
-									return;
-								}
-
-								return fetch(cfg.confirmPaymentUrl || '', {
-									method: 'POST',
-									credentials: 'same-origin',
-									headers: {
-										'Content-Type': 'application/json',
-										'X-WP-Nonce': cfg.nonce || '',
-									},
-									body: JSON.stringify({
-										payment_intent_id: intentId || (result.paymentIntent && result.paymentIntent.id) || '',
-										booking_id: bookingId,
-										client_total: state.confirmedTotal != null ? state.confirmedTotal : state.previewTotal,
-									}),
-								}).then(function (res) {
-									return res.json().then(function (body) {
-										return { ok: res.ok, body: body };
-									});
-								});
-							})
-							.then(function (confirmResult) {
-								if (!confirmResult) {
-									return;
-								}
-								payBtn.disabled = false;
-								if (label) {
-									label.textContent = i18n.complete || 'Pay now';
-								}
-								if (!confirmResult.ok || !confirmResult.body || !confirmResult.body.success) {
-									showStripeError(
-										(confirmResult.body && confirmResult.body.message) ||
-											i18n.paymentError ||
-											'Payment could not be completed. Please try again.'
-									);
-									return;
-								}
+									if (!confirmResult.ok || !confirmResult.body || !confirmResult.body.success) {
+										showStripeError(
+											(confirmResult.body && confirmResult.body.message) ||
+												i18n.paymentError ||
+												'Payment could not be completed. Please try again.'
+										);
+										return;
+									}
 								wrap.hidden = true;
 								var subtitle = root.querySelector('.booking-form__success-subtitle');
 								var text = root.querySelector('.booking-form__success-text');
@@ -1622,12 +1795,31 @@
 				.catch(function () {
 					showStripeError(i18n.paymentError || 'Payment could not be completed. Please try again.');
 				});
+			}
+
+			/* Mount after success-card animation so Stripe Elements paints correctly. */
+			var successCard = root.querySelector('.booking-form__card--success');
+			var scheduled = false;
+			function scheduleMount() {
+				if (scheduled) {
+					return;
+				}
+				scheduled = true;
+				window.requestAnimationFrame(function () {
+					window.requestAnimationFrame(mountPaymentElement);
+				});
+			}
+			if (successCard) {
+				successCard.addEventListener('animationend', scheduleMount, { once: true });
+			}
+			window.setTimeout(scheduleMount, 450);
 		}
 
 		/* Events */
 		root.querySelectorAll('[data-booking-service]').forEach(function (btn) {
 			btn.addEventListener('click', function () {
 				state.service = btn.getAttribute('data-booking-service') || '';
+				state.serviceBtn = btn;
 				invalidateServerQuote();
 				showError('');
 				clearAddonsIfNeeded();
@@ -1912,6 +2104,10 @@
 					var input = opt.querySelector('[data-booking-field="payment_method"]');
 					opt.classList.toggle('is-selected', !!(input && input.checked));
 				});
+				var onlinePanel = root.querySelector('[data-booking-online-panel]');
+				if (onlinePanel) {
+					onlinePanel.hidden = state.payment_method !== 'online';
+				}
 				setFieldError('payment_method', '');
 				updateNextAvailability();
 			});

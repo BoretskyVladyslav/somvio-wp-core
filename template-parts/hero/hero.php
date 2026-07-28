@@ -149,6 +149,16 @@ $somvio_render_hero_ratings = static function ( $icons_uri, $duplicate = false )
 			?>
 		</div>
 
+		<?php
+		/**
+		 * Toggle hero reviews bar + rating badges (Google / Yelp / Trustpilot).
+		 * Set to true when real review counts are ready.
+		 *
+		 * @param bool $show Whether to show the reviews section.
+		 */
+		$somvio_show_hero_ratings = (bool) apply_filters( 'somvio_show_hero_ratings', false );
+		if ( $somvio_show_hero_ratings ) :
+			?>
 		<div class="somvio-hero__reviews">
 			<p class="somvio-hero__reviews-label">
 				<span class="somvio-hero__reviews-label-line"><?php esc_html_e( 'Top rated Glasgow', 'somvio' ); ?></span>
@@ -156,23 +166,13 @@ $somvio_render_hero_ratings = static function ( $icons_uri, $duplicate = false )
 				<span class="somvio-hero__reviews-label-line"><?php esc_html_e( 'All reviews', 'somvio' ); ?></span>
 			</p>
 
-			<?php
-			/**
-			 * Toggle hero rating badges (Google / Yelp / Trustpilot).
-			 * Set to true when real review counts are ready.
-			 *
-			 * @param bool $show Whether to show rating badges.
-			 */
-			$somvio_show_hero_ratings = (bool) apply_filters( 'somvio_show_hero_ratings', false );
-			if ( $somvio_show_hero_ratings ) :
-				?>
 			<div class="somvio-hero__ratings-viewport">
 				<div class="somvio-hero__ratings-track">
 					<?php $somvio_render_hero_ratings( $somvio_icons_uri ); ?>
 					<?php $somvio_render_hero_ratings( $somvio_icons_uri, true ); ?>
 				</div>
 			</div>
-			<?php endif; ?>
 		</div>
+		<?php endif; ?>
 	</div>
 </section>

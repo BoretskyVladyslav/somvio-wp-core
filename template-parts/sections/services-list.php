@@ -16,9 +16,10 @@ $somvio_images_uri = get_stylesheet_directory_uri() . '/assets/images';
 $somvio_images_dir = get_stylesheet_directory() . '/assets/images';
 
 /*
- * Figma 300:2170 — five service_item rows (no Office).
+ * Figma 300:2170 — six service_item rows (no Office).
  * Even index = media start; odd = media end.
  * CTAs link to published Single Service pages via somvio_get_service_page_url().
+ * 6th row is the hallway Regular Cleaning variation (same page URL as row 1).
  */
 $somvio_list_services = array(
 	array(
@@ -56,6 +57,14 @@ $somvio_list_services = array(
 		'price' => __( 'From £35', 'somvio' ),
 		'text'  => __( 'Clear away the heavy dust, debris, and residue left behind after your recent home renovation. Our professionals use specialized equipment to safely eliminate fine particles and construction mess from every surface. Step right into a beautifully completed, clean home ready for immediate living.', 'somvio' ),
 	),
+	array(
+		'id'         => 'regular-cleaning-alt',
+		'page_slug'  => 'regular-cleaning',
+		'image'      => 'service-regular-cleaning-alt.png',
+		'title'      => __( 'Regular Cleaning', 'somvio' ),
+		'price'      => __( 'From £35', 'somvio' ),
+		'text'       => __( 'Keep your home consistently fresh, clean, and welcoming with our routine maintenance service. Our trusted professionals handle dusting, vacuuming, and surface sanitization on a schedule that perfectly fits your lifestyle. Enjoy a stress-free, tidy living space every single week without lifting a finger.', 'somvio' ),
+	),
 );
 ?>
 <section class="services-list" aria-label="<?php esc_attr_e( 'Our services', 'somvio' ); ?>">
@@ -66,9 +75,10 @@ $somvio_list_services = array(
 			$image_url   = esc_url( $somvio_images_uri . '/' . $service['image'] );
 			$media_start = ( 0 === ( $index % 2 ) );
 			$item_mod    = $media_start ? 'services-list__item--media-start' : 'services-list__item--media-end';
+			$page_slug   = isset( $service['page_slug'] ) ? (string) $service['page_slug'] : (string) $service['id'];
 			$service_url = function_exists( 'somvio_get_service_page_url' )
-				? esc_url( somvio_get_service_page_url( $service['id'] ) )
-				: esc_url( home_url( '/services/' . $service['id'] . '/' ) );
+				? esc_url( somvio_get_service_page_url( $page_slug ) )
+				: esc_url( home_url( '/services/' . $page_slug . '/' ) );
 			?>
 			<article
 				id="<?php echo esc_attr( $service['id'] ); ?>"

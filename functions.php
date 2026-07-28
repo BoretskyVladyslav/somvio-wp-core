@@ -30,6 +30,68 @@ function somvio_theme_setup() {
 }
 add_action( 'after_setup_theme', 'somvio_theme_setup' );
 
+/**
+ * filemtime-based version for a child-theme asset (cache bust).
+ *
+ * @param string $relative_path Path relative to the child theme root.
+ * @return string
+ */
+function somvio_asset_version( $relative_path ) {
+	$path = get_stylesheet_directory() . '/' . ltrim( (string) $relative_path, '/' );
+
+	if ( file_exists( $path ) ) {
+		return (string) filemtime( $path );
+	}
+
+	$theme = wp_get_theme( get_stylesheet() );
+	$ver   = $theme->get( 'Version' );
+
+	return is_string( $ver ) && '' !== $ver ? $ver : '1.0.5';
+}
+
+/**
+ * Force ?ver=filemtime on all child-theme CSS/JS URLs.
+ *
+ * GeneratePress already versions generate-child via filemtime; enqueues in inc/
+ * do the same. This filter keeps versions correct if a plugin freezes/strips them.
+ *
+ * @param string $src    Asset URL.
+ * @param string $handle Script/style handle.
+ * @return string
+ */
+function somvio_cache_bust_theme_asset_src( $src, $handle ) {
+	unset( $handle );
+
+	if ( ! is_string( $src ) || '' === $src ) {
+		return $src;
+	}
+
+	$theme_uri = get_stylesheet_directory_uri();
+	if ( 0 !== strpos( $src, $theme_uri ) ) {
+		return $src;
+	}
+
+	$path_part = wp_parse_url( $src, PHP_URL_PATH );
+	$base_path = wp_parse_url( $theme_uri, PHP_URL_PATH );
+	if ( ! is_string( $path_part ) || ! is_string( $base_path ) ) {
+		return $src;
+	}
+
+	$relative = ltrim( substr( $path_part, strlen( $base_path ) ), '/' );
+	if ( '' === $relative ) {
+		return $src;
+	}
+
+	$file = get_stylesheet_directory() . '/' . $relative;
+	if ( ! is_file( $file ) ) {
+		return $src;
+	}
+
+	return add_query_arg( 'ver', (string) filemtime( $file ), remove_query_arg( 'ver', $src ) );
+}
+add_filter( 'style_loader_src', 'somvio_cache_bust_theme_asset_src', 20, 2 );
+add_filter( 'script_loader_src', 'somvio_cache_bust_theme_asset_src', 20, 2 );
+
 require_once get_stylesheet_directory() . '/inc/acf-fields.php';
 require_once get_stylesheet_directory() . '/inc/header.php';
 require_once get_stylesheet_directory() . '/inc/hero.php';
@@ -47,6 +109,7 @@ require_once get_stylesheet_directory() . '/inc/testimonials.php';
 require_once get_stylesheet_directory() . '/inc/faq.php';
 require_once get_stylesheet_directory() . '/inc/booking-page.php';
 require_once get_stylesheet_directory() . '/inc/thank-you-page.php';
+require_once get_stylesheet_directory() . '/inc/contact-page.php';
 require_once get_stylesheet_directory() . '/inc/legal-page.php';
 require_once get_stylesheet_directory() . '/inc/error-404.php';
 require_once get_stylesheet_directory() . '/inc/footer.php';

@@ -10,30 +10,188 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** @var int Bump to re-run page seeding on admin_init / theme switch. */
-const SOMVIO_CORE_PAGES_VERSION = 13;
+const SOMVIO_CORE_PAGES_VERSION = 17;
+
+/**
+ * Whether a site title looks like a Local / stock WordPress default.
+ *
+ * @param string $name Site title.
+ * @return bool
+ */
+function somvio_is_default_site_name( $name ) {
+	$normalized = strtolower( trim( (string) $name ) );
+
+	$defaults = array(
+		'',
+		'my wordpress',
+		'wordpress',
+		'just another wordpress site',
+		'my local wordpress site',
+		'local wordpress site',
+		'local site',
+	);
+
+	return in_array( $normalized, $defaults, true );
+}
+
+/**
+ * Whether a tagline looks like a stock WordPress default.
+ *
+ * @param string $desc Tagline.
+ * @return bool
+ */
+function somvio_is_default_site_tagline( $desc ) {
+	$normalized = strtolower( trim( (string) $desc ) );
+
+	$defaults = array(
+		'',
+		'just another wordpress site',
+		'just another wordpress site.',
+	);
+
+	return in_array( $normalized, $defaults, true );
+}
 
 /**
  * Ensure site title + tagline are Somvio (not default "My WordPress").
  *
- * Only overwrites empty or stock WordPress defaults so Customizer edits stick.
+ * Only overwrites empty or stock WordPress / Local defaults so intentional
+ * Customizer edits stick. Reads raw option values (filters removed) so
+ * display-time filters cannot hide a bad DB value from persistence.
  *
  * @return void
  */
 function somvio_ensure_site_identity() {
+	$had_name = has_filter( 'option_blogname', 'somvio_filter_option_blogname' );
+	$had_desc = has_filter( 'option_blogdescription', 'somvio_filter_option_blogdescription' );
+
+	if ( $had_name ) {
+		remove_filter( 'option_blogname', 'somvio_filter_option_blogname' );
+	}
+	if ( $had_desc ) {
+		remove_filter( 'option_blogdescription', 'somvio_filter_option_blogdescription' );
+	}
+
 	$name = (string) get_option( 'blogname', '' );
 	$desc = (string) get_option( 'blogdescription', '' );
 
-	$default_names = array( '', 'My WordPress', 'WordPress', 'Just another WordPress site' );
-	$default_descs = array( '', 'Just another WordPress site' );
-
-	if ( in_array( trim( $name ), $default_names, true ) ) {
+	if ( somvio_is_default_site_name( $name ) ) {
 		update_option( 'blogname', 'Somvio' );
 	}
 
-	if ( in_array( trim( $desc ), $default_descs, true ) ) {
+	if ( somvio_is_default_site_tagline( $desc ) ) {
 		update_option( 'blogdescription', 'Clean Spaces. Better Living.' );
 	}
+
+	if ( $had_name ) {
+		add_filter( 'option_blogname', 'somvio_filter_option_blogname' );
+	}
+	if ( $had_desc ) {
+		add_filter( 'option_blogdescription', 'somvio_filter_option_blogdescription' );
+	}
 }
+
+/**
+ * Run identity cleanup early on every request (front + admin).
+ *
+ * Page seeding is version-gated; identity must still correct Local defaults
+ * that reappear without a version bump.
+ *
+ * @return void
+ */
+function somvio_maybe_ensure_site_identity() {
+	somvio_ensure_site_identity();
+}
+add_action( 'init', 'somvio_maybe_ensure_site_identity', 5 );
+
+/**
+ * Scrub document &lt;title&gt; parts of leftover WordPress defaults.
+ *
+ * Front page typically becomes "Somvio - Clean Spaces. Better Living." when
+ * WP uses site + tagline; inner pages keep "Page – Somvio".
+ *
+ * @param array<string, string> $parts Title parts.
+ * @return array<string, string>
+ */
+function somvio_filter_document_title_parts( $parts ) {
+	if ( ! is_array( $parts ) ) {
+		return $parts;
+	}
+
+	if ( isset( $parts['title'] ) && somvio_is_default_site_name( $parts['title'] ) ) {
+		$parts['title'] = 'Somvio';
+	}
+
+	if ( isset( $parts['site'] ) && somvio_is_default_site_name( $parts['site'] ) ) {
+		$parts['site'] = 'Somvio';
+	}
+
+	if ( isset( $parts['tagline'] ) && somvio_is_default_site_tagline( $parts['tagline'] ) ) {
+		$parts['tagline'] = 'Clean Spaces. Better Living.';
+	}
+
+	return $parts;
+}
+add_filter( 'document_title_parts', 'somvio_filter_document_title_parts', 20 );
+
+/**
+ * Safety net for bloginfo( 'name' ) / bloginfo( 'description' ) consumers.
+ *
+ * @param string $output Filtered value.
+ * @param string $show   bloginfo field.
+ * @return string
+ */
+function somvio_filter_bloginfo( $output, $show ) {
+	if ( 'name' === $show && somvio_is_default_site_name( $output ) ) {
+		return 'Somvio';
+	}
+
+	if ( 'description' === $show && somvio_is_default_site_tagline( $output ) ) {
+		return 'Clean Spaces. Better Living.';
+	}
+
+	return $output;
+}
+add_filter( 'bloginfo', 'somvio_filter_bloginfo', 20, 2 );
+
+/**
+ * Catch plugins / SEO tools that read blogname / blogdescription options directly.
+ *
+ * @param mixed $value Option value.
+ * @return mixed
+ */
+function somvio_filter_option_blogname( $value ) {
+	if ( somvio_is_default_site_name( (string) $value ) ) {
+		return 'Somvio';
+	}
+
+	return $value;
+}
+add_filter( 'option_blogname', 'somvio_filter_option_blogname' );
+
+/**
+ * @param mixed $value Option value.
+ * @return mixed
+ */
+function somvio_filter_option_blogdescription( $value ) {
+	if ( somvio_is_default_site_tagline( (string) $value ) ) {
+		return 'Clean Spaces. Better Living.';
+	}
+
+	return $value;
+}
+add_filter( 'option_blogdescription', 'somvio_filter_option_blogdescription' );
+
+/**
+ * Prefer a hyphen separator consistent with brand titles.
+ *
+ * @param string $sep Separator.
+ * @return string
+ */
+function somvio_document_title_separator( $sep ) {
+	return '-';
+}
+add_filter( 'document_title_separator', 'somvio_document_title_separator' );
 
 /**
  * Core pages to ensure exist (slug => title).
@@ -78,6 +236,32 @@ function somvio_get_single_service_pages() {
 		'airbnb-cleaning'  => 'Airbnb Cleaning',
 		'after-builders'   => 'After Builders',
 	);
+}
+
+/**
+ * Header Services dropdown entries matching the homepage 6-card grid
+ * (includes a second Regular Cleaning entry for the hallway card).
+ *
+ * @return array<int, array{slug:string,title:string}>
+ */
+function somvio_get_services_menu_entries() {
+	$pages = somvio_get_single_service_pages();
+	$entries = array();
+
+	foreach ( $pages as $slug => $title ) {
+		$entries[] = array(
+			'slug'  => $slug,
+			'title' => $title,
+		);
+	}
+
+	/* 6th grid card — duplicate Regular Cleaning link. */
+	$entries[] = array(
+		'slug'  => 'regular-cleaning',
+		'title' => $pages['regular-cleaning'],
+	);
+
+	return $entries;
 }
 
 /**
@@ -348,6 +532,31 @@ function somvio_get_thank_you_url() {
 }
 
 /**
+ * Ensure the Contact page exists with the Contact Us template.
+ *
+ * @return int Page ID or 0.
+ */
+function somvio_ensure_contact_page_seed() {
+	if ( function_exists( 'somvio_ensure_contact_page' ) ) {
+		return somvio_ensure_contact_page();
+	}
+
+	$page_id = somvio_ensure_page( 'contact', 'Contact' );
+
+	if ( $page_id <= 0 ) {
+		return 0;
+	}
+
+	$template = get_post_meta( $page_id, '_wp_page_template', true );
+
+	if ( 'page-contact.php' !== $template ) {
+		update_post_meta( $page_id, '_wp_page_template', 'page-contact.php' );
+	}
+
+	return $page_id;
+}
+
+/**
  * Ensure the Blog page exists with the Blog template.
  *
  * @return int Page ID or 0.
@@ -513,6 +722,11 @@ function somvio_setup_core_pages() {
 				continue;
 			}
 
+			if ( 'contact' === $slug ) {
+				$page_ids[ $slug ] = somvio_ensure_contact_page_seed();
+				continue;
+			}
+
 			if ( 'blog' === $slug ) {
 				$page_ids[ $slug ] = somvio_ensure_blog_page();
 				continue;
@@ -576,9 +790,8 @@ function somvio_setup_core_pages() {
 }
 
 /**
- * Sync primary nav Services children to published single-service page URLs.
- *
- * Rewrites custom/hash links; creates missing child items under Services when needed.
+ * Sync primary nav Services children to the 6 homepage grid entries
+ * (5 unique services + duplicate Regular Cleaning).
  *
  * @return void
  */
@@ -595,8 +808,8 @@ function somvio_sync_primary_menu_service_links() {
 		return;
 	}
 
-	$services = somvio_get_single_service_pages();
-	$items    = wp_get_nav_menu_items( $menu_id );
+	$entries = somvio_get_services_menu_entries();
+	$items   = wp_get_nav_menu_items( $menu_id );
 
 	if ( ! is_array( $items ) ) {
 		$items = array();
@@ -622,50 +835,26 @@ function somvio_sync_primary_menu_service_links() {
 		return;
 	}
 
-	$matched_slugs = array();
+	$children = array();
 
 	foreach ( $items as $item ) {
 		if ( ! $item instanceof WP_Post ) {
 			continue;
 		}
 
-		if ( (int) $item->menu_item_parent !== $services_parent_id ) {
-			continue;
+		if ( (int) $item->menu_item_parent === $services_parent_id ) {
+			$children[] = $item;
 		}
-
-		$slug = somvio_match_service_slug_from_menu_item( $item, $services );
-
-		if ( null === $slug ) {
-			continue;
-		}
-
-		$page_id = somvio_get_service_page_id( $slug );
-
-		if ( $page_id <= 0 ) {
-			continue;
-		}
-
-		$matched_slugs[] = $slug;
-
-		wp_update_nav_menu_item(
-			$menu_id,
-			(int) $item->ID,
-			array(
-				'menu-item-object-id' => $page_id,
-				'menu-item-object'    => 'page',
-				'menu-item-type'      => 'post_type',
-				'menu-item-status'    => 'publish',
-				'menu-item-parent-id' => $services_parent_id,
-				'menu-item-title'     => $services[ $slug ],
-			)
-		);
 	}
 
+	$used_ids = array();
 	$position = 1;
 
-	foreach ( $services as $slug => $title ) {
-		if ( in_array( $slug, $matched_slugs, true ) ) {
-			++$position;
+	foreach ( $entries as $entry ) {
+		$slug  = isset( $entry['slug'] ) ? (string) $entry['slug'] : '';
+		$title = isset( $entry['title'] ) ? (string) $entry['title'] : '';
+
+		if ( '' === $slug || '' === $title ) {
 			continue;
 		}
 
@@ -675,9 +864,30 @@ function somvio_sync_primary_menu_service_links() {
 			continue;
 		}
 
+		$menu_item_id = 0;
+
+		foreach ( $children as $index => $child ) {
+			if ( ! $child instanceof WP_Post ) {
+				continue;
+			}
+
+			if ( in_array( (int) $child->ID, $used_ids, true ) ) {
+				continue;
+			}
+
+			$child_slug = somvio_match_service_slug_from_menu_item( $child, somvio_get_single_service_pages() );
+
+			if ( $child_slug === $slug ) {
+				$menu_item_id = (int) $child->ID;
+				$used_ids[]   = $menu_item_id;
+				unset( $children[ $index ] );
+				break;
+			}
+		}
+
 		wp_update_nav_menu_item(
 			$menu_id,
-			0,
+			$menu_item_id,
 			array(
 				'menu-item-object-id' => $page_id,
 				'menu-item-object'    => 'page',
@@ -691,13 +901,20 @@ function somvio_sync_primary_menu_service_links() {
 
 		++$position;
 	}
+
+	/* Remove leftover Commercial / unmatched children. */
+	foreach ( $children as $child ) {
+		if ( $child instanceof WP_Post && ! in_array( (int) $child->ID, $used_ids, true ) ) {
+			wp_delete_post( (int) $child->ID, true );
+		}
+	}
 }
 
 /**
- * Align primary header menu top-level items to Figma:
- * Home | Services | About Us | Blog | FAQ | Booking
+ * Align primary header menu top-level items:
+ * Home | Services | About Us | Blog | FAQ | Booking | Contact
  *
- * Removes Reviews / Contact; ensures Blog → /blog/.
+ * Removes Reviews; ensures Blog → /blog/ and Contact → /contact/.
  *
  * @return void
  */
@@ -720,9 +937,10 @@ function somvio_sync_primary_menu_structure() {
 		$items = array();
 	}
 
-	$remove_titles = array( 'reviews', 'contact' );
-	$remove_paths  = array( '/reviews', '/contact' );
+	$remove_titles = array( 'reviews' );
+	$remove_paths  = array( '/reviews' );
 	$has_blog      = false;
+	$has_contact   = false;
 
 	foreach ( $items as $item ) {
 		if ( ! $item instanceof WP_Post ) {
@@ -767,11 +985,50 @@ function somvio_sync_primary_menu_structure() {
 					$menu_id,
 					(int) $item->ID,
 					array(
-						'menu-item-type'   => 'custom',
-						'menu-item-status' => 'publish',
+						'menu-item-type'      => 'custom',
+						'menu-item-status'    => 'publish',
 						'menu-item-parent-id' => 0,
-						'menu-item-title'  => __( 'Blog', 'somvio' ),
-						'menu-item-url'    => home_url( '/blog/' ),
+						'menu-item-title'     => __( 'Blog', 'somvio' ),
+						'menu-item-url'       => home_url( '/blog/' ),
+					)
+				);
+			}
+		}
+
+		if (
+			'contact' === $title
+			|| 'contact us' === $title
+			|| preg_match( '#/contacts?$#', $path )
+		) {
+			$has_contact = true;
+
+			$contact_id = function_exists( 'somvio_get_page_id_by_slug' )
+				? (int) somvio_get_page_id_by_slug( 'contact' )
+				: 0;
+
+			if ( $contact_id > 0 ) {
+				wp_update_nav_menu_item(
+					$menu_id,
+					(int) $item->ID,
+					array(
+						'menu-item-object-id' => $contact_id,
+						'menu-item-object'    => 'page',
+						'menu-item-type'      => 'post_type',
+						'menu-item-status'    => 'publish',
+						'menu-item-parent-id' => 0,
+						'menu-item-title'     => __( 'Contact', 'somvio' ),
+					)
+				);
+			} else {
+				wp_update_nav_menu_item(
+					$menu_id,
+					(int) $item->ID,
+					array(
+						'menu-item-type'      => 'custom',
+						'menu-item-status'    => 'publish',
+						'menu-item-parent-id' => 0,
+						'menu-item-title'     => __( 'Contact', 'somvio' ),
+						'menu-item-url'       => home_url( '/contact/' ),
 					)
 				);
 			}
@@ -810,10 +1067,43 @@ function somvio_sync_primary_menu_structure() {
 			);
 		}
 	}
+
+	if ( ! $has_contact ) {
+		$contact_id = function_exists( 'somvio_get_page_id_by_slug' )
+			? (int) somvio_get_page_id_by_slug( 'contact' )
+			: 0;
+
+		if ( $contact_id > 0 ) {
+			wp_update_nav_menu_item(
+				$menu_id,
+				0,
+				array(
+					'menu-item-object-id' => $contact_id,
+					'menu-item-object'    => 'page',
+					'menu-item-type'      => 'post_type',
+					'menu-item-status'    => 'publish',
+					'menu-item-parent-id' => 0,
+					'menu-item-title'     => __( 'Contact', 'somvio' ),
+				)
+			);
+		} else {
+			wp_update_nav_menu_item(
+				$menu_id,
+				0,
+				array(
+					'menu-item-type'      => 'custom',
+					'menu-item-status'    => 'publish',
+					'menu-item-parent-id' => 0,
+					'menu-item-title'     => __( 'Contact', 'somvio' ),
+					'menu-item-url'       => home_url( '/contact/' ),
+				)
+			);
+		}
+	}
 }
 
 /**
- * Filter primary nav objects: drop Reviews/Contact until DB sync runs.
+ * Filter primary nav objects: drop Reviews until DB sync runs.
  *
  * @param WP_Post[] $items Menu items.
  * @param stdClass  $args  wp_nav_menu() args.
@@ -824,8 +1114,8 @@ function somvio_filter_primary_nav_structure( $items, $args ) {
 		return $items;
 	}
 
-	$remove_titles = array( 'reviews', 'contact' );
-	$remove_paths  = array( '/reviews', '/contact' );
+	$remove_titles = array( 'reviews' );
+	$remove_paths  = array( '/reviews' );
 	$filtered      = array();
 
 	foreach ( $items as $item ) {

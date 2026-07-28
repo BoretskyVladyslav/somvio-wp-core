@@ -49,6 +49,14 @@ $somvio_services = array(
 		'text'  => __( 'Keep your home consistently clean, tidy, and fresh.', 'somvio' ),
 		'price' => __( 'From £35', 'somvio' ),
 	),
+	array(
+		/* Figma 300:1413 — duplicate Regular Cleaning title, alternate hallway image. */
+		'slug'  => 'regular-cleaning',
+		'image' => 'service-regular-cleaning-alt.png',
+		'title' => __( 'Regular Cleaning', 'somvio' ),
+		'text'  => __( 'Keep your home consistently clean, tidy, and fresh.', 'somvio' ),
+		'price' => __( 'From £35', 'somvio' ),
+	),
 );
 ?>
 <section class="services-grid" aria-labelledby="services-grid-title">
