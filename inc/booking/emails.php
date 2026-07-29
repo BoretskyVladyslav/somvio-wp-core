@@ -18,10 +18,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return string
  */
 function somvio_get_booking_admin_email() {
-	$email = apply_filters( 'somvio_booking_admin_email', 'info@somvio.co.uk' );
-	$email = sanitize_email( (string) $email );
+	$default = sanitize_email( (string) get_option( 'admin_email' ) );
+	$email   = apply_filters( 'somvio_booking_admin_email', $default );
+	$email   = sanitize_email( (string) $email );
 
-	return $email ? $email : 'info@somvio.co.uk';
+	return $email ? $email : $default;
 }
 
 /**
@@ -306,25 +307,45 @@ function somvio_booking_email_labels( array $payload ) {
 	$service_key = isset( $payload['service'] ) ? (string) $payload['service'] : '';
 	$property    = isset( $payload['property'] ) ? (string) $payload['property'] : '';
 	$addon_keys  = isset( $payload['addons'] ) && is_array( $payload['addons'] ) ? $payload['addons'] : array();
+	$quantities  = isset( $payload['addon_quantities'] ) && is_array( $payload['addon_quantities'] )
+		? $payload['addon_quantities']
+		: array();
 
 	$addon_labels = array();
 	foreach ( $addon_keys as $key ) {
 		$key = sanitize_key( (string) $key );
-		if ( isset( $addons[ $key ]['label'] ) ) {
-			$addon_labels[] = (string) $addons[ $key ]['label'];
+		$label = isset( $addons[ $key ]['label'] ) ? (string) $addons[ $key ]['label'] : $key;
+		$qty   = isset( $quantities[ $key ] ) ? absint( $quantities[ $key ] ) : 0;
+		if ( somvio_addon_is_qty( $addons[ $key ] ?? null ) && $qty > 1 ) {
+			/* translators: 1: addon label, 2: quantity */
+			$addon_labels[] = sprintf( __( '%1$s (x%2$d)', 'somvio' ), $label, $qty );
+		} elseif ( somvio_addon_is_qty( $addons[ $key ] ?? null ) && 1 === $qty ) {
+			$addon_labels[] = sprintf( __( '%1$s (x%2$d)', 'somvio' ), $label, 1 );
 		} else {
-			$addon_labels[] = $key;
+			$addon_labels[] = $label;
 		}
 	}
 
 	$payment = isset( $payload['payment_method'] ) ? sanitize_key( (string) $payload['payment_method'] ) : 'cash';
 	$payment_label = ( 'online' === $payment || 'stripe' === $payment )
-		? __( 'Pay online (Stripe)', 'somvio' )
-		: __( 'Pay on completion / Cash', 'somvio' );
+		? __( 'Pay Online (Card)', 'somvio' )
+		: __( 'Cash/Bank Transfer', 'somvio' );
 
 	$welcome = isset( $payload['welcome_pack'] ) && 'yes' === $payload['welcome_pack']
 		? __( 'Yes', 'somvio' )
 		: __( 'No', 'somvio' );
+
+	$frequency_key = isset( $payload['frequency'] ) ? sanitize_key( (string) $payload['frequency'] ) : '';
+	$frequency_label = '';
+	if ( 'weekly' === $frequency_key ) {
+		$frequency_label = __( 'Weekly', 'somvio' );
+	} elseif ( 'fortnightly' === $frequency_key ) {
+		$frequency_label = __( 'Fortnightly', 'somvio' );
+	}
+
+	$access_options = function_exists( 'somvio_get_access_method_options' ) ? somvio_get_access_method_options() : array();
+	$access_key     = isset( $payload['access_method'] ) ? sanitize_key( (string) $payload['access_method'] ) : '';
+	$access_label   = isset( $access_options[ $access_key ] ) ? (string) $access_options[ $access_key ] : '';
 
 	$symbol = isset( $rates['symbol'] ) ? (string) $rates['symbol'] : '£';
 	$total  = isset( $payload['total'] ) ? (float) $payload['total'] : 0.0;
@@ -335,6 +356,8 @@ function somvio_booking_email_labels( array $payload ) {
 		'addons'        => $addon_labels ? implode( ', ', $addon_labels ) : __( 'None', 'somvio' ),
 		'payment'       => $payment_label,
 		'welcome_pack'  => $welcome,
+		'frequency'     => $frequency_label,
+		'access_method' => $access_label,
 		'total_formatted' => $symbol . number_format_i18n( $total, 2 ),
 		'source'        => ( isset( $payload['source'] ) && 'booking' === $payload['source'] )
 			? __( 'Booking form', 'somvio' )
@@ -370,14 +393,28 @@ function somvio_booking_email_cost_rows( array $payload ) {
 	);
 
 	$addon_keys = isset( $payload['addons'] ) && is_array( $payload['addons'] ) ? $payload['addons'] : array();
+	$quantities = isset( $payload['addon_quantities'] ) && is_array( $payload['addon_quantities'] )
+		? $payload['addon_quantities']
+		: array();
+
 	foreach ( $addon_keys as $key ) {
 		$key = sanitize_key( (string) $key );
 		if ( ! isset( $addon_defs[ $key ] ) ) {
 			continue;
 		}
-		$price = (float) ( $addon_defs[ $key ]['price'] ?? 0 );
+		$unit  = (float) ( $addon_defs[ $key ]['price'] ?? 0 );
+		$qty   = isset( $quantities[ $key ] ) ? absint( $quantities[ $key ] ) : 0;
+		$label = (string) ( $addon_defs[ $key ]['label'] ?? $key );
+		if ( function_exists( 'somvio_addon_is_qty' ) && somvio_addon_is_qty( $addon_defs[ $key ] ) ) {
+			$qty   = max( 1, $qty );
+			$price = $unit * $qty;
+			/* translators: 1: addon label, 2: quantity */
+			$label = sprintf( __( '%1$s (x%2$d)', 'somvio' ), $label, $qty );
+		} else {
+			$price = $unit;
+		}
 		$rows[] = array(
-			'label' => (string) ( $addon_defs[ $key ]['label'] ?? $key ),
+			'label' => $label,
 			'value' => $symbol . number_format_i18n( $price, 2 ),
 		);
 	}
@@ -457,14 +494,21 @@ function somvio_send_booking_notification_emails( array $payload ) {
 	$admin_html = somvio_render_booking_email_html( 'admin', $payload );
 	$customer_html = somvio_render_booking_email_html( 'customer', $payload );
 
+	$customer_email = isset( $payload['email'] ) ? sanitize_email( (string) $payload['email'] ) : '';
+	$admin_headers  = array();
+	if ( $customer_email && is_email( $customer_email ) ) {
+		$reply_name      = $name ? sanitize_text_field( $name ) : $customer_email;
+		$admin_headers[] = sprintf( 'Reply-To: %s <%s>', $reply_name, $customer_email );
+	}
+
 	$admin_sent = somvio_send_html_mail(
 		somvio_get_booking_admin_email(),
 		$admin_subject,
-		$admin_html
+		$admin_html,
+		$admin_headers
 	);
 
-	$customer_email = isset( $payload['email'] ) ? sanitize_email( (string) $payload['email'] ) : '';
-	$customer_sent  = false;
+	$customer_sent = false;
 	if ( $customer_email ) {
 		$customer_sent = somvio_send_html_mail( $customer_email, $customer_subject, $customer_html );
 	}

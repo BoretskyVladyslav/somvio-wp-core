@@ -57,6 +57,14 @@ $row = static function ( $label, $value ) {
 
 							<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e8eef2;border-radius:6px;overflow:hidden;margin-bottom:20px;">
 								<?php
+								$somvio_email_service      = isset( $payload['service'] ) ? sanitize_key( (string) $payload['service'] ) : '';
+								$somvio_main_rooms_label   = ( 'after-builders' === $somvio_email_service )
+									? __( 'Rooms (Living, Bed, Dining)', 'somvio' )
+									: __( 'Main rooms', 'somvio' );
+								$somvio_bathrooms_label    = in_array( $somvio_email_service, array( 'deep-cleaning', 'end-of-tenancy', 'after-builders' ), true )
+									? __( 'Bathrooms And Shower Rooms', 'somvio' )
+									: __( 'Bathrooms', 'somvio' );
+
 								echo $row( __( 'Source', 'somvio' ), $labels['source'] ?? '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo $row( __( 'Customer', 'somvio' ), (string) ( $payload['name'] ?? '' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo $row( __( 'Email', 'somvio' ), (string) ( $payload['email'] ?? '' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -64,12 +72,20 @@ $row = static function ( $label, $value ) {
 								echo $row( __( 'Address / Postcode', 'somvio' ), (string) ( $payload['address'] ?? '' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo $row( __( 'Service', 'somvio' ), $labels['service'] ?? '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo $row( __( 'Property', 'somvio' ), $labels['property'] ?? '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo $row( __( 'Main rooms', 'somvio' ), (string) (int) ( $payload['main_rooms'] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								if ( ! empty( $labels['frequency'] ) ) {
+									echo $row( __( 'Frequency', 'somvio' ), $labels['frequency'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								}
+								echo $row( $somvio_main_rooms_label, (string) (int) ( $payload['main_rooms'] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo $row( __( 'Bedrooms', 'somvio' ), (string) (int) ( $payload['bedrooms'] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo $row( __( 'Bathrooms', 'somvio' ), (string) (int) ( $payload['bathrooms'] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo $row( $somvio_bathrooms_label, (string) (int) ( $payload['bathrooms'] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo $row( __( 'Toilets (without Baths/showers)', 'somvio' ), (string) (int) ( $payload['toilets'] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo $row( __( 'Kitchens', 'somvio' ), (string) (int) ( $payload['kitchens'] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo $row( __( 'Linen changes', 'somvio' ), (string) (int) ( $payload['linen_changes'] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo $row( __( 'Welcome pack', 'somvio' ), $labels['welcome_pack'] ?? '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo $row( __( 'Extra services', 'somvio' ), $labels['addons'] ?? '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								if ( ! empty( $labels['access_method'] ) ) {
+									echo $row( __( 'How will we get in?', 'somvio' ), $labels['access_method'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								}
 								echo $row( __( 'Date', 'somvio' ), (string) ( $payload['date'] ?? '' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo $row( __( 'Time', 'somvio' ), (string) ( $payload['time'] ?? '' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo $row( __( 'Payment', 'somvio' ), $labels['payment'] ?? '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

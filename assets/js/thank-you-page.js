@@ -32,7 +32,7 @@
 		}
 
 		var recap = root.querySelector('[data-thank-you-recap]');
-		var keys = ['service', 'date', 'time', 'name', 'phone', 'email', 'address', 'total', 'booking_id'];
+		var keys = ['service', 'date', 'time', 'name', 'phone', 'email', 'address', 'access_method', 'total', 'booking_id'];
 		var hasAny = false;
 
 		keys.forEach(function (key) {

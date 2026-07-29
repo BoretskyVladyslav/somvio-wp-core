@@ -1,13 +1,10 @@
 <?php
 /**
- * Template Name: FAQ
+ * Search results template — Somvio branded dark fallback.
  *
- * FAQ landing. Hero is the first full-width block inside main;
- * accordion follows in the page body.
+ * Avoids GeneratePress / core white search chrome; keeps header + footer.
  *
- * Figma nodes: 300:2369 (hero), 300:2375 (accordion)
- *
- * @package Somvio_Child  
+ * @package Somvio_Child
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -27,23 +24,14 @@ get_header();
 			 */
 			do_action( 'generate_before_main_content' );
 
-			get_template_part( 'template-parts/sections/faq', 'hero' );
+			get_template_part( 'template-parts/sections/search', 'hero' );
 
 			/**
-			 * FAQ page body sections (accordion, future blocks).
+			 * Search page body (extra sections).
 			 *
 			 * @since 1.0.0
 			 */
-			do_action( 'somvio_faq_page_content' );
-
-			get_template_part( 'template-parts/sections/faq', null, array( 'hide_title' => true ) );
-
-			if ( generate_has_default_loop() ) {
-				while ( have_posts() ) :
-					the_post();
-					generate_do_template_part( 'page' );
-				endwhile;
-			}
+			do_action( 'somvio_search_content' );
 
 			/**
 			 * generate_after_main_content hook.

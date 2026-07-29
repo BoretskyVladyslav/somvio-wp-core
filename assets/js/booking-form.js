@@ -73,12 +73,213 @@
 		var addonTotal = 0;
 		var addonDefs = rates.addons || {};
 		(state.addons || []).forEach(function (key) {
-			if (addonDefs[key] && addonDefs[key].price != null) {
-				addonTotal += Number(addonDefs[key].price);
+			if (!addonDefs[key] || addonDefs[key].price == null) {
+				return;
 			}
+			if (isQtyAddon(key)) {
+				return;
+			}
+			addonTotal += Number(addonDefs[key].price);
+		});
+		Object.keys(state.addonQty || {}).forEach(function (key) {
+			var qty = Math.max(0, Math.min(10, parseInt(state.addonQty[key], 10) || 0));
+			if (qty < 1 || !isQtyAddon(key) || !addonDefs[key] || addonDefs[key].price == null) {
+				return;
+			}
+			addonTotal += Number(addonDefs[key].price) * qty;
 		});
 
 		return Math.round(((base + bathExtra) * svcMult * propMult + addonTotal) * 100) / 100;
+	}
+
+	function isQtyAddon(key) {
+		var def = rates.addons && rates.addons[key];
+		return !!(def && def.qty);
+	}
+
+	function getAddonQty(state, key) {
+		return Math.max(0, Math.min(10, parseInt((state.addonQty && state.addonQty[key]) || 0, 10) || 0));
+	}
+
+	function formatAddonQtyLabel(label, qty) {
+		var tpl = i18n.addonQty || '%1$s (x%2$d)';
+		return tpl.replace('%1$s', label).replace('%2$d', String(qty));
+	}
+
+	function collectSelectedAddons(state) {
+		var keys = (state.addons || []).slice();
+		Object.keys(state.addonQty || {}).forEach(function (key) {
+			if (getAddonQty(state, key) > 0 && keys.indexOf(key) === -1) {
+				keys.push(key);
+			}
+		});
+		return keys;
+	}
+
+	function collectAddonQuantities(state) {
+		var out = {};
+		Object.keys(state.addonQty || {}).forEach(function (key) {
+			var qty = getAddonQty(state, key);
+			if (qty > 0 && isQtyAddon(key)) {
+				out[key] = qty;
+			}
+		});
+		return out;
+	}
+
+	function roundMoney(n) {
+		return Math.round(Number(n) * 100) / 100;
+	}
+
+	function countLabel(tpl, n, fallback) {
+		var count = parseInt(n, 10) || 0;
+		var template = tpl || fallback || '%d';
+		return template.replace('%d', String(count));
+	}
+
+	/**
+	 * Preview line items for Order Summary. Prices mirror getPreviewTotal().
+	 *
+	 * @param {object} state
+	 * @return {{service:string,rooms:Array<{label:string,amount:number|null}>,extras:Array<{label:string,amount:number}>,datetime:string}}
+	 */
+	function getLineItems(state) {
+		var fields = getRoomFieldsForService(state.service);
+		var bedKey = String(Math.max(1, Math.min(5, parseInt(state.bedrooms, 10) || 1)));
+		var beds = parseInt(state.bedrooms, 10) || 1;
+		var baths = Math.max(1, parseInt(state.bathrooms, 10) || 1);
+		var base =
+			rates.bedroom_base && rates.bedroom_base[bedKey] != null
+				? Number(rates.bedroom_base[bedKey])
+				: 55;
+		var bathExtra = Math.max(0, baths - 1) * Number(rates.bathroom_extra || 10);
+		var svcMult =
+			rates.service_mult && rates.service_mult[state.service] != null
+				? Number(rates.service_mult[state.service])
+				: 1;
+		var propMult =
+			rates.property_mult && rates.property_mult[state.property] != null
+				? Number(rates.property_mult[state.property])
+				: 1;
+		var mult = svcMult * propMult;
+
+		var rooms = [];
+		if (state.service === 'regular-cleaning' && state.frequency) {
+			rooms.push({
+				label: (i18n.frequency || 'Frequency') + ': ' + frequencyLabel(state.frequency, i18n),
+				amount: null,
+			});
+		}
+		if (fields.indexOf('main_rooms') !== -1) {
+			var mainTpl =
+				state.service === 'after-builders'
+					? i18n.roomsLivingBedDiningCount || '%d Rooms (Living, Bed, Dining)'
+					: i18n.mainRoomsCount || '%d Main rooms';
+			rooms.push({
+				label: countLabel(mainTpl, state.main_rooms, mainTpl),
+				amount: null,
+			});
+		}
+		if (fields.indexOf('bedrooms') !== -1) {
+			rooms.push({
+				label: countLabel(i18n.bedroomsCount, beds, '%d Bedrooms'),
+				amount: roundMoney(base * mult),
+			});
+		}
+		if (fields.indexOf('bathrooms') !== -1) {
+			var bathAmount = roundMoney(bathExtra * mult);
+			var bathTpl =
+				state.service === 'deep-cleaning' ||
+				state.service === 'end-of-tenancy' ||
+				state.service === 'after-builders'
+					? i18n.bathroomsAndShowersCount || '%d Bathrooms And Shower Rooms'
+					: i18n.bathroomsCount || '%d Bathrooms';
+			rooms.push({
+				label: countLabel(bathTpl, baths, bathTpl),
+				amount: bathAmount > 0 ? bathAmount : null,
+			});
+		}
+		if (fields.indexOf('toilets') !== -1) {
+			rooms.push({
+				label: countLabel(i18n.toiletsCount, state.toilets, '%d Toilets (without Baths/showers)'),
+				amount: null,
+			});
+		}
+		if (fields.indexOf('kitchens') !== -1) {
+			rooms.push({
+				label: countLabel(i18n.kitchensCount, state.kitchens, '%d Kitchens'),
+				amount: null,
+			});
+		}
+		if (fields.indexOf('linen_changes') !== -1) {
+			rooms.push({
+				label: countLabel(i18n.linenChangesCount, state.linen_changes, '%d Linen changes'),
+				amount: null,
+			});
+		}
+		if (state.service === 'airbnb-cleaning' && state.welcome_pack === 'yes') {
+			rooms.push({
+				label: i18n.welcomePack || 'Welcome pack',
+				amount: null,
+			});
+		}
+
+		var extras = [];
+		if (serviceHasExtras(state.service)) {
+			var addonDefs = rates.addons || {};
+			(state.addons || []).forEach(function (key) {
+				if (!addonDefs[key] || isQtyAddon(key)) {
+					return;
+				}
+				extras.push({
+					label: addonDefs[key].label || key,
+					amount: roundMoney(addonDefs[key].price != null ? addonDefs[key].price : 0),
+				});
+			});
+			Object.keys(state.addonQty || {}).forEach(function (key) {
+				var qty = getAddonQty(state, key);
+				if (qty < 1 || !addonDefs[key] || !isQtyAddon(key)) {
+					return;
+				}
+				var unit = Number(addonDefs[key].price != null ? addonDefs[key].price : 0);
+				extras.push({
+					label: formatAddonQtyLabel(addonDefs[key].label || key, qty),
+					amount: roundMoney(unit * qty),
+				});
+			});
+		}
+
+		var serviceLabel = (services && services[state.service]) || state.service || '';
+		if (!serviceLabel) {
+			serviceLabel = i18n.notSelected || 'Not selected';
+		}
+
+		var dateText = state.date ? formatDisplayDate(state.date) : '';
+		var timeText = state.time ? formatSlot(state.time) : '';
+		var datetime = '';
+		if (dateText && timeText) {
+			datetime = dateText + ' · ' + timeText;
+		} else if (dateText) {
+			datetime = dateText;
+		} else if (timeText) {
+			datetime = timeText;
+		} else {
+			datetime = i18n.notSelected || 'Not selected';
+		}
+
+		var accessOptions = i18n.accessOptions || {};
+		var accessLabel = '';
+		if (state.access_method && accessOptions[state.access_method]) {
+			accessLabel = accessOptions[state.access_method];
+		}
+
+		return {
+			service: serviceLabel,
+			rooms: rooms,
+			extras: extras,
+			datetime: datetime,
+			access: accessLabel,
+		};
 	}
 
 	function toISODate(d) {
@@ -151,9 +352,16 @@
 			service === 'end-of-tenancy' ||
 			service === 'after-builders'
 		) {
-			return ['main_rooms', 'bedrooms', 'bathrooms'];
+			return ['main_rooms', 'bedrooms', 'bathrooms', 'toilets', 'kitchens'];
 		}
 		return [];
+	}
+
+	function frequencyLabel(frequency, i18nLabels) {
+		if (frequency === 'fortnightly') {
+			return (i18nLabels && i18nLabels.frequencyFortnightlyLabel) || (i18nLabels && i18nLabels.frequencyFortnightly) || 'Fortnightly';
+		}
+		return (i18nLabels && i18nLabels.frequencyWeeklyLabel) || (i18nLabels && i18nLabels.frequencyWeekly) || 'Weekly';
 	}
 
 	function bedroomHomeLabel(n, i18nLabels) {
@@ -199,9 +407,13 @@
 			main_rooms: '1',
 			bedrooms: '1',
 			bathrooms: '1',
+			toilets: '0',
+			kitchens: '0',
 			linen_changes: '0',
 			welcome_pack: 'no',
+			frequency: 'weekly',
 			addons: [],
+			addonQty: {},
 			date: '',
 			time: '',
 			first_name: '',
@@ -210,6 +422,7 @@
 			phone: '',
 			address: '',
 			comment: '',
+			access_method: '',
 			terms_accepted: false,
 			payment_method: 'online',
 			previewTotal: 0,
@@ -285,6 +498,7 @@
 				'email',
 				'phone',
 				'address',
+				'access_method',
 				'time',
 				'date',
 				'terms_accepted',
@@ -349,7 +563,7 @@
 		}
 
 		function readFields() {
-			['service', 'main_rooms', 'bedrooms', 'bathrooms', 'linen_changes', 'date', 'time', 'first_name', 'last_name', 'email', 'phone', 'address', 'comment'].forEach(
+			['service', 'main_rooms', 'bedrooms', 'bathrooms', 'toilets', 'kitchens', 'linen_changes', 'date', 'time', 'first_name', 'last_name', 'email', 'phone', 'address', 'comment', 'access_method'].forEach(
 				function (key) {
 					var el = field(key);
 					if (el) {
@@ -359,6 +573,8 @@
 			);
 			var welcomeEl = root.querySelector('[data-booking-field="welcome_pack"]:checked');
 			state.welcome_pack = welcomeEl ? welcomeEl.value : 'no';
+			var frequencyEl = root.querySelector('[data-booking-field="frequency"]:checked');
+			state.frequency = frequencyEl ? frequencyEl.value : 'weekly';
 			var termsEl = field('terms_accepted');
 			state.terms_accepted = !!(termsEl && termsEl.checked);
 			var paymentEl = root.querySelector('[data-booking-field="payment_method"]:checked');
@@ -369,6 +585,7 @@
 		function syncState() {
 			readFields();
 			renderPrice();
+			renderSummary();
 		}
 
 		function renderPrice() {
@@ -384,6 +601,85 @@
 			});
 			root.querySelectorAll('[data-booking-price-live]').forEach(function (el) {
 				el.textContent = (i18n.totalPrice || 'Total Price') + ' ' + text;
+			});
+		}
+
+		function appendSummaryRow(container, label, amount) {
+			var row = document.createElement('div');
+			row.className = 'booking-form__summary-row';
+
+			var dt = document.createElement('span');
+			dt.className = 'booking-form__summary-dt';
+			dt.textContent = label;
+
+			var dd = document.createElement('span');
+			dd.className = 'booking-form__summary-dd';
+			if (amount != null && !isNaN(amount)) {
+				dd.textContent = formatMoney(amount);
+			} else {
+				dd.textContent = '';
+				dd.classList.add('booking-form__summary-dd--empty');
+			}
+
+			row.appendChild(dt);
+			row.appendChild(dd);
+			container.appendChild(row);
+		}
+
+		function renderSummary() {
+			var items = getLineItems(state);
+
+			root.querySelectorAll('[data-summary-service]').forEach(function (el) {
+				el.textContent = items.service;
+			});
+
+			root.querySelectorAll('[data-summary-datetime]').forEach(function (el) {
+				el.textContent = items.datetime;
+			});
+
+			root.querySelectorAll('[data-summary-access-row]').forEach(function (row) {
+				var valueEl = row.querySelector('[data-summary-access]');
+				if (items.access) {
+					row.hidden = false;
+					if (valueEl) {
+						valueEl.textContent = items.access;
+					}
+				} else {
+					row.hidden = true;
+					if (valueEl) {
+						valueEl.textContent = '';
+					}
+				}
+			});
+
+			root.querySelectorAll('[data-summary-rooms]').forEach(function (el) {
+				el.textContent = '';
+				if (!items.rooms.length) {
+					el.hidden = true;
+					return;
+				}
+				el.hidden = false;
+				items.rooms.forEach(function (row) {
+					appendSummaryRow(el, row.label, row.amount);
+				});
+			});
+
+			root.querySelectorAll('[data-summary-extras]').forEach(function (el) {
+				el.textContent = '';
+				if (!items.extras.length) {
+					el.hidden = true;
+					return;
+				}
+				el.hidden = false;
+
+				var heading = document.createElement('p');
+				heading.className = 'booking-form__summary-group-label';
+				heading.textContent = i18n.extraServices || 'Extra Services';
+				el.appendChild(heading);
+
+				items.extras.forEach(function (row) {
+					appendSummaryRow(el, row.label, row.amount);
+				});
 			});
 		}
 
@@ -470,6 +766,7 @@
 				isValidEmail(state.email) &&
 				isValidPhone(state.phone) &&
 				isValidAddress(state.address) &&
+				!!state.access_method &&
 				(state.payment_method === 'cash' || state.payment_method === 'online')
 			);
 		}
@@ -506,6 +803,12 @@
 			if (key === 'address') {
 				if (!isValidAddress(value)) {
 					return i18n.invalidAddress || 'Please enter your street address.';
+				}
+				return '';
+			}
+			if (key === 'access_method') {
+				if (!trim(state.access_method)) {
+					return i18n.selectAccess || 'Please select how we will get in.';
 				}
 				return '';
 			}
@@ -553,6 +856,7 @@
 				phone: trim(state.phone),
 				email: trim(state.email),
 				address: trim(state.address),
+				access_method: (i18n.accessOptions && i18n.accessOptions[state.access_method]) || state.access_method || '',
 				total: formatMoney(state.confirmedTotal != null ? state.confirmedTotal : state.previewTotal),
 				booking_id: 0,
 				payment_method: state.payment_method || '',
@@ -577,6 +881,7 @@
 				phone: trim(state.phone),
 				email: trim(state.email),
 				address: trim(state.address),
+				access_method: (i18n.accessOptions && i18n.accessOptions[state.access_method]) || state.access_method || '',
 				total: formatMoney(state.confirmedTotal != null ? state.confirmedTotal : state.previewTotal),
 			};
 			Object.keys(map).forEach(function (key) {
@@ -594,9 +899,33 @@
 				btn.classList.toggle('is-selected', on);
 				btn.setAttribute('aria-pressed', on ? 'true' : 'false');
 			});
+
+			root.querySelectorAll('[data-booking-addon-qty]').forEach(function (card) {
+				var key = card.getAttribute('data-booking-addon-qty');
+				var qty = getAddonQty(state, key);
+				var on = qty > 0;
+				card.classList.toggle('is-selected', on);
+				var valueEl = card.querySelector('[data-booking-addon-qty-value]');
+				if (valueEl) {
+					valueEl.textContent = String(qty);
+				}
+				var dec = card.querySelector('[data-booking-addon-qty-dec]');
+				var inc = card.querySelector('[data-booking-addon-qty-inc]');
+				if (dec) {
+					dec.disabled = qty <= 0;
+				}
+				if (inc) {
+					inc.disabled = qty >= 10;
+				}
+			});
+
 			var addonsField = field('addons');
 			if (addonsField) {
-				addonsField.value = state.addons.join(',');
+				addonsField.value = collectSelectedAddons(state).join(',');
+			}
+			var qtyField = field('addon_quantities');
+			if (qtyField) {
+				qtyField.value = JSON.stringify(collectAddonQuantities(state));
 			}
 		}
 
@@ -916,11 +1245,15 @@
 		}
 
 		function updateStepLabels(step) {
-			var visible = getVisibleSteps();
+			/* Never include success (5) in the "Step X of Y" denominator. */
+			var visible = getVisibleSteps().filter(function (n) {
+				return n >= 1 && n <= TOTAL_STEPS;
+			});
 			var idx = visible.indexOf(step);
 			/* Remap to the visible sequence (e.g. 1,3,4 → 1,2,3 of 3). */
+			var total = Math.min(TOTAL_STEPS, Math.max(1, visible.length));
 			var displayStep = idx === -1 ? 1 : idx + 1;
-			var total = Math.max(1, visible.length);
+			displayStep = Math.min(Math.max(1, displayStep), total);
 			var label = formatStepOf(displayStep, total);
 
 			root.querySelectorAll('[data-booking-step-label]').forEach(function (el) {
@@ -1013,6 +1346,7 @@
 		}
 
 		function getVisibleSteps() {
+			/* Wizard panels only — never SUCCESS_STEP (5). Max length = TOTAL_STEPS (4). */
 			return serviceHasExtras(state.service) ? [1, 2, 3, 4] : [1, 3, 4];
 		}
 
@@ -1043,8 +1377,16 @@
 
 		function clearAddonsIfNeeded() {
 			if (!serviceHasExtras(state.service)) {
+				var changed = false;
 				if (state.addons.length) {
 					state.addons = [];
+					changed = true;
+				}
+				if (state.addonQty && Object.keys(state.addonQty).length) {
+					state.addonQty = {};
+					changed = true;
+				}
+				if (changed) {
 					invalidateServerQuote();
 				}
 				renderAddons();
@@ -1055,12 +1397,25 @@
 			var fields = getRoomFieldsForService(state.service);
 			var countersWrap = root.querySelector('[data-booking-counters]');
 			var welcomeWrap = root.querySelector('[data-booking-welcome]');
+			var frequencyWrap = root.querySelector('[data-booking-frequency]');
 			var showCounters = !!state.service && fields.length > 0;
 			var hasExtras = serviceHasExtras(state.service);
+			var showFrequency = state.service === 'regular-cleaning';
 
 			root.setAttribute('data-booking-has-extras', hasExtras ? '1' : '0');
 			root.classList.toggle('booking-form--has-extras', hasExtras);
 			root.classList.toggle('booking-form--no-extras', !!state.service && !hasExtras);
+
+			if (frequencyWrap) {
+				frequencyWrap.hidden = !showFrequency;
+				frequencyWrap.setAttribute('aria-hidden', showFrequency ? 'false' : 'true');
+				root.querySelectorAll('[data-booking-field="frequency"]').forEach(function (radio) {
+					var option = radio.closest('.booking-form__frequency-option');
+					if (option) {
+						option.classList.toggle('is-selected', !!radio.checked);
+					}
+				});
+			}
 
 			if (countersWrap) {
 				countersWrap.hidden = !showCounters;
@@ -1092,11 +1447,23 @@
 				} else if (state.service === 'airbnb-cleaning' && key === 'bathrooms') {
 					labelEl.textContent = i18n.noOfBathrooms || 'No. of Bathrooms';
 				} else if (key === 'main_rooms') {
-					labelEl.textContent = i18n.mainRooms || 'Main rooms';
+					labelEl.textContent =
+						state.service === 'after-builders'
+							? i18n.roomsLivingBedDining || 'Rooms (Living, Bed, Dining)'
+							: i18n.mainRooms || 'Main rooms';
 				} else if (key === 'bedrooms') {
 					labelEl.textContent = i18n.bedrooms || 'Bedrooms';
 				} else if (key === 'bathrooms') {
-					labelEl.textContent = i18n.bathrooms || 'Bathrooms';
+					labelEl.textContent =
+						state.service === 'deep-cleaning' ||
+						state.service === 'end-of-tenancy' ||
+						state.service === 'after-builders'
+							? i18n.bathroomsAndShowers || 'Bathrooms And Shower Rooms'
+							: i18n.bathrooms || 'Bathrooms';
+				} else if (key === 'toilets') {
+					labelEl.textContent = i18n.toilets || 'Toilets (without Baths/showers)';
+				} else if (key === 'kitchens') {
+					labelEl.textContent = i18n.kitchens || 'Kitchens';
 				} else if (key === 'linen_changes') {
 					labelEl.textContent = i18n.linenChanges || 'No. of Linen Changes';
 				}
@@ -1325,7 +1692,7 @@
 			var firstInvalid = null;
 			var firstInvalidKey = '';
 			var hasError = false;
-			['first_name', 'last_name', 'phone', 'email', 'address', 'payment_method', 'terms_accepted'].forEach(function (key) {
+			['first_name', 'last_name', 'phone', 'email', 'address', 'access_method', 'payment_method', 'terms_accepted'].forEach(function (key) {
 				var msg = getContactFieldError(key);
 				if (msg) {
 					setFieldError(key, msg);
@@ -1461,7 +1828,10 @@
 				bathrooms: parseInt(state.bathrooms, 10) || 1,
 				main_rooms: parseInt(state.main_rooms, 10) || 0,
 				linen_changes: parseInt(state.linen_changes, 10) || 0,
+				toilets: parseInt(state.toilets, 10) || 0,
+				kitchens: parseInt(state.kitchens, 10) || 0,
 				welcome_pack: state.welcome_pack === 'yes' ? 'yes' : 'no',
+				frequency: state.service === 'regular-cleaning' ? (state.frequency || 'weekly') : '',
 				date: state.date,
 				time: state.time,
 				first_name: trim(state.first_name),
@@ -1471,7 +1841,9 @@
 				phone: normalizePhone(state.phone),
 				address: trim(state.address),
 				comment: trim(state.comment),
-				addons: serviceHasExtras(state.service) ? state.addons.slice() : [],
+				addons: serviceHasExtras(state.service) ? collectSelectedAddons(state) : [],
+				addon_quantities: serviceHasExtras(state.service) ? collectAddonQuantities(state) : {},
+				access_method: trim(state.access_method),
 				terms_accepted: true,
 				payment_method: state.payment_method === 'online' ? 'online' : 'cash',
 				source: 'booking',
@@ -1553,12 +1925,13 @@
 
 					if (needsPayment) {
 						initStripePayment(result.data);
-					} else if (result.data.payment_error) {
+					} else if (result.data.payment_error || (result.data.requires_payment && !needsPayment)) {
 						openSuccessModal();
 						showStripeError(
 							result.data.message ||
+								i18n.paymentUnavailable ||
 								i18n.paymentError ||
-								'Payment could not be completed. Please try again.'
+								'Booking was received but online payment could not be started. Please contact us or choose pay on completion.'
 						);
 					}
 				})
@@ -1662,8 +2035,21 @@
 			var pubKey = data.payment.publishable_key || cfg.stripePublishableKey || '';
 			var clientSecret = data.payment.client_secret;
 			var intentId = data.payment.payment_intent_id || '';
-			var bookingId = data.booking_id || 0;
+			var bookingId = parseInt(data.booking_id, 10) || 0;
 			var mounted = false;
+
+			if (bookingId < 1 || !clientSecret) {
+				if (payBtn) {
+					payBtn.disabled = true;
+				}
+				showStripeError(
+					(data.message) ||
+						i18n.paymentUnavailable ||
+						i18n.paymentError ||
+						'Booking was received but online payment could not be started. Please contact us or choose pay on completion.'
+				);
+				return;
+			}
 
 			function mountPaymentElement() {
 				if (mounted) {
@@ -1721,6 +2107,21 @@
 											label.textContent = i18n.complete || 'Pay now';
 										}
 										showStripeError(result.error.message || i18n.paymentError);
+										return;
+									}
+
+									var intentStatus =
+										(result.paymentIntent && result.paymentIntent.status) || '';
+									if (intentStatus && intentStatus !== 'succeeded') {
+										payBtn.disabled = false;
+										if (label) {
+											label.textContent = i18n.complete || 'Pay now';
+										}
+										showStripeError(
+											i18n.paymentUnconfirmed ||
+												i18n.paymentError ||
+												'Payment was not confirmed. Please try again or contact us.'
+										);
 										return;
 									}
 
@@ -1793,6 +2194,9 @@
 					};
 				})
 				.catch(function () {
+					if (payBtn) {
+						payBtn.disabled = true;
+					}
 					showStripeError(i18n.paymentError || 'Payment could not be completed. Please try again.');
 				});
 			}
@@ -1815,6 +2219,44 @@
 			window.setTimeout(scheduleMount, 450);
 		}
 
+		function scrollAfterServiceSelect() {
+			if (!window.matchMedia || !window.matchMedia('(max-width: 899px)').matches) {
+				return;
+			}
+
+			window.requestAnimationFrame(function () {
+				var header = document.querySelector('.somvio-header, .site-header, header');
+				var offset = 16;
+				if (header) {
+					offset += header.getBoundingClientRect().height || 0;
+				}
+
+				var frequencyWrap = root.querySelector('[data-booking-frequency]');
+				var countersWrap = root.querySelector('[data-booking-counters]');
+				var welcomeWrap = root.querySelector('[data-booking-welcome]');
+				var step1 = root.querySelector('[data-booking-step="1"]');
+				var footer = step1 ? step1.querySelector('.booking-form__footer') : null;
+				var target = null;
+
+				if (frequencyWrap && !frequencyWrap.hidden) {
+					target = frequencyWrap;
+				} else if (countersWrap && !countersWrap.hidden) {
+					target = countersWrap;
+				} else if (welcomeWrap && !welcomeWrap.hidden) {
+					target = welcomeWrap;
+				} else if (footer) {
+					target = footer;
+				}
+
+				if (!target || typeof target.scrollIntoView !== 'function') {
+					return;
+				}
+
+				target.style.scrollMarginTop = offset + 'px';
+				target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			});
+		}
+
 		/* Events */
 		root.querySelectorAll('[data-booking-service]').forEach(function (btn) {
 			btn.addEventListener('click', function () {
@@ -1833,6 +2275,7 @@
 					updateStepLabels(state.step);
 				}
 				syncState();
+				scrollAfterServiceSelect();
 			});
 		});
 
@@ -1919,9 +2362,27 @@
 			});
 		});
 
+		root.querySelectorAll('[data-booking-field="frequency"]').forEach(function (radio) {
+			radio.addEventListener('change', function () {
+				if (radio.checked) {
+					state.frequency = radio.value;
+					root.querySelectorAll('[data-booking-field="frequency"]').forEach(function (el) {
+						var option = el.closest('.booking-form__frequency-option');
+						if (option) {
+							option.classList.toggle('is-selected', !!el.checked);
+						}
+					});
+					syncState();
+				}
+			});
+		});
+
 		root.querySelectorAll('[data-booking-addon]').forEach(function (btn) {
 			btn.addEventListener('click', function () {
 				var key = btn.getAttribute('data-booking-addon');
+				if (!key || isQtyAddon(key)) {
+					return;
+				}
 				var idx = state.addons.indexOf(key);
 				if (idx === -1) {
 					state.addons.push(key);
@@ -1932,6 +2393,42 @@
 				renderAddons();
 				syncState();
 			});
+		});
+
+		root.querySelectorAll('[data-booking-addon-qty]').forEach(function (card) {
+			var key = card.getAttribute('data-booking-addon-qty');
+			if (!key) {
+				return;
+			}
+			if (!state.addonQty) {
+				state.addonQty = {};
+			}
+			if (state.addonQty[key] == null) {
+				state.addonQty[key] = 0;
+			}
+			var dec = card.querySelector('[data-booking-addon-qty-dec]');
+			var inc = card.querySelector('[data-booking-addon-qty-inc]');
+			function setQty(next) {
+				var qty = Math.max(0, Math.min(10, next));
+				state.addonQty[key] = qty;
+				invalidateServerQuote();
+				renderAddons();
+				syncState();
+			}
+			if (dec) {
+				dec.addEventListener('click', function (event) {
+					event.preventDefault();
+					event.stopPropagation();
+					setQty(getAddonQty(state, key) - 1);
+				});
+			}
+			if (inc) {
+				inc.addEventListener('click', function (event) {
+					event.preventDefault();
+					event.stopPropagation();
+					setQty(getAddonQty(state, key) + 1);
+				});
+			}
 		});
 
 		root.querySelectorAll('[data-booking-slot]').forEach(function (btn) {
@@ -2065,20 +2562,21 @@
 			});
 		});
 
-		['first_name', 'last_name', 'email', 'phone', 'address', 'comment'].forEach(function (key) {
+		['first_name', 'last_name', 'email', 'phone', 'address', 'comment', 'access_method'].forEach(function (key) {
 			var el = field(key);
 			if (!el) {
 				return;
 			}
-			el.addEventListener('input', function () {
+			var eventName = key === 'access_method' ? 'change' : 'input';
+			el.addEventListener(eventName, function () {
 				state[key] = el.value;
 				syncState();
-				if (key !== 'comment' && el.classList.contains('is-invalid')) {
+				if (key !== 'comment' && (el.classList.contains('is-invalid') || key === 'access_method')) {
 					validateContactField(key);
 				}
 				updateNextAvailability();
 			});
-			if (key !== 'comment') {
+			if (key !== 'comment' && key !== 'access_method') {
 				el.addEventListener('blur', function () {
 					state[key] = el.value;
 					syncState();

@@ -41,6 +41,41 @@ function somvio_get_location() {
 }
 
 /**
+ * Service areas / cities covered (filterable).
+ *
+ * @return string[]
+ */
+function somvio_get_service_areas() {
+	$areas = array(
+		__( 'Glasgow', 'somvio' ),
+		__( 'Clydebank', 'somvio' ),
+		__( 'Bearsden', 'somvio' ),
+		__( 'Milngavie', 'somvio' ),
+		__( 'Renfrew', 'somvio' ),
+		__( 'Paisley', 'somvio' ),
+		__( 'Bishopbriggs', 'somvio' ),
+		__( 'Erskine', 'somvio' ),
+		__( 'Dumbarton', 'somvio' ),
+		__( 'Alexandria', 'somvio' ),
+	);
+
+	$filtered = apply_filters( 'somvio_service_areas', $areas );
+	if ( ! is_array( $filtered ) ) {
+		return $areas;
+	}
+
+	$out = array();
+	foreach ( $filtered as $area ) {
+		$label = trim( (string) $area );
+		if ( '' !== $label ) {
+			$out[] = $label;
+		}
+	}
+
+	return $out ? $out : $areas;
+}
+
+/**
  * WhatsApp chat URL (filterable).
  *
  * @return string
@@ -98,7 +133,7 @@ add_action( 'after_setup_theme', 'somvio_replace_default_footer', 20 );
  * @return bool
  */
 function somvio_should_skip_cta_banner() {
-	if ( is_404() ) {
+	if ( is_404() || is_search() ) {
 		return true;
 	}
 

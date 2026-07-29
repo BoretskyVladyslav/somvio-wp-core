@@ -84,6 +84,17 @@ if ( function_exists( 'somvio_get_terms_conditions_page_id' ) ) {
 					</li>
 				</ul>
 
+				<?php
+				get_template_part(
+					'template-parts/components/service',
+					'areas',
+					array(
+						'variant' => 'contact',
+						'class'   => 'contact-page__service-areas',
+					)
+				);
+				?>
+
 				<a
 					class="btn btn--outline btn--md contact-page__whatsapp"
 					href="<?php echo esc_url( $somvio_whatsapp ); ?>"

@@ -78,14 +78,23 @@ function somvio_process_booking_submission( array $payload ) {
 	$result['emails'] = somvio_send_booking_notification_emails( $payload );
 
 	if ( 'online' === $payment_method && 'booking' === ( $payload['source'] ?? '' ) ) {
-		$stripe = somvio_stripe_create_payment_intent( (float) ( $payload['total'] ?? 0 ), $payload );
-		$result['payment'] = $stripe;
+		if ( $result['booking_id'] > 0 ) {
+			$stripe = somvio_stripe_create_payment_intent( (float) ( $payload['total'] ?? 0 ), $payload );
+			$result['payment'] = $stripe;
 
-		if ( ! empty( $stripe['success'] ) && $result['booking_id'] > 0 && class_exists( 'OsBookingModel' ) ) {
-			$booking = new OsBookingModel( $result['booking_id'] );
-			if ( ! empty( $booking->id ) && method_exists( $booking, 'save_meta_by_key' ) ) {
-				$booking->save_meta_by_key( 'somvio_stripe_payment_intent', (string) ( $stripe['payment_intent_id'] ?? '' ) );
+			if ( ! empty( $stripe['success'] ) && class_exists( 'OsBookingModel' ) ) {
+				$booking = new OsBookingModel( $result['booking_id'] );
+				if ( ! empty( $booking->id ) && method_exists( $booking, 'save_meta_by_key' ) ) {
+					$booking->save_meta_by_key( 'somvio_stripe_payment_intent', (string) ( $stripe['payment_intent_id'] ?? '' ) );
+				}
 			}
+		} else {
+			// Never create an orphan PaymentIntent without a LatePoint booking to bind it to.
+			$result['payment'] = array(
+				'success' => false,
+				'error'   => 'missing_booking',
+				'message' => __( 'Booking was received but online payment could not be started. Please contact us or choose pay on completion.', 'somvio' ),
+			);
 		}
 	}
 

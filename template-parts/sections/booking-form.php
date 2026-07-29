@@ -1,6 +1,6 @@
 <?php
 /**
- * Booking form — Figma 418:6214 / 418:6213 (4-step flow, no order summary).
+ * Booking form — Figma 418:6214 / 418:6213 (4-step flow + itemized order summary).
  *
  * @package Somvio_Child
  */
@@ -14,6 +14,7 @@ $somvio_bf_rates    = function_exists( 'somvio_get_quote_rates' ) ? somvio_get_q
 $somvio_bf_addons   = isset( $somvio_bf_rates['addons'] ) && is_array( $somvio_bf_rates['addons'] ) ? $somvio_bf_rates['addons'] : array();
 $somvio_bf_slots    = isset( $somvio_bf_rates['time_slots'] ) && is_array( $somvio_bf_rates['time_slots'] ) ? $somvio_bf_rates['time_slots'] : array();
 $somvio_bf_symbol   = isset( $somvio_bf_rates['symbol'] ) ? (string) $somvio_bf_rates['symbol'] : '£';
+$somvio_bf_access   = function_exists( 'somvio_get_access_method_options' ) ? somvio_get_access_method_options() : array();
 $somvio_bf_uid      = 'bf-' . wp_unique_id();
 
 $somvio_bf_images_dir = get_stylesheet_directory() . '/assets/images';
@@ -75,6 +76,18 @@ $somvio_bf_counters = array(
 		'min'   => 1,
 		'max'   => 4,
 		'value' => 1,
+	),
+	'toilets'        => array(
+		'label' => __( 'Toilets (without Baths/showers)', 'somvio' ),
+		'min'   => 0,
+		'max'   => 5,
+		'value' => 0,
+	),
+	'kitchens'       => array(
+		'label' => __( 'Kitchens', 'somvio' ),
+		'min'   => 0,
+		'max'   => 5,
+		'value' => 0,
 	),
 	'linen_changes'  => array(
 		'label' => __( 'No. of Linen Changes', 'somvio' ),
@@ -244,6 +257,34 @@ $somvio_bf_counters = array(
 				</div>
 				<input type="hidden" name="service" data-booking-field="service" value="">
 
+				<fieldset class="booking-form__frequency" data-booking-frequency hidden>
+					<legend class="booking-form__label is-required">
+						<?php esc_html_e( 'Frequency', 'somvio' ); ?>
+						<span class="somvio-required" aria-hidden="true">*</span>
+					</legend>
+					<div class="booking-form__frequency-options" role="radiogroup" aria-required="true" aria-label="<?php esc_attr_e( 'Frequency', 'somvio' ); ?>">
+						<label class="booking-form__frequency-option is-selected">
+							<input
+								type="radio"
+								name="frequency"
+								data-booking-field="frequency"
+								value="weekly"
+								checked
+							>
+							<span><?php esc_html_e( 'Weekly', 'somvio' ); ?></span>
+						</label>
+						<label class="booking-form__frequency-option">
+							<input
+								type="radio"
+								name="frequency"
+								data-booking-field="frequency"
+								value="fortnightly"
+							>
+							<span><?php esc_html_e( 'Fortnightly', 'somvio' ); ?></span>
+						</label>
+					</div>
+				</fieldset>
+
 				<div class="booking-form__counters" data-booking-counters hidden>
 					<?php foreach ( $somvio_bf_counters as $somvio_bf_ckey => $somvio_bf_counter ) : ?>
 						<div
@@ -342,6 +383,8 @@ $somvio_bf_counters = array(
 						$somvio_bf_alabel = isset( $somvio_bf_addon['label'] ) ? (string) $somvio_bf_addon['label'] : $somvio_bf_akey;
 						$somvio_bf_aprice = isset( $somvio_bf_addon['price'] ) ? (float) $somvio_bf_addon['price'] : 0;
 						$somvio_bf_aicon  = isset( $somvio_bf_addon['icon'] ) ? (string) $somvio_bf_addon['icon'] : '';
+						$somvio_bf_is_qty = ! empty( $somvio_bf_addon['qty'] );
+						$somvio_bf_unit   = isset( $somvio_bf_addon['unit'] ) ? (string) $somvio_bf_addon['unit'] : '';
 						$somvio_bf_auri   = '';
 						if ( '' !== $somvio_bf_aicon ) {
 							$somvio_bf_auri  = $somvio_bf_icons_uri . $somvio_bf_aicon;
@@ -350,54 +393,109 @@ $somvio_bf_counters = array(
 								$somvio_bf_auri .= '?v=' . rawurlencode( (string) filemtime( $somvio_bf_apath ) );
 							}
 						}
+						$somvio_bf_price_text = $somvio_bf_is_qty && '' !== $somvio_bf_unit
+							? sprintf(
+								/* translators: 1: price with currency, 2: unit (room/window) */
+								__( '%1$s / %2$s', 'somvio' ),
+								$somvio_bf_symbol . number_format_i18n( $somvio_bf_aprice, 0 ),
+								$somvio_bf_unit
+							)
+							: ( $somvio_bf_symbol . number_format_i18n( $somvio_bf_aprice, 0 ) );
 						?>
-						<button
-							type="button"
-							class="booking-form__addon"
-							data-booking-addon="<?php echo esc_attr( $somvio_bf_akey ); ?>"
-							aria-pressed="false"
-						>
-							<span class="booking-form__addon-top">
-								<span class="booking-form__addon-price">
-									<?php
-									/* translators: %s: price with currency */
-									echo esc_html( sprintf( __( 'From %s', 'somvio' ), $somvio_bf_symbol . number_format_i18n( $somvio_bf_aprice, 0 ) ) );
-									?>
+						<?php if ( $somvio_bf_is_qty ) : ?>
+							<div
+								class="booking-form__addon booking-form__addon--qty"
+								data-booking-addon-qty="<?php echo esc_attr( $somvio_bf_akey ); ?>"
+							>
+								<span class="booking-form__addon-top">
+									<span class="booking-form__addon-price"><?php echo esc_html( $somvio_bf_price_text ); ?></span>
+									<?php if ( '' !== $somvio_bf_auri ) : ?>
+										<img
+											class="booking-form__addon-icon"
+											src="<?php echo esc_url( $somvio_bf_auri ); ?>"
+											alt=""
+											width="60"
+											height="60"
+											decoding="async"
+										>
+									<?php endif; ?>
 								</span>
-								<?php if ( '' !== $somvio_bf_auri ) : ?>
-									<img
-										class="booking-form__addon-icon"
-										src="<?php echo esc_url( $somvio_bf_auri ); ?>"
-										alt=""
-										width="60"
-										height="60"
-										decoding="async"
+								<span class="booking-form__addon-footer">
+									<span class="booking-form__addon-label"><?php echo esc_html( $somvio_bf_alabel ); ?></span>
+									<div
+										class="booking-form__addon-qty"
+										data-booking-addon-qty-control
 									>
-								<?php endif; ?>
-							</span>
-							<span class="booking-form__addon-footer">
-								<span class="booking-form__service-check" aria-hidden="true">
-									<img
-										class="booking-form__service-check-img booking-form__service-check-img--off"
-										src="<?php echo esc_url( $somvio_bf_icons_uri . 'icon-check-circle-outline.svg' ); ?>"
-										alt=""
-										width="24"
-										height="24"
-									>
-									<img
-										class="booking-form__service-check-img booking-form__service-check-img--on"
-										src="<?php echo esc_url( $somvio_bf_icons_uri . 'icon-check-circle-filled.svg' ); ?>"
-										alt=""
-										width="24"
-										height="24"
-									>
+										<button
+											type="button"
+											class="booking-form__addon-qty-btn booking-form__addon-qty-btn--minus"
+											data-booking-addon-qty-dec
+											aria-label="<?php echo esc_attr( sprintf( /* translators: %s: addon label */ __( 'Decrease %s', 'somvio' ), $somvio_bf_alabel ) ); ?>"
+											disabled
+										>
+											<span aria-hidden="true">−</span>
+										</button>
+										<span
+											class="booking-form__addon-qty-value"
+											data-booking-addon-qty-value
+											aria-live="polite"
+										>0</span>
+										<button
+											type="button"
+											class="booking-form__addon-qty-btn booking-form__addon-qty-btn--plus"
+											data-booking-addon-qty-inc
+											aria-label="<?php echo esc_attr( sprintf( /* translators: %s: addon label */ __( 'Increase %s', 'somvio' ), $somvio_bf_alabel ) ); ?>"
+										>
+											<span aria-hidden="true">+</span>
+										</button>
+									</div>
 								</span>
-								<span class="booking-form__addon-label"><?php echo esc_html( $somvio_bf_alabel ); ?></span>
-							</span>
-						</button>
+							</div>
+						<?php else : ?>
+							<button
+								type="button"
+								class="booking-form__addon"
+								data-booking-addon="<?php echo esc_attr( $somvio_bf_akey ); ?>"
+								aria-pressed="false"
+							>
+								<span class="booking-form__addon-top">
+									<span class="booking-form__addon-price"><?php echo esc_html( $somvio_bf_price_text ); ?></span>
+									<?php if ( '' !== $somvio_bf_auri ) : ?>
+										<img
+											class="booking-form__addon-icon"
+											src="<?php echo esc_url( $somvio_bf_auri ); ?>"
+											alt=""
+											width="60"
+											height="60"
+											decoding="async"
+										>
+									<?php endif; ?>
+								</span>
+								<span class="booking-form__addon-footer">
+									<span class="booking-form__service-check" aria-hidden="true">
+										<img
+											class="booking-form__service-check-img booking-form__service-check-img--off"
+											src="<?php echo esc_url( $somvio_bf_icons_uri . 'icon-check-circle-outline.svg' ); ?>"
+											alt=""
+											width="24"
+											height="24"
+										>
+										<img
+											class="booking-form__service-check-img booking-form__service-check-img--on"
+											src="<?php echo esc_url( $somvio_bf_icons_uri . 'icon-check-circle-filled.svg' ); ?>"
+											alt=""
+											width="24"
+											height="24"
+										>
+									</span>
+									<span class="booking-form__addon-label"><?php echo esc_html( $somvio_bf_alabel ); ?></span>
+								</span>
+							</button>
+						<?php endif; ?>
 					<?php endforeach; ?>
 				</div>
 				<input type="hidden" name="addons" data-booking-field="addons" value="">
+				<input type="hidden" name="addon_quantities" data-booking-field="addon_quantities" value="">
 
 				<div class="booking-form__footer">
 					<button type="button" class="booking-form__back btn btn--outline" data-booking-back>
@@ -643,6 +741,27 @@ $somvio_bf_counters = array(
 							placeholder="<?php esc_attr_e( 'Any special instructions or comments...', 'somvio' ); ?>"
 						></textarea>
 					</div>
+					<div class="booking-form__field booking-form__field--full">
+						<label class="booking-form__label is-required" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-access">
+							<?php esc_html_e( 'How will we get in?', 'somvio' ); ?>
+							<span class="somvio-required" aria-hidden="true">*</span>
+						</label>
+						<select
+							class="booking-form__select"
+							id="<?php echo esc_attr( $somvio_bf_uid ); ?>-access"
+							name="access_method"
+							data-booking-field="access_method"
+							required
+						>
+							<option value="" selected disabled><?php esc_html_e( 'Select an option', 'somvio' ); ?></option>
+							<?php foreach ( $somvio_bf_access as $somvio_bf_access_key => $somvio_bf_access_label ) : ?>
+								<option value="<?php echo esc_attr( $somvio_bf_access_key ); ?>">
+									<?php echo esc_html( $somvio_bf_access_label ); ?>
+								</option>
+							<?php endforeach; ?>
+						</select>
+						<p class="booking-form__field-error" data-booking-field-error="access_method" hidden role="alert"></p>
+					</div>
 				</div>
 
 				<fieldset class="booking-form__payment">
@@ -663,8 +782,8 @@ $somvio_bf_counters = array(
 							<span class="booking-form__payment-card">
 								<span class="booking-form__payment-indicator" aria-hidden="true"></span>
 								<span class="booking-form__payment-body">
-									<span class="booking-form__payment-title"><?php esc_html_e( 'Pay Online (Card / Stripe)', 'somvio' ); ?></span>
-									<span class="booking-form__payment-desc"><?php esc_html_e( 'Secure card payment via Stripe after you confirm.', 'somvio' ); ?></span>
+									<span class="booking-form__payment-title"><?php esc_html_e( 'Pay Online (Card)', 'somvio' ); ?></span>
+									<span class="booking-form__payment-desc"><?php esc_html_e( 'Secure payment via Stripe.', 'somvio' ); ?></span>
 								</span>
 							</span>
 						</label>
@@ -679,8 +798,8 @@ $somvio_bf_counters = array(
 							<span class="booking-form__payment-card">
 								<span class="booking-form__payment-indicator" aria-hidden="true"></span>
 								<span class="booking-form__payment-body">
-									<span class="booking-form__payment-title"><?php esc_html_e( 'Pay After Cleaning (Cash / Local)', 'somvio' ); ?></span>
-									<span class="booking-form__payment-desc"><?php esc_html_e( 'Confirm now, pay after the clean.', 'somvio' ); ?></span>
+									<span class="booking-form__payment-title"><?php esc_html_e( 'Pay on Completion', 'somvio' ); ?></span>
+									<span class="booking-form__payment-desc"><?php esc_html_e( 'Cash or Bank Transfer.', 'somvio' ); ?></span>
 								</span>
 							</span>
 						</label>
@@ -742,8 +861,34 @@ $somvio_bf_counters = array(
 				</div>
 
 				<div class="booking-form__summary" data-booking-summary>
-					<p class="booking-form__summary-label"><?php esc_html_e( 'Total Price', 'somvio' ); ?></p>
-					<p class="booking-form__summary-total" data-booking-total aria-hidden="false">£0.00</p>
+					<p class="booking-form__summary-heading"><?php esc_html_e( 'Order Summary', 'somvio' ); ?></p>
+
+					<div class="booking-form__summary-list">
+						<div class="booking-form__summary-row booking-form__summary-row--service">
+							<span class="booking-form__summary-dt"><?php esc_html_e( 'Service', 'somvio' ); ?></span>
+							<span class="booking-form__summary-dd" data-summary-service><?php esc_html_e( 'Not selected', 'somvio' ); ?></span>
+						</div>
+
+						<div class="booking-form__summary-rooms" data-summary-rooms hidden></div>
+
+						<div class="booking-form__summary-extras" data-summary-extras hidden></div>
+
+						<div class="booking-form__summary-row booking-form__summary-row--datetime">
+							<span class="booking-form__summary-dt"><?php esc_html_e( 'Date & Time', 'somvio' ); ?></span>
+							<span class="booking-form__summary-dd" data-summary-datetime><?php esc_html_e( 'Not selected', 'somvio' ); ?></span>
+						</div>
+
+						<div class="booking-form__summary-row booking-form__summary-row--access" data-summary-access-row hidden>
+							<span class="booking-form__summary-dt"><?php esc_html_e( 'How will we get in?', 'somvio' ); ?></span>
+							<span class="booking-form__summary-dd" data-summary-access></span>
+						</div>
+
+						<div class="booking-form__summary-row booking-form__summary-row--total">
+							<span class="booking-form__summary-dt"><?php esc_html_e( 'Total Price', 'somvio' ); ?></span>
+							<span class="booking-form__summary-dd booking-form__summary-total" data-booking-total aria-hidden="false">£0.00</span>
+						</div>
+					</div>
+
 					<p class="booking-form__summary-note"><?php esc_html_e( 'Preview only — final price confirmed on submit.', 'somvio' ); ?></p>
 					<p class="sr-only" data-booking-price-live aria-live="polite" aria-atomic="true"></p>
 				</div>
@@ -831,6 +976,10 @@ $somvio_bf_counters = array(
 						<div class="booking-form__success-row">
 							<dt><?php esc_html_e( 'Address', 'somvio' ); ?></dt>
 							<dd data-booking-success="address"></dd>
+						</div>
+						<div class="booking-form__success-row">
+							<dt><?php esc_html_e( 'How will we get in?', 'somvio' ); ?></dt>
+							<dd data-booking-success="access_method"></dd>
 						</div>
 						<div class="booking-form__success-row">
 							<dt><?php esc_html_e( 'Estimated total', 'somvio' ); ?></dt>

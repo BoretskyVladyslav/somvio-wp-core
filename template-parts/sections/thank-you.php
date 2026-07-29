@@ -63,6 +63,10 @@ $somvio_home_url = esc_url( home_url( '/' ) );
 				<dd data-thank-you-field="address"></dd>
 			</div>
 			<div class="thank-you__row">
+				<dt><?php esc_html_e( 'How will we get in?', 'somvio' ); ?></dt>
+				<dd data-thank-you-field="access_method"></dd>
+			</div>
+			<div class="thank-you__row">
 				<dt><?php esc_html_e( 'Estimated total', 'somvio' ); ?></dt>
 				<dd data-thank-you-field="total"></dd>
 			</div>

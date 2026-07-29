@@ -7,7 +7,7 @@
  *
  * Figma nodes: 384:5980 (hero), 300:2032 (story), 300:2112 (why choose),
  * 300:2124 / 389:6012 (numbers), 300:2040 / 300:2042 (social proof)
- *
+ * 
  * @package Somvio_Child
  */
 

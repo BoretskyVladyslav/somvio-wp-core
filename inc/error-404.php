@@ -1,8 +1,8 @@
 <?php
 /**
- * 404 page — Figma 420:6896.
+ * 404 + search fallback pages — Figma 420:6896 styling system.
  *
- * Full-bleed dark hero with background photo; no pre-footer CTA
+ * Full-bleed dark surfaces; no pre-footer CTA
  * (see somvio_should_skip_cta_banner).
  *
  * @package Somvio_Child
@@ -13,7 +13,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Mark 404 so the transparent sticky header merges with the hero.
+ * Mark 404 / search so the transparent sticky header merges with the hero
+ * and body uses the branded dark fallback background.
  *
  * @param string[] $classes Body classes.
  * @return string[]
@@ -22,6 +23,13 @@ function somvio_404_body_class( $classes ) {
 	if ( is_404() ) {
 		$classes[] = 'somvio-has-hero';
 		$classes[] = 'somvio-404-page';
+		$classes[] = 'somvio-dark-fallback';
+	}
+
+	if ( is_search() ) {
+		$classes[] = 'somvio-has-hero';
+		$classes[] = 'somvio-search-page';
+		$classes[] = 'somvio-dark-fallback';
 	}
 
 	return $classes;

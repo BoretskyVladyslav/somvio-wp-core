@@ -280,15 +280,31 @@ function somvio_latepoint_booking_notes( array $payload ) {
 		sprintf( 'Source: %s', $labels['source'] ?? (string) ( $payload['source'] ?? '' ) ),
 		sprintf( 'Service: %s', $labels['service'] ?? (string) ( $payload['service'] ?? '' ) ),
 		sprintf( 'Property: %s', $labels['property'] ?? (string) ( $payload['property'] ?? '' ) ),
-		sprintf( 'Main rooms: %d', (int) ( $payload['main_rooms'] ?? 0 ) ),
-		sprintf( 'Bedrooms: %d', (int) ( $payload['bedrooms'] ?? 0 ) ),
-		sprintf( 'Bathrooms: %d', (int) ( $payload['bathrooms'] ?? 0 ) ),
-		sprintf( 'Linen changes: %d', (int) ( $payload['linen_changes'] ?? 0 ) ),
-		sprintf( 'Welcome pack: %s', $labels['welcome_pack'] ?? 'no' ),
-		sprintf( 'Extras: %s', $labels['addons'] ?? '' ),
-		sprintf( 'Payment: %s', $labels['payment'] ?? '' ),
-		sprintf( 'Server total: %s', $labels['total_formatted'] ?? '' ),
 	);
+
+	$service = isset( $payload['service'] ) ? sanitize_key( (string) $payload['service'] ) : '';
+	if ( 'regular-cleaning' === $service && ! empty( $labels['frequency'] ) ) {
+		$lines[] = sprintf( 'Frequency: %s', $labels['frequency'] );
+	}
+
+	$main_rooms_label = ( 'after-builders' === $service )
+		? 'Rooms (Living, Bed, Dining)'
+		: 'Main rooms';
+	$bathrooms_label  = in_array( $service, array( 'deep-cleaning', 'end-of-tenancy', 'after-builders' ), true )
+		? 'Bathrooms And Shower Rooms'
+		: 'Bathrooms';
+
+	$lines[] = sprintf( '%s: %d', $main_rooms_label, (int) ( $payload['main_rooms'] ?? 0 ) );
+	$lines[] = sprintf( 'Bedrooms: %d', (int) ( $payload['bedrooms'] ?? 0 ) );
+	$lines[] = sprintf( '%s: %d', $bathrooms_label, (int) ( $payload['bathrooms'] ?? 0 ) );
+	$lines[] = sprintf( 'Toilets (without Baths/showers): %d', (int) ( $payload['toilets'] ?? 0 ) );
+	$lines[] = sprintf( 'Kitchens: %d', (int) ( $payload['kitchens'] ?? 0 ) );
+	$lines[] = sprintf( 'Linen changes: %d', (int) ( $payload['linen_changes'] ?? 0 ) );
+	$lines[] = sprintf( 'Welcome pack: %s', $labels['welcome_pack'] ?? 'no' );
+	$lines[] = sprintf( 'Extras: %s', $labels['addons'] ?? '' );
+	$lines[] = sprintf( 'Access: %s', $labels['access_method'] ?? '' );
+	$lines[] = sprintf( 'Payment: %s', $labels['payment'] ?? '' );
+	$lines[] = sprintf( 'Server total: %s', $labels['total_formatted'] ?? '' );
 
 	if ( ! empty( $payload['address'] ) ) {
 		$lines[] = 'Address: ' . sanitize_text_field( (string) $payload['address'] );

@@ -11,13 +11,29 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$payload   = isset( $payload ) && is_array( $payload ) ? $payload : array();
-$labels    = isset( $labels ) && is_array( $labels ) ? $labels : array();
-$site_name = isset( $site_name ) ? (string) $site_name : 'Somvio';
-$admin_email = isset( $admin_email ) ? (string) $admin_email : 'info@somvio.co.uk';
-$is_booking = isset( $payload['source'] ) && 'booking' === $payload['source'];
-$first      = trim( (string) ( $payload['first_name'] ?? '' ) );
+$payload     = isset( $payload ) && is_array( $payload ) ? $payload : array();
+$labels      = isset( $labels ) && is_array( $labels ) ? $labels : array();
+$cost_rows   = isset( $cost_rows ) && is_array( $cost_rows ) ? $cost_rows : array();
+$site_name   = isset( $site_name ) ? (string) $site_name : 'Somvio';
+$admin_email = isset( $admin_email ) ? (string) $admin_email : '';
+if ( '' === $admin_email && function_exists( 'somvio_get_booking_admin_email' ) ) {
+	$admin_email = somvio_get_booking_admin_email();
+}
+$is_booking    = isset( $payload['source'] ) && 'booking' === $payload['source'];
+$first         = trim( (string) ( $payload['first_name'] ?? '' ) );
 $greeting_name = $first ? $first : (string) ( $payload['name'] ?? '' );
+$bedrooms      = (int) ( $payload['bedrooms'] ?? 0 );
+$bathrooms     = (int) ( $payload['bathrooms'] ?? 0 );
+$main_rooms    = (int) ( $payload['main_rooms'] ?? 0 );
+$toilets       = (int) ( $payload['toilets'] ?? 0 );
+$kitchens      = (int) ( $payload['kitchens'] ?? 0 );
+$service_key   = isset( $payload['service'] ) ? sanitize_key( (string) $payload['service'] ) : '';
+$main_rooms_label = ( 'after-builders' === $service_key )
+	? __( 'Rooms (Living, Bed, Dining)', 'somvio' )
+	: __( 'Main rooms', 'somvio' );
+$bathrooms_label  = in_array( $service_key, array( 'deep-cleaning', 'end-of-tenancy', 'after-builders' ), true )
+	? __( 'Bathrooms And Shower Rooms', 'somvio' )
+	: __( 'Bathrooms', 'somvio' );
 
 $row = static function ( $label, $value ) {
 	$label = (string) $label;
@@ -82,9 +98,34 @@ $row = static function ( $label, $value ) {
 							<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e8eef2;border-radius:6px;overflow:hidden;margin-bottom:20px;">
 								<?php
 								echo $row( __( 'Service', 'somvio' ), $labels['service'] ?? '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								if ( ! empty( $labels['property'] ) ) {
+									echo $row( __( 'Property', 'somvio' ), $labels['property'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								}
+								if ( ! empty( $labels['frequency'] ) ) {
+									echo $row( __( 'Frequency', 'somvio' ), $labels['frequency'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								}
+								if ( $main_rooms > 0 ) {
+									echo $row( $main_rooms_label, (string) $main_rooms ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								}
+								if ( $bedrooms > 0 ) {
+									echo $row( __( 'Bedrooms', 'somvio' ), (string) $bedrooms ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								}
+								if ( $bathrooms > 0 ) {
+									echo $row( $bathrooms_label, (string) $bathrooms ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								}
+								if ( $toilets > 0 ) {
+									echo $row( __( 'Toilets (without Baths/showers)', 'somvio' ), (string) $toilets ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								}
+								if ( $kitchens > 0 ) {
+									echo $row( __( 'Kitchens', 'somvio' ), (string) $kitchens ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								}
 								echo $row( __( 'Date', 'somvio' ), (string) ( $payload['date'] ?? '' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo $row( __( 'Time', 'somvio' ), (string) ( $payload['time'] ?? '' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo $row( __( 'Phone', 'somvio' ), (string) ( $payload['phone'] ?? '' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo $row( __( 'Address', 'somvio' ), (string) ( $payload['address'] ?? '' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								if ( ! empty( $labels['access_method'] ) ) {
+									echo $row( __( 'How will we get in?', 'somvio' ), $labels['access_method'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								}
 								echo $row( __( 'Estimated total', 'somvio' ), $labels['total_formatted'] ?? '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo $row( __( 'Payment', 'somvio' ), $labels['payment'] ?? '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								if ( ! empty( $labels['addons'] ) && __( 'None', 'somvio' ) !== $labels['addons'] ) {
@@ -92,6 +133,22 @@ $row = static function ( $label, $value ) {
 								}
 								?>
 							</table>
+
+							<?php if ( ! empty( $cost_rows ) ) : ?>
+								<h2 style="margin:0 0 12px;font-size:16px;color:#091e2c;"><?php echo esc_html__( 'Cost breakdown', 'somvio' ); ?></h2>
+								<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e8eef2;border-radius:6px;overflow:hidden;margin-bottom:20px;">
+									<?php foreach ( $cost_rows as $cost_row ) : ?>
+										<tr>
+											<td style="padding:8px 12px;border-bottom:1px solid #e8eef2;color:#5a6b76;font-size:14px;">
+												<?php echo esc_html( (string) ( $cost_row['label'] ?? '' ) ); ?>
+											</td>
+											<td style="padding:8px 12px;border-bottom:1px solid #e8eef2;color:#00050e;font-size:14px;font-weight:600;text-align:right;">
+												<?php echo esc_html( (string) ( $cost_row['value'] ?? '' ) ); ?>
+											</td>
+										</tr>
+									<?php endforeach; ?>
+								</table>
+							<?php endif; ?>
 
 							<h2 style="margin:0 0 8px;font-size:16px;color:#091e2c;"><?php echo esc_html__( 'Next steps', 'somvio' ); ?></h2>
 							<ol style="margin:0 0 20px;padding-left:20px;color:#334049;font-size:14px;line-height:1.6;">

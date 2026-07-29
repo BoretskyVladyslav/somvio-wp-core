@@ -13,6 +13,39 @@
 
 	var EMAIL_RE = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
 	var PHONE_RE = /^(\+?[1-9]\d{9,14}|0[1-9]\d{9,10})$/;
+	var ADDON_QTY_MAX = 10;
+
+	function isQtyAddon(key) {
+		var def = rates.addons && rates.addons[key];
+		return !!(def && def.qty);
+	}
+
+	function getAddonQty(state, key) {
+		return Math.max(0, Math.min(ADDON_QTY_MAX, parseInt((state.addon_quantities && state.addon_quantities[key]) || 0, 10) || 0));
+	}
+
+	function collectAddonQuantities(state) {
+		var out = {};
+		Object.keys(state.addon_quantities || {}).forEach(function (key) {
+			var qty = getAddonQty(state, key);
+			if (qty > 0 && isQtyAddon(key)) {
+				out[key] = qty;
+			}
+		});
+		return out;
+	}
+
+	function syncAddonsFromQuantities(state) {
+		Object.keys(state.addon_quantities || {}).forEach(function (key) {
+			var qty = getAddonQty(state, key);
+			var idx = state.addons.indexOf(key);
+			if (qty > 0 && idx === -1) {
+				state.addons.push(key);
+			} else if (qty < 1 && idx !== -1) {
+				state.addons.splice(idx, 1);
+			}
+		});
+	}
 
 	/**
 	 * @param {number} n
@@ -111,7 +144,7 @@
 			service === 'end-of-tenancy' ||
 			service === 'after-builders'
 		) {
-			return ['main_rooms', 'bedrooms', 'bathrooms'];
+			return ['main_rooms', 'bedrooms', 'bathrooms', 'toilets', 'kitchens'];
 		}
 		return ['bedrooms', 'bathrooms'];
 	}
@@ -146,9 +179,17 @@
 		var addonTotal = 0;
 		var addonDefs = rates.addons || {};
 		(state.addons || []).forEach(function (key) {
-			if (addonDefs[key] && addonDefs[key].price != null) {
-				addonTotal += Number(addonDefs[key].price);
+			if (isQtyAddon(key) || !addonDefs[key] || addonDefs[key].price == null) {
+				return;
 			}
+			addonTotal += Number(addonDefs[key].price);
+		});
+		Object.keys(state.addon_quantities || {}).forEach(function (key) {
+			var qty = getAddonQty(state, key);
+			if (qty < 1 || !isQtyAddon(key) || !addonDefs[key] || addonDefs[key].price == null) {
+				return;
+			}
+			addonTotal += Number(addonDefs[key].price) * qty;
 		});
 
 		return Math.round(((base + bathExtra) * svcMult * propMult + addonTotal) * 100) / 100;
@@ -223,9 +264,13 @@
 			main_rooms: '1',
 			bedrooms: '1',
 			bathrooms: '1',
+			toilets: '0',
+			kitchens: '0',
 			linen_changes: '0',
 			welcome_pack: 'no',
+			frequency: 'weekly',
 			addons: [],
+			addon_quantities: {},
 			date: '',
 			time: '',
 			name: '',
@@ -248,7 +293,7 @@
 		}
 
 		function readFields() {
-			['service', 'property', 'main_rooms', 'bedrooms', 'bathrooms', 'linen_changes', 'date', 'time', 'name', 'email', 'phone', 'comment'].forEach(
+			['service', 'property', 'main_rooms', 'bedrooms', 'bathrooms', 'toilets', 'kitchens', 'linen_changes', 'date', 'time', 'name', 'email', 'phone', 'comment'].forEach(
 				function (key) {
 					var el = field(key);
 					if (el) {
@@ -258,6 +303,8 @@
 			);
 			var welcomeEl = root.querySelector('[data-quote-field="welcome_pack"]:checked');
 			state.welcome_pack = welcomeEl ? welcomeEl.value : 'no';
+			var frequencyEl = root.querySelector('[data-quote-field="frequency"]:checked');
+			state.frequency = frequencyEl ? frequencyEl.value : 'weekly';
 			if (state.service === 'regular-cleaning') {
 				state.bathrooms = state.bathrooms || '1';
 			}
@@ -299,6 +346,23 @@
 				btn.classList.toggle('is-selected', on);
 				btn.setAttribute('aria-pressed', on ? 'true' : 'false');
 			});
+			root.querySelectorAll('[data-quote-addon-qty]').forEach(function (wrap) {
+				var key = wrap.getAttribute('data-quote-addon-qty');
+				var qty = getAddonQty(state, key);
+				var valueEl = wrap.querySelector('[data-quote-addon-qty-value]');
+				var decBtn = wrap.querySelector('[data-quote-addon-qty-dec]');
+				var incBtn = wrap.querySelector('[data-quote-addon-qty-inc]');
+				if (valueEl) {
+					valueEl.textContent = String(qty);
+				}
+				if (decBtn) {
+					decBtn.disabled = qty <= 0;
+				}
+				if (incBtn) {
+					incBtn.disabled = qty >= ADDON_QTY_MAX;
+				}
+				wrap.classList.toggle('is-selected', qty > 0);
+			});
 			var addonsField = field('addons');
 			if (addonsField) {
 				addonsField.value = state.addons.join(',');
@@ -309,9 +373,22 @@
 			var fields = getRoomFieldsForService(state.service);
 			var countersWrap = root.querySelector('[data-quote-counters]');
 			var welcomeWrap = root.querySelector('[data-quote-welcome]');
+			var frequencyWrap = root.querySelector('[data-quote-frequency]');
 			var hasExtras = serviceHasExtras(state.service);
+			var showFrequency = state.service === 'regular-cleaning';
 
 			root.setAttribute('data-quote-has-extras', hasExtras ? '1' : '0');
+
+			if (frequencyWrap) {
+				frequencyWrap.hidden = !showFrequency;
+				frequencyWrap.setAttribute('aria-hidden', showFrequency ? 'false' : 'true');
+				root.querySelectorAll('[data-quote-field="frequency"]').forEach(function (radio) {
+					var option = radio.closest('.quote-calculator__frequency-option');
+					if (option) {
+						option.classList.toggle('is-selected', !!radio.checked);
+					}
+				});
+			}
 
 			if (countersWrap) {
 				fields.forEach(function (key) {
@@ -341,11 +418,23 @@
 				} else if (state.service === 'airbnb-cleaning' && key === 'bathrooms') {
 					labelEl.textContent = i18n.noOfBathrooms || 'No. of Bathrooms';
 				} else if (key === 'main_rooms') {
-					labelEl.textContent = i18n.mainRooms || 'Main rooms';
+					labelEl.textContent =
+						state.service === 'after-builders'
+							? i18n.roomsLivingBedDining || 'Rooms (Living, Bed, Dining)'
+							: i18n.mainRooms || 'Main rooms';
 				} else if (key === 'bedrooms') {
 					labelEl.textContent = i18n.bedrooms || 'Bedrooms';
 				} else if (key === 'bathrooms') {
-					labelEl.textContent = i18n.bathrooms || 'Bathrooms';
+					labelEl.textContent =
+						state.service === 'deep-cleaning' ||
+						state.service === 'end-of-tenancy' ||
+						state.service === 'after-builders'
+							? i18n.bathroomsAndShowers || 'Bathrooms And Shower Rooms'
+							: i18n.bathrooms || 'Bathrooms';
+				} else if (key === 'toilets') {
+					labelEl.textContent = i18n.toilets || 'Toilets (without Baths/showers)';
+				} else if (key === 'kitchens') {
+					labelEl.textContent = i18n.kitchens || 'Kitchens';
 				} else if (key === 'linen_changes') {
 					labelEl.textContent = i18n.linenChanges || 'No. of Linen Changes';
 				}
@@ -359,6 +448,7 @@
 
 			if (!hasExtras) {
 				state.addons = [];
+				state.addon_quantities = {};
 				renderAddons();
 			}
 		}
@@ -549,9 +639,18 @@
 			state.step = step;
 			root.setAttribute('data-step', String(step));
 			var isSuccess = step === SUCCESS_STEP;
-			var visible = getVisibleSteps();
-			var displayStep = Math.max(1, visible.indexOf(step) + 1);
-			var totalVisible = visible.length;
+			var visible = getVisibleSteps().filter(function (n) {
+				return n >= 1 && n <= TOTAL_STEPS;
+			});
+			/*
+			 * Indicator max is 4 (matches booking + SSR label), even though the
+			 * quote widget still has separate date/time/contact panels.
+			 */
+			var maxLabelSteps = 4;
+			var idx = visible.indexOf(step);
+			var totalVisible = Math.min(maxLabelSteps, Math.max(1, visible.length));
+			var displayStep = idx === -1 ? 1 : idx + 1;
+			displayStep = Math.min(Math.max(1, displayStep), totalVisible);
 
 			root.classList.toggle('quote-calculator--success', isSuccess);
 
@@ -577,7 +676,7 @@
 				if (!isSuccess) {
 					var tpl = i18n.stepOf || 'Step %1$d of %2$d';
 					stepLabel.textContent = tpl
-						.replace('%1$d', String(Math.min(displayStep, totalVisible)))
+						.replace('%1$d', String(displayStep))
 						.replace('%2$d', String(totalVisible));
 				}
 			}
@@ -787,8 +886,12 @@
 				bathrooms: parseInt(state.bathrooms, 10) || 1,
 				main_rooms: parseInt(state.main_rooms, 10) || 0,
 				linen_changes: parseInt(state.linen_changes, 10) || 0,
+				toilets: parseInt(state.toilets, 10) || 0,
+				kitchens: parseInt(state.kitchens, 10) || 0,
 				welcome_pack: state.welcome_pack === 'yes' ? 'yes' : 'no',
+				frequency: state.service === 'regular-cleaning' ? (state.frequency || 'weekly') : '',
 				addons: serviceHasExtras(state.service) ? state.addons.slice() : [],
+				addon_quantities: serviceHasExtras(state.service) ? collectAddonQuantities(state) : {},
 				date: state.date,
 				time: state.time,
 				name: trim(state.name),
@@ -880,7 +983,9 @@
 			state.phone = '';
 			state.comment = '';
 			state.addons = [];
+			state.addon_quantities = {};
 			state.welcome_pack = 'no';
+			state.frequency = 'weekly';
 			state.quotedTotal = null;
 			state.calYear = today.getFullYear();
 			state.calMonth = today.getMonth();
@@ -894,6 +999,13 @@
 			root.querySelectorAll('[data-quote-field="welcome_pack"]').forEach(function (radio) {
 				radio.checked = radio.value === 'no';
 				var option = radio.closest('.quote-calculator__welcome-option');
+				if (option) {
+					option.classList.toggle('is-selected', radio.checked);
+				}
+			});
+			root.querySelectorAll('[data-quote-field="frequency"]').forEach(function (radio) {
+				radio.checked = radio.value === 'weekly';
+				var option = radio.closest('.quote-calculator__frequency-option');
 				if (option) {
 					option.classList.toggle('is-selected', radio.checked);
 				}
@@ -931,6 +1043,7 @@
 					state.service = el.value;
 					if (!serviceHasExtras(state.service)) {
 						state.addons = [];
+						state.addon_quantities = {};
 					}
 					syncRoomFields();
 				}
@@ -1013,9 +1126,28 @@
 			});
 		});
 
+		root.querySelectorAll('[data-quote-field="frequency"]').forEach(function (radio) {
+			radio.addEventListener('change', function () {
+				if (!radio.checked) {
+					return;
+				}
+				state.frequency = radio.value;
+				root.querySelectorAll('[data-quote-field="frequency"]').forEach(function (el) {
+					var option = el.closest('.quote-calculator__frequency-option');
+					if (option) {
+						option.classList.toggle('is-selected', !!el.checked);
+					}
+				});
+				readFields();
+			});
+		});
+
 		root.querySelectorAll('[data-quote-addon]').forEach(function (btn) {
 			btn.addEventListener('click', function () {
 				var key = btn.getAttribute('data-quote-addon');
+				if (isQtyAddon(key)) {
+					return;
+				}
 				var idx = state.addons.indexOf(key);
 				if (idx === -1) {
 					state.addons.push(key);
@@ -1027,6 +1159,37 @@
 				readFields();
 				renderPrice();
 			});
+		});
+
+		root.querySelectorAll('[data-quote-addon-qty]').forEach(function (wrap) {
+			var key = wrap.getAttribute('data-quote-addon-qty');
+			if (!key) {
+				return;
+			}
+			var decBtn = wrap.querySelector('[data-quote-addon-qty-dec]');
+			var incBtn = wrap.querySelector('[data-quote-addon-qty-inc]');
+			function setQty(next) {
+				var qty = Math.max(0, Math.min(ADDON_QTY_MAX, parseInt(next, 10) || 0));
+				if (!state.addon_quantities) {
+					state.addon_quantities = {};
+				}
+				state.addon_quantities[key] = qty;
+				syncAddonsFromQuantities(state);
+				state.quotedTotal = null;
+				renderAddons();
+				readFields();
+				renderPrice();
+			}
+			if (decBtn) {
+				decBtn.addEventListener('click', function () {
+					setQty(getAddonQty(state, key) - 1);
+				});
+			}
+			if (incBtn) {
+				incBtn.addEventListener('click', function () {
+					setQty(getAddonQty(state, key) + 1);
+				});
+			}
 		});
 
 		root.querySelectorAll('[data-quote-slot]').forEach(function (btn) {

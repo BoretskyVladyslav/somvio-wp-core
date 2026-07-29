@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** @var int Bump to re-run page seeding on admin_init / theme switch. */
-const SOMVIO_CORE_PAGES_VERSION = 17;
+const SOMVIO_CORE_PAGES_VERSION = 18;
 
 /**
  * Whether a site title looks like a Local / stock WordPress default.
@@ -480,6 +480,39 @@ function somvio_ensure_booking_page() {
 }
 
 /**
+ * Ensure the Services archive page exists (slug `services`) with its template.
+ *
+ * @return int Page ID or 0.
+ */
+function somvio_ensure_services_page() {
+	$page_id = somvio_ensure_page( 'services', 'Services' );
+
+	if ( $page_id <= 0 ) {
+		return 0;
+	}
+
+	$page = get_post( $page_id );
+
+	if ( $page instanceof WP_Post && 'publish' !== $page->post_status ) {
+		wp_update_post(
+			array(
+				'ID'          => $page_id,
+				'post_status' => 'publish',
+			)
+		);
+	}
+
+	/* page-services.php also matches via slug hierarchy; pin meta for clarity. */
+	$template = get_post_meta( $page_id, '_wp_page_template', true );
+
+	if ( 'page-services.php' !== $template ) {
+		update_post_meta( $page_id, '_wp_page_template', 'page-services.php' );
+	}
+
+	return $page_id;
+}
+
+/**
  * Ensure the Thank You page exists with its template.
  *
  * @return int Page ID or 0.
@@ -717,6 +750,11 @@ function somvio_setup_core_pages() {
 				continue;
 			}
 
+			if ( 'services' === $slug ) {
+				$page_ids[ $slug ] = somvio_ensure_services_page();
+				continue;
+			}
+
 			if ( 'thank-you' === $slug ) {
 				$page_ids[ $slug ] = somvio_ensure_thank_you_page();
 				continue;
@@ -784,6 +822,9 @@ function somvio_setup_core_pages() {
 		somvio_sync_primary_menu_structure();
 
 		update_option( 'somvio_core_pages_version', SOMVIO_CORE_PAGES_VERSION, false );
+
+		/* Pretty permalinks + flush so /services/ resolves to the page, not search/404. */
+		somvio_ensure_pretty_permalinks_and_flush( true );
 	} finally {
 		delete_option( 'somvio_core_pages_setup_lock' );
 	}
@@ -1225,6 +1266,54 @@ function somvio_maybe_setup_core_pages() {
 add_action( 'admin_init', 'somvio_maybe_setup_core_pages' );
 
 /**
+ * Rewrite flush version — bump to force one-shot flush on next request.
+ *
+ * @var int
+ */
+const SOMVIO_REWRITE_FLUSH_VERSION = 3;
+
+/**
+ * Ensure permalink structure is pretty and rewrite rules are flushed once.
+ *
+ * @param bool $force Flush even when version option is current.
+ * @return void
+ */
+function somvio_ensure_pretty_permalinks_and_flush( $force = false ) {
+	$force = (bool) $force;
+
+	if ( ! $force && (int) get_option( 'somvio_rewrite_flush_version', 0 ) >= SOMVIO_REWRITE_FLUSH_VERSION ) {
+		return;
+	}
+
+	if ( function_exists( 'somvio_ensure_services_page' ) ) {
+		somvio_ensure_services_page();
+	}
+
+	$structure = (string) get_option( 'permalink_structure', '' );
+
+	if ( '' === $structure ) {
+		update_option( 'permalink_structure', '/%postname%/' );
+	}
+
+	flush_rewrite_rules( false );
+	update_option( 'somvio_rewrite_flush_version', SOMVIO_REWRITE_FLUSH_VERSION, false );
+}
+
+/**
+ * One-shot rewrite flush after deploy / version bump (admin + front).
+ *
+ * @return void
+ */
+function somvio_maybe_flush_rewrites() {
+	if ( (int) get_option( 'somvio_rewrite_flush_version', 0 ) >= SOMVIO_REWRITE_FLUSH_VERSION ) {
+		return;
+	}
+
+	somvio_ensure_pretty_permalinks_and_flush( true );
+}
+add_action( 'init', 'somvio_maybe_flush_rewrites', 99 );
+
+/**
  * Also seed pages when the child theme is activated.
  *
  * @return void
@@ -1232,5 +1321,6 @@ add_action( 'admin_init', 'somvio_maybe_setup_core_pages' );
 function somvio_setup_core_pages_on_theme_switch() {
 	// Theme switch may run before a user capability context is ready.
 	somvio_setup_core_pages();
+	somvio_ensure_pretty_permalinks_and_flush( true );
 }
 add_action( 'after_switch_theme', 'somvio_setup_core_pages_on_theme_switch' );

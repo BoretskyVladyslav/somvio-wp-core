@@ -20,8 +20,10 @@ function somvio_get_quote_rates() {
 	delete_transient( 'somvio_quote_rates_v5' );
 	delete_transient( 'somvio_quote_rates_v6' );
 	delete_transient( 'somvio_quote_rates_v7' );
+	delete_transient( 'somvio_quote_rates_v8' );
+	delete_transient( 'somvio_quote_rates_v9' );
 
-	$cached = get_transient( 'somvio_quote_rates_v8' );
+	$cached = get_transient( 'somvio_quote_rates_v10' );
 	if ( false !== $cached && is_array( $cached ) ) {
 		return $cached;
 	}
@@ -72,27 +74,22 @@ function somvio_get_quote_rates() {
 				'icon'  => 'icon-addon-fridge.svg',
 			),
 			'kitchen-cupboards'         => array(
-				'label' => __( 'Inside All Kitchen Cupboards (empty)', 'somvio' ),
+				'label' => __( 'Inside Kitchen Cupboards (must be empty)', 'somvio' ),
 				'price' => 39,
 				'icon'  => 'icon-addon-cupboards.svg',
 			),
-			'kitchen-appliances'        => array(
-				'label' => __( 'Kitchen Appliances (Internal)', 'somvio' ),
-				'price' => 20,
-				'icon'  => 'icon-addon-appliances.svg',
-			),
 			'washing-machine'           => array(
-				'label' => __( 'Washing Machine', 'somvio' ),
+				'label' => __( 'Inside Washing Machine', 'somvio' ),
 				'price' => 20,
 				'icon'  => 'icon-addon-washing.svg',
 			),
 			'dishwasher'                => array(
-				'label' => __( 'Dishwasher', 'somvio' ),
+				'label' => __( 'Inside Dishwasher', 'somvio' ),
 				'price' => 20,
 				'icon'  => 'icon-addon-dishwasher.svg',
 			),
 			'tumble-dryer'              => array(
-				'label' => __( 'Tumble Dryer', 'somvio' ),
+				'label' => __( 'Inside Tumble Dryer', 'somvio' ),
 				'price' => 20,
 				'icon'  => 'icon-addon-dryer.svg',
 			),
@@ -105,11 +102,15 @@ function somvio_get_quote_rates() {
 				'label' => __( 'Carpet Deep Cleaning (per room)', 'somvio' ),
 				'price' => 30,
 				'icon'  => 'icon-addon-carpet.svg',
+				'qty'   => true,
+				'unit'  => __( 'room', 'somvio' ),
 			),
 			'venetian-blinds'           => array(
 				'label' => __( 'Venetian Blinds (per window)', 'somvio' ),
 				'price' => 12,
 				'icon'  => 'icon-addon-blinds.svg',
+				'qty'   => true,
+				'unit'  => __( 'window', 'somvio' ),
 			),
 			'balcony-patio'             => array(
 				'label' => __( 'Balcony / Patio Cleaning', 'somvio' ),
@@ -132,22 +133,80 @@ function somvio_get_quote_rates() {
 	 */
 	$rates = apply_filters( 'somvio_quote_rates', $rates );
 
-	set_transient( 'somvio_quote_rates_v8', $rates, HOUR_IN_SECONDS );
+	set_transient( 'somvio_quote_rates_v10', $rates, HOUR_IN_SECONDS );
 
 	return $rates;
 }
 
 /**
+ * Whether an addon definition uses quantity pricing.
+ *
+ * @param mixed $def Addon definition.
+ * @return bool
+ */
+function somvio_addon_is_qty( $def ) {
+	return is_array( $def ) && ! empty( $def['qty'] );
+}
+
+/**
+ * Sanitize addon quantity map (key => 1–10).
+ *
+ * @param mixed $value Raw request value.
+ * @return array<string, int>
+ */
+function somvio_rest_sanitize_addon_quantities( $value ) {
+	if ( ! is_array( $value ) ) {
+		return array();
+	}
+
+	$out = array();
+	foreach ( $value as $key => $qty ) {
+		$key = sanitize_key( (string) $key );
+		$qty = absint( $qty );
+		if ( '' === $key || $qty < 1 || $qty > 10 ) {
+			continue;
+		}
+		$out[ $key ] = $qty;
+	}
+
+	return $out;
+}
+
+/**
+ * Access / entry method options for booking checkout.
+ *
+ * @return array<string, string>
+ */
+function somvio_get_access_method_options() {
+	$options = array(
+		'at-home'              => __( "I'll be at home", 'somvio' ),
+		'call-me'              => __( 'Please call me', 'somvio' ),
+		'key-neighbour-hidden' => __( 'The key will be with neighbour or hidden', 'somvio' ),
+		'other'                => __( 'Other', 'somvio' ),
+	);
+
+	/**
+	 * Filter access method options.
+	 *
+	 * @param array<string, string> $options Key => label.
+	 */
+	$filtered = apply_filters( 'somvio_access_method_options', $options );
+
+	return is_array( $filtered ) ? $filtered : $options;
+}
+
+/**
  * Recalculate quote total from trusted inputs (server authority).
  *
- * @param string   $service  Service key.
- * @param string   $property Property key.
- * @param int      $bedrooms Bedroom count.
- * @param int      $bathrooms Bathroom count.
- * @param string[] $addons   Selected add-on keys.
+ * @param string               $service          Service key.
+ * @param string               $property         Property key.
+ * @param int                  $bedrooms         Bedroom count.
+ * @param int                  $bathrooms        Bathroom count.
+ * @param string[]             $addons           Selected add-on keys.
+ * @param array<string, int>   $addon_quantities Qty map for per-unit addons.
  * @return float
  */
-function somvio_calculate_quote_price( $service, $property, $bedrooms, $bathrooms, $addons = array() ) {
+function somvio_calculate_quote_price( $service, $property, $bedrooms, $bathrooms, $addons = array(), $addon_quantities = array() ) {
 	$rates = somvio_get_quote_rates();
 
 	$bed_key = (string) max( 1, min( 5, absint( $bedrooms ) ) );
@@ -165,12 +224,33 @@ function somvio_calculate_quote_price( $service, $property, $bedrooms, $bathroom
 
 	$addon_total = 0.0;
 	$addon_defs  = isset( $rates['addons'] ) && is_array( $rates['addons'] ) ? $rates['addons'] : array();
+	$quantities  = is_array( $addon_quantities ) ? $addon_quantities : array();
 
 	foreach ( (array) $addons as $addon_key ) {
 		$addon_key = sanitize_key( (string) $addon_key );
+		if ( ! isset( $addon_defs[ $addon_key ] ) || ! is_array( $addon_defs[ $addon_key ] ) ) {
+			continue;
+		}
+		if ( somvio_addon_is_qty( $addon_defs[ $addon_key ] ) ) {
+			/* Qty addons priced via $quantities; bare key implies qty 1 (quote toggle compat). */
+			if ( ! isset( $quantities[ $addon_key ] ) ) {
+				$quantities[ $addon_key ] = 1;
+			}
+			continue;
+		}
 		if ( isset( $addon_defs[ $addon_key ]['price'] ) ) {
 			$addon_total += (float) $addon_defs[ $addon_key ]['price'];
 		}
+	}
+
+	foreach ( $quantities as $addon_key => $qty ) {
+		$addon_key = sanitize_key( (string) $addon_key );
+		$qty       = absint( $qty );
+		if ( $qty < 1 || ! isset( $addon_defs[ $addon_key ] ) || ! somvio_addon_is_qty( $addon_defs[ $addon_key ] ) ) {
+			continue;
+		}
+		$unit = isset( $addon_defs[ $addon_key ]['price'] ) ? (float) $addon_defs[ $addon_key ]['price'] : 0.0;
+		$addon_total += $unit * min( 10, $qty );
 	}
 
 	return round( ( ( $base + $bath_extra ) * $svc_mult * $prop_mult ) + $addon_total, 2 );
@@ -361,12 +441,19 @@ function somvio_enqueue_quote_calculator_assets() {
 				'selectDate'       => __( 'Select date', 'somvio' ),
 				'selectTime'       => __( 'Please select a time slot.', 'somvio' ),
 				'bedroomHome'      => __( '%d Bedroom Home', 'somvio' ),
-				'mainRooms'        => __( 'Main rooms', 'somvio' ),
-				'bedrooms'         => __( 'Bedrooms', 'somvio' ),
-				'bathrooms'        => __( 'Bathrooms', 'somvio' ),
-				'noOfBedrooms'     => __( 'No. of Bedrooms', 'somvio' ),
-				'noOfBathrooms'    => __( 'No. of Bathrooms', 'somvio' ),
-				'linenChanges'     => __( 'No. of Linen Changes', 'somvio' ),
+				'mainRooms'             => __( 'Main rooms', 'somvio' ),
+				'roomsLivingBedDining'  => __( 'Rooms (Living, Bed, Dining)', 'somvio' ),
+				'bedrooms'              => __( 'Bedrooms', 'somvio' ),
+				'bathrooms'             => __( 'Bathrooms', 'somvio' ),
+				'bathroomsAndShowers'   => __( 'Bathrooms And Shower Rooms', 'somvio' ),
+				'toilets'               => __( 'Toilets (without Baths/showers)', 'somvio' ),
+				'kitchens'              => __( 'Kitchens', 'somvio' ),
+				'noOfBedrooms'          => __( 'No. of Bedrooms', 'somvio' ),
+				'noOfBathrooms'         => __( 'No. of Bathrooms', 'somvio' ),
+				'linenChanges'          => __( 'No. of Linen Changes', 'somvio' ),
+				'frequency'             => __( 'Frequency', 'somvio' ),
+				'frequencyWeekly'       => __( 'Weekly', 'somvio' ),
+				'frequencyFortnightly'  => __( 'Fortnightly', 'somvio' ),
 				'nextStep'         => __( 'Next Step', 'somvio' ),
 				'back'             => __( 'Back', 'somvio' ),
 				'submitQuote'      => __( 'Submit Quote', 'somvio' ),
@@ -457,6 +544,7 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	$welcome_pack   = sanitize_key( (string) ( $request['welcome_pack'] ?? 'no' ) );
 	$toilets        = absint( $request['toilets'] ?? 0 );
 	$kitchens       = absint( $request['kitchens'] ?? 0 );
+	$frequency      = sanitize_key( (string) ( $request['frequency'] ?? '' ) );
 	$date      = sanitize_text_field( (string) $request['date'] );
 	$time      = sanitize_text_field( (string) $request['time'] );
 	$first     = sanitize_text_field( (string) ( $request['first_name'] ?? '' ) );
@@ -467,6 +555,8 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	$address   = sanitize_text_field( (string) ( $request['address'] ?? '' ) );
 	$comment   = sanitize_textarea_field( (string) $request['comment'] );
 	$addons    = somvio_rest_sanitize_string_list( $request['addons'] ?? array() );
+	$addon_quantities = somvio_rest_sanitize_addon_quantities( $request['addon_quantities'] ?? array() );
+	$access_method    = sanitize_key( (string) ( $request['access_method'] ?? '' ) );
 	$terms     = rest_sanitize_boolean( $request['terms_accepted'] ?? false );
 	$source    = sanitize_key( (string) ( $request['source'] ?? 'quote' ) );
 	$payment_method = function_exists( 'somvio_normalize_payment_method' )
@@ -511,6 +601,13 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	}
 	if ( $kitchens > 5 ) {
 		return new WP_Error( 'invalid_rooms', __( 'Invalid room counts.', 'somvio' ), array( 'status' => 400 ) );
+	}
+	if ( 'regular-cleaning' === $service ) {
+		if ( ! in_array( $frequency, array( 'weekly', 'fortnightly' ), true ) ) {
+			$frequency = 'weekly';
+		}
+	} else {
+		$frequency = '';
 	}
 	if ( ! somvio_is_valid_quote_date( $date ) ) {
 		return new WP_Error( 'invalid_date', __( 'Invalid date.', 'somvio' ), array( 'status' => 400 ) );
@@ -563,16 +660,26 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 				array( 'status' => 400 )
 			);
 		}
+		$access_options = somvio_get_access_method_options();
+		if ( '' === $access_method || ! isset( $access_options[ $access_method ] ) ) {
+			return new WP_Error(
+				'invalid_access_method',
+				__( 'Please select how we will get in.', 'somvio' ),
+				array( 'status' => 400 )
+			);
+		}
 	} else {
 		// Quick quote has no payment step.
 		$payment_method = 'cash';
+		$access_method  = '';
 	}
 
 	$extras_services = isset( $rates['extras_services'] ) && is_array( $rates['extras_services'] )
 		? $rates['extras_services']
 		: array( 'deep-cleaning', 'end-of-tenancy', 'after-builders' );
 	if ( ! in_array( $service, $extras_services, true ) ) {
-		$addons = array();
+		$addons           = array();
+		$addon_quantities = array();
 	}
 
 	foreach ( $addons as $addon_key ) {
@@ -581,7 +688,17 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 		}
 	}
 
-	$server_total = somvio_calculate_quote_price( $service, $property, $bedrooms, $bathrooms, $addons );
+	foreach ( $addon_quantities as $qty_key => $qty_val ) {
+		unset( $qty_val );
+		if ( ! isset( $addon_defs[ $qty_key ] ) || ! somvio_addon_is_qty( $addon_defs[ $qty_key ] ) ) {
+			return new WP_Error( 'invalid_addon', __( 'Invalid add-on selection.', 'somvio' ), array( 'status' => 400 ) );
+		}
+		if ( ! in_array( $qty_key, $addons, true ) ) {
+			$addons[] = $qty_key;
+		}
+	}
+
+	$server_total = somvio_calculate_quote_price( $service, $property, $bedrooms, $bathrooms, $addons, $addon_quantities );
 	$client_total = isset( $request['client_total'] ) ? (float) $request['client_total'] : null;
 
 	if ( null !== $client_total && ! is_finite( $client_total ) ) {
@@ -608,6 +725,7 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 		'welcome_pack'    => $welcome_pack,
 		'toilets'         => $toilets,
 		'kitchens'        => $kitchens,
+		'frequency'       => $frequency,
 		'date'            => $date,
 		'time'            => $time,
 		'first_name'      => $first,
@@ -618,6 +736,8 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 		'address'         => $address,
 		'comment'         => $comment,
 		'addons'          => $addons,
+		'addon_quantities'=> $addon_quantities,
+		'access_method'   => $access_method,
 		'terms_accepted'  => $terms,
 		'source'          => $source,
 		'payment_method'  => $payment_method,
@@ -666,7 +786,9 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 		} else {
 			$response['requires_payment'] = true;
 			$response['payment_error']    = (string) ( $payment['error'] ?? 'stripe_failed' );
-			$response['message']          = __( 'Booking saved, but online payment could not be started. We’ll contact you to arrange payment.', 'somvio' );
+			$response['message']          = ! empty( $payment['message'] )
+				? (string) $payment['message']
+				: __( 'Booking saved, but online payment could not be started. We’ll contact you to arrange payment.', 'somvio' );
 		}
 	}
 
@@ -758,6 +880,18 @@ function somvio_register_quote_rest_routes() {
 					'default'           => array(),
 					'sanitize_callback' => 'somvio_rest_sanitize_string_list',
 				),
+				'addon_quantities' => array(
+					'required'          => false,
+					'type'              => 'object',
+					'default'           => array(),
+					'sanitize_callback' => 'somvio_rest_sanitize_addon_quantities',
+				),
+				'access_method'   => array(
+					'required'          => false,
+					'type'              => 'string',
+					'default'           => '',
+					'sanitize_callback' => 'sanitize_key',
+				),
 				'toilets'         => array(
 					'required'          => false,
 					'type'              => 'integer',
@@ -786,6 +920,12 @@ function somvio_register_quote_rest_routes() {
 					'required'          => false,
 					'type'              => 'string',
 					'default'           => 'no',
+					'sanitize_callback' => 'sanitize_key',
+				),
+				'frequency'       => array(
+					'required'          => false,
+					'type'              => 'string',
+					'default'           => '',
 					'sanitize_callback' => 'sanitize_key',
 				),
 				'first_name'      => array(

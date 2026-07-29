@@ -227,6 +227,16 @@ $somvio_year         = (int) gmdate( 'Y' );
 						</a>
 					</li>
 				</ul>
+				<?php
+				get_template_part(
+					'template-parts/components/service',
+					'areas',
+					array(
+						'variant' => 'footer',
+						'class'   => 'site-footer__service-areas',
+					)
+				);
+				?>
 				<a
 					class="btn btn--outline btn--sm site-footer__whatsapp"
 					href="<?php echo esc_url( $somvio_whatsapp ); ?>"

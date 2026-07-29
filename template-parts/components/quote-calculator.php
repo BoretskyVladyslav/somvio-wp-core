@@ -56,6 +56,18 @@ $somvio_qc_counters = array(
 		'max'   => 4,
 		'value' => 1,
 	),
+	'toilets'       => array(
+		'label' => __( 'Toilets (without Baths/showers)', 'somvio' ),
+		'min'   => 0,
+		'max'   => 5,
+		'value' => 0,
+	),
+	'kitchens'      => array(
+		'label' => __( 'Kitchens', 'somvio' ),
+		'min'   => 0,
+		'max'   => 5,
+		'value' => 0,
+	),
 	'linen_changes' => array(
 		'label' => __( 'No. of Linen Changes', 'somvio' ),
 		'min'   => 0,
@@ -148,6 +160,20 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 				</div>
 			</div>
 
+			<fieldset class="quote-calculator__frequency" data-quote-frequency hidden>
+				<legend class="quote-card__label"><?php esc_html_e( 'Frequency', 'somvio' ); ?></legend>
+				<div class="quote-calculator__frequency-options" role="radiogroup" aria-label="<?php esc_attr_e( 'Frequency', 'somvio' ); ?>">
+					<label class="quote-calculator__frequency-option is-selected">
+						<input type="radio" name="<?php echo esc_attr( $somvio_qc_uid ); ?>-frequency" data-quote-field="frequency" value="weekly" checked>
+						<span><?php esc_html_e( 'Weekly', 'somvio' ); ?></span>
+					</label>
+					<label class="quote-calculator__frequency-option">
+						<input type="radio" name="<?php echo esc_attr( $somvio_qc_uid ); ?>-frequency" data-quote-field="frequency" value="fortnightly">
+						<span><?php esc_html_e( 'Fortnightly', 'somvio' ); ?></span>
+					</label>
+				</div>
+			</fieldset>
+
 			<div class="quote-calculator__counters" data-quote-counters>
 				<?php foreach ( $somvio_qc_counters as $somvio_qc_ckey => $somvio_qc_counter ) : ?>
 					<div
@@ -220,6 +246,8 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 					$somvio_qc_alabel = isset( $somvio_qc_addon['label'] ) ? (string) $somvio_qc_addon['label'] : $somvio_qc_akey;
 					$somvio_qc_aprice = isset( $somvio_qc_addon['price'] ) ? (float) $somvio_qc_addon['price'] : 0;
 					$somvio_qc_aicon  = isset( $somvio_qc_addon['icon'] ) ? (string) $somvio_qc_addon['icon'] : '';
+					$somvio_qc_is_qty = ! empty( $somvio_qc_addon['qty'] );
+					$somvio_qc_unit   = isset( $somvio_qc_addon['unit'] ) ? (string) $somvio_qc_addon['unit'] : '';
 					$somvio_qc_auri   = '';
 					if ( '' !== $somvio_qc_aicon ) {
 						$somvio_qc_auri  = $somvio_qc_icons_uri . $somvio_qc_aicon;
@@ -228,28 +256,80 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 							$somvio_qc_auri .= '?v=' . rawurlencode( (string) filemtime( $somvio_qc_apath ) );
 						}
 					}
+					$somvio_qc_price_text = $somvio_qc_is_qty && '' !== $somvio_qc_unit
+						? sprintf(
+							/* translators: 1: price with currency, 2: unit (room/window) */
+							__( '%1$s / %2$s', 'somvio' ),
+							$somvio_qc_symbol . number_format_i18n( $somvio_qc_aprice, 0 ),
+							$somvio_qc_unit
+						)
+						: ( $somvio_qc_symbol . number_format_i18n( $somvio_qc_aprice, 0 ) );
 					?>
-					<button
-						type="button"
-						class="quote-calculator__addon"
-						data-quote-addon="<?php echo esc_attr( $somvio_qc_akey ); ?>"
-						aria-pressed="false"
-					>
-						<?php if ( '' !== $somvio_qc_auri ) : ?>
-							<img
-								class="quote-calculator__addon-icon"
-								src="<?php echo esc_url( $somvio_qc_auri ); ?>"
-								alt=""
-								width="28"
-								height="28"
-								decoding="async"
-							>
-						<?php endif; ?>
-						<span class="quote-calculator__addon-label"><?php echo esc_html( $somvio_qc_alabel ); ?></span>
-						<span class="quote-calculator__addon-price">
-							<?php echo esc_html( $somvio_qc_symbol . number_format_i18n( $somvio_qc_aprice, 0 ) ); ?>
-						</span>
-					</button>
+					<?php if ( $somvio_qc_is_qty ) : ?>
+						<div
+							class="quote-calculator__addon quote-calculator__addon--qty"
+							data-quote-addon-qty="<?php echo esc_attr( $somvio_qc_akey ); ?>"
+						>
+							<?php if ( '' !== $somvio_qc_auri ) : ?>
+								<img
+									class="quote-calculator__addon-icon"
+									src="<?php echo esc_url( $somvio_qc_auri ); ?>"
+									alt=""
+									width="28"
+									height="28"
+									decoding="async"
+								>
+							<?php endif; ?>
+							<span class="quote-calculator__addon-label"><?php echo esc_html( $somvio_qc_alabel ); ?></span>
+							<span class="quote-calculator__addon-price"><?php echo esc_html( $somvio_qc_price_text ); ?></span>
+							<div class="quote-calculator__addon-qty" data-quote-addon-qty-control>
+								<button
+									type="button"
+									class="quote-calculator__addon-qty-btn quote-calculator__addon-qty-btn--minus"
+									data-quote-addon-qty-dec
+									aria-label="<?php echo esc_attr( sprintf( /* translators: %s: addon label */ __( 'Decrease %s', 'somvio' ), $somvio_qc_alabel ) ); ?>"
+									disabled
+								>
+									<span aria-hidden="true">−</span>
+								</button>
+								<span
+									class="quote-calculator__addon-qty-value"
+									data-quote-addon-qty-value
+									aria-live="polite"
+								>0</span>
+								<button
+									type="button"
+									class="quote-calculator__addon-qty-btn quote-calculator__addon-qty-btn--plus"
+									data-quote-addon-qty-inc
+									aria-label="<?php echo esc_attr( sprintf( /* translators: %s: addon label */ __( 'Increase %s', 'somvio' ), $somvio_qc_alabel ) ); ?>"
+								>
+									<span aria-hidden="true">+</span>
+								</button>
+							</div>
+						</div>
+					<?php else : ?>
+						<button
+							type="button"
+							class="quote-calculator__addon"
+							data-quote-addon="<?php echo esc_attr( $somvio_qc_akey ); ?>"
+							aria-pressed="false"
+						>
+							<?php if ( '' !== $somvio_qc_auri ) : ?>
+								<img
+									class="quote-calculator__addon-icon"
+									src="<?php echo esc_url( $somvio_qc_auri ); ?>"
+									alt=""
+									width="28"
+									height="28"
+									decoding="async"
+								>
+							<?php endif; ?>
+							<span class="quote-calculator__addon-label"><?php echo esc_html( $somvio_qc_alabel ); ?></span>
+							<span class="quote-calculator__addon-price">
+								<?php echo esc_html( $somvio_qc_symbol . number_format_i18n( $somvio_qc_aprice, 0 ) ); ?>
+							</span>
+						</button>
+					<?php endif; ?>
 				<?php endforeach; ?>
 			</div>
 			<input type="hidden" name="addons" data-quote-field="addons" value="">
