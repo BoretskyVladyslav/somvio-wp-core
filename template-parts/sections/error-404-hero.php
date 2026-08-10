@@ -14,8 +14,8 @@ $somvio_book_url = function_exists( 'somvio_get_book_now_url' )
 	? somvio_get_book_now_url()
 	: esc_url( home_url( '/booking/' ) );
 
-$somvio_bg_path = get_stylesheet_directory() . '/assets/images/404-bg.png';
-$somvio_bg_uri  = get_stylesheet_directory_uri() . '/assets/images/404-bg.png';
+$somvio_bg_path = get_stylesheet_directory() . '/assets/images/blog/featured-2.png';
+$somvio_bg_uri  = get_stylesheet_directory_uri() . '/assets/images/blog/featured-2.png';
 
 if ( file_exists( $somvio_bg_path ) ) {
 	$somvio_bg_uri .= '?v=' . rawurlencode( (string) filemtime( $somvio_bg_path ) );

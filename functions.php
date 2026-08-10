@@ -46,8 +46,118 @@ function somvio_asset_version( $relative_path ) {
 	$theme = wp_get_theme( get_stylesheet() );
 	$ver   = $theme->get( 'Version' );
 
-	return is_string( $ver ) && '' !== $ver ? $ver : '1.0.5';
+	return is_string( $ver ) && '' !== $ver ? $ver : '1.0.6';
 }
+
+/**
+ * Whether to prefer minified theme assets (disable via SCRIPT_DEBUG).
+ *
+ * @return bool
+ */
+function somvio_use_minified_assets() {
+	return ! ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG );
+}
+
+/**
+ * Resolve a theme-relative JS path, preferring `.min.js` when available.
+ *
+ * @param string $relative_js Path relative to the child theme root (e.g. assets/js/header.js).
+ * @return string
+ */
+function somvio_theme_script_path( $relative_js ) {
+	$relative_js = ltrim( (string) $relative_js, '/' );
+
+	if ( somvio_use_minified_assets() && preg_match( '/\.js$/i', $relative_js ) && ! preg_match( '/\.min\.js$/i', $relative_js ) ) {
+		$min_rel = (string) preg_replace( '/\.js$/i', '.min.js', $relative_js );
+		if ( is_file( get_stylesheet_directory() . '/' . $min_rel ) ) {
+			return $min_rel;
+		}
+	}
+
+	return $relative_js;
+}
+
+/**
+ * Enqueue a child-theme script in the footer with a defer-friendly strategy.
+ *
+ * Stable handles + `defer` keep assets compatible with caching plugins
+ * (WP Rocket, LiteSpeed, Autoptimize) that delay/defer JS further.
+ *
+ * @param string   $handle      Script handle.
+ * @param string   $relative_js Path relative to the child theme root.
+ * @param string[] $deps        Script dependencies.
+ * @param string   $strategy    Loading strategy: defer|async|empty string.
+ * @return bool True when enqueued.
+ */
+function somvio_enqueue_theme_script( $handle, $relative_js, $deps = array(), $strategy = 'defer' ) {
+	$relative = somvio_theme_script_path( $relative_js );
+	$path     = get_stylesheet_directory() . '/' . $relative;
+
+	if ( ! is_file( $path ) ) {
+		return false;
+	}
+
+	$args = array(
+		'in_footer' => true,
+	);
+
+	if ( is_string( $strategy ) && '' !== $strategy ) {
+		$args['strategy'] = $strategy;
+	}
+
+	wp_enqueue_script(
+		$handle,
+		get_stylesheet_directory_uri() . '/' . $relative,
+		$deps,
+		(string) filemtime( $path ),
+		$args
+	);
+
+	return true;
+}
+
+/**
+ * Prefer minified child stylesheet when GeneratePress enqueues `generate-child`.
+ *
+ * @param string $src    Stylesheet URL.
+ * @param string $handle Style handle.
+ * @return string
+ */
+function somvio_prefer_minified_child_style( $src, $handle ) {
+	if ( 'generate-child' !== $handle || ! somvio_use_minified_assets() ) {
+		return $src;
+	}
+
+	$min_path = get_stylesheet_directory() . '/style.min.css';
+	if ( ! is_file( $min_path ) ) {
+		return $src;
+	}
+
+	return get_stylesheet_directory_uri() . '/style.min.css';
+}
+add_filter( 'style_loader_src', 'somvio_prefer_minified_child_style', 15, 2 );
+
+/**
+ * Resource hints for Google Fonts (PageSpeed).
+ *
+ * @param array  $urls          URLs to print for resource hints.
+ * @param string $relation_type The relation type the URLs are printed for.
+ * @return array
+ */
+function somvio_resource_hints( $urls, $relation_type ) {
+	if ( 'preconnect' === $relation_type ) {
+		$urls[] = array(
+			'href' => 'https://fonts.googleapis.com',
+		);
+		$urls[] = array(
+			'href'        => 'https://fonts.gstatic.com',
+			'crossorigin' => 'anonymous',
+		);
+	}
+
+	return $urls;
+}
+add_filter( 'wp_resource_hints', 'somvio_resource_hints', 10, 2 );
 
 /**
  * Force ?ver=filemtime on all child-theme CSS/JS URLs.
@@ -116,7 +226,6 @@ require_once get_stylesheet_directory() . '/inc/footer.php';
 require_once get_stylesheet_directory() . '/inc/cookie-consent.php';
 require_once get_stylesheet_directory() . '/inc/scroll-reveal.php';
 require_once get_stylesheet_directory() . '/inc/setup-pages.php';
-require_once get_stylesheet_directory() . '/inc/page-seeder.php';
 require_once get_stylesheet_directory() . '/inc/calculator.php';
 require_once get_stylesheet_directory() . '/inc/booking/bootstrap.php';
 require_once get_stylesheet_directory() . '/inc/layout.php';

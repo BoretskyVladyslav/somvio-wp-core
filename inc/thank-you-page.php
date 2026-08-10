@@ -52,24 +52,14 @@ function somvio_enqueue_thank_you_page_assets() {
 		return;
 	}
 
-	$script_path = get_stylesheet_directory() . '/assets/js/thank-you-page.js';
-
-	if ( ! file_exists( $script_path ) ) {
-		return;
-	}
-
-	wp_enqueue_script(
-		'somvio-thank-you-page',
-		get_stylesheet_directory_uri() . '/assets/js/thank-you-page.js',
-		array(),
-		(string) filemtime( $script_path ),
-		true
-	);
+	somvio_enqueue_theme_script( 'somvio-thank-you-page', 'assets/js/thank-you-page.js' );
 }
 add_action( 'wp_enqueue_scripts', 'somvio_enqueue_thank_you_page_assets' );
 
 /**
  * Enqueue global booking → Thank You redirect listener.
+ *
+ * Loaded only where quote/booking flows can fire the redirect event.
  *
  * @return void
  */
@@ -78,19 +68,16 @@ function somvio_enqueue_thank_you_redirect_assets() {
 		return;
 	}
 
-	$script_path = get_stylesheet_directory() . '/assets/js/thank-you-redirect.js';
+	$needs_redirect = ( function_exists( 'somvio_is_booking_page' ) && somvio_is_booking_page() )
+		|| ( function_exists( 'somvio_needs_quote_calculator_assets' ) && somvio_needs_quote_calculator_assets() );
 
-	if ( ! file_exists( $script_path ) ) {
+	if ( ! $needs_redirect ) {
 		return;
 	}
 
-	wp_enqueue_script(
-		'somvio-thank-you-redirect',
-		get_stylesheet_directory_uri() . '/assets/js/thank-you-redirect.js',
-		array(),
-		(string) filemtime( $script_path ),
-		true
-	);
+	if ( ! somvio_enqueue_theme_script( 'somvio-thank-you-redirect', 'assets/js/thank-you-redirect.js' ) ) {
+		return;
+	}
 
 	$thank_you_url = function_exists( 'somvio_get_thank_you_url' )
 		? somvio_get_thank_you_url()

@@ -53,19 +53,9 @@ function somvio_enqueue_booking_form_assets() {
 		return;
 	}
 
-	$script_path = get_stylesheet_directory() . '/assets/js/booking-form.js';
-
-	if ( ! file_exists( $script_path ) ) {
+	if ( ! somvio_enqueue_theme_script( 'somvio-booking-form', 'assets/js/booking-form.js' ) ) {
 		return;
 	}
-
-	wp_enqueue_script(
-		'somvio-booking-form',
-		get_stylesheet_directory_uri() . '/assets/js/booking-form.js',
-		array(),
-		(string) filemtime( $script_path ),
-		true
-	);
 
 	$privacy_url = function_exists( 'somvio_get_privacy_policy_page_id' )
 		? get_permalink( somvio_get_privacy_policy_page_id() )

@@ -3,7 +3,7 @@
  * Single blog post hero — Figma 300:2415.
  *
  * Structure: breadcrumbs → H1 → date. Featured image preferred;
- * hard-fallback to assets/images/blog-single-hero-bg.jpg.
+ * hard-fallback to assets/images/blog-hero-bg.jpg.
  *
  * @package Somvio_Child
  */
@@ -28,10 +28,10 @@ $somvio_date  = get_the_date( 'F j, Y', $somvio_post_id );
 
 // Featured image first; hard-fallback to local hero asset.
 $somvio_bg_uri  = (string) get_the_post_thumbnail_url( $somvio_post_id, 'full' );
-$somvio_bg_path = get_stylesheet_directory() . '/assets/images/blog-single-hero-bg.jpg';
+$somvio_bg_path = get_stylesheet_directory() . '/assets/images/blog-hero-bg.jpg';
 
 if ( '' === $somvio_bg_uri && file_exists( $somvio_bg_path ) ) {
-	$somvio_bg_uri  = get_stylesheet_directory_uri() . '/assets/images/blog-single-hero-bg.jpg';
+	$somvio_bg_uri  = get_stylesheet_directory_uri() . '/assets/images/blog-hero-bg.jpg';
 	$somvio_bg_uri .= '?v=' . rawurlencode( (string) filemtime( $somvio_bg_path ) );
 }
 

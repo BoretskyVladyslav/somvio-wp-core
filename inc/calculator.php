@@ -413,18 +413,9 @@ function somvio_enqueue_quote_calculator_assets() {
 		return;
 	}
 
-	$script_path = get_stylesheet_directory() . '/assets/js/quote-calculator.js';
-	if ( ! file_exists( $script_path ) ) {
+	if ( ! somvio_enqueue_theme_script( 'somvio-quote-calculator', 'assets/js/quote-calculator.js' ) ) {
 		return;
 	}
-
-	wp_enqueue_script(
-		'somvio-quote-calculator',
-		get_stylesheet_directory_uri() . '/assets/js/quote-calculator.js',
-		array(),
-		(string) filemtime( $script_path ),
-		true
-	);
 
 	wp_localize_script(
 		'somvio-quote-calculator',

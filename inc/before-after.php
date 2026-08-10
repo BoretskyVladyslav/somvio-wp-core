@@ -35,18 +35,6 @@ function somvio_enqueue_before_after_assets() {
 		return;
 	}
 
-	$script_path = get_stylesheet_directory() . '/assets/js/before-after.js';
-
-	if ( ! file_exists( $script_path ) ) {
-		return;
-	}
-
-	wp_enqueue_script(
-		'somvio-before-after',
-		get_stylesheet_directory_uri() . '/assets/js/before-after.js',
-		array(),
-		(string) filemtime( $script_path ),
-		true
-	);
+	somvio_enqueue_theme_script( 'somvio-before-after', 'assets/js/before-after.js' );
 }
 add_action( 'wp_enqueue_scripts', 'somvio_enqueue_before_after_assets' );

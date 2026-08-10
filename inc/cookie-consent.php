@@ -15,19 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return void
  */
 function somvio_enqueue_cookie_consent_assets() {
-	$script_path = get_stylesheet_directory() . '/assets/js/cookie-consent.js';
-
-	if ( ! file_exists( $script_path ) ) {
-		return;
-	}
-
-	wp_enqueue_script(
-		'somvio-cookie-consent',
-		get_stylesheet_directory_uri() . '/assets/js/cookie-consent.js',
-		array(),
-		(string) filemtime( $script_path ),
-		true
-	);
+	somvio_enqueue_theme_script( 'somvio-cookie-consent', 'assets/js/cookie-consent.js' );
 }
 add_action( 'wp_enqueue_scripts', 'somvio_enqueue_cookie_consent_assets' );
 

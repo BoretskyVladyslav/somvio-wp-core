@@ -58,19 +58,7 @@ function somvio_enqueue_blog_assets() {
 		return;
 	}
 
-	$script_path = get_stylesheet_directory() . '/assets/js/blog-filter.js';
-
-	if ( ! file_exists( $script_path ) ) {
-		return;
-	}
-
-	wp_enqueue_script(
-		'somvio-blog-filter',
-		get_stylesheet_directory_uri() . '/assets/js/blog-filter.js',
-		array(),
-		(string) filemtime( $script_path ),
-		true
-	);
+	somvio_enqueue_theme_script( 'somvio-blog-filter', 'assets/js/blog-filter.js' );
 }
 add_action( 'wp_enqueue_scripts', 'somvio_enqueue_blog_assets' );
 

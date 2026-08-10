@@ -11,8 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$somvio_image_path = get_stylesheet_directory() . '/assets/images/about-story.jpg';
-$somvio_image_uri  = get_stylesheet_directory_uri() . '/assets/images/about-story.jpg';
+$somvio_image_path = get_stylesheet_directory() . '/assets/images/hero-bg.jpg';
+$somvio_image_uri  = get_stylesheet_directory_uri() . '/assets/images/hero-bg.jpg';
 
 if ( file_exists( $somvio_image_path ) ) {
 	$somvio_image_uri .= '?v=' . rawurlencode( (string) filemtime( $somvio_image_path ) );
@@ -34,7 +34,7 @@ if ( file_exists( $somvio_image_path ) ) {
 					>
 				<?php else : ?>
 					<span class="about-story__media-missing">
-						<?php esc_html_e( 'Missing image: assets/images/about-story.jpg', 'somvio' ); ?>
+						<?php esc_html_e( 'Missing image: assets/images/hero-bg.jpg', 'somvio' ); ?>
 					</span>
 				<?php endif; ?>
 			</figure>

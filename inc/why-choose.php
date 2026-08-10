@@ -35,18 +35,6 @@ function somvio_enqueue_why_choose_assets() {
 		return;
 	}
 
-	$script_path = get_stylesheet_directory() . '/assets/js/why-choose.js';
-
-	if ( ! file_exists( $script_path ) ) {
-		return;
-	}
-
-	wp_enqueue_script(
-		'somvio-why-choose',
-		get_stylesheet_directory_uri() . '/assets/js/why-choose.js',
-		array(),
-		(string) filemtime( $script_path ),
-		true
-	);
+	somvio_enqueue_theme_script( 'somvio-why-choose', 'assets/js/why-choose.js' );
 }
 add_action( 'wp_enqueue_scripts', 'somvio_enqueue_why_choose_assets' );

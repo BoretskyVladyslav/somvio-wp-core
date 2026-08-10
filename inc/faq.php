@@ -103,18 +103,6 @@ function somvio_enqueue_faq_assets() {
 		return;
 	}
 
-	$script_path = get_stylesheet_directory() . '/assets/js/accordion.js';
-
-	if ( ! file_exists( $script_path ) ) {
-		return;
-	}
-
-	wp_enqueue_script(
-		'somvio-accordion',
-		get_stylesheet_directory_uri() . '/assets/js/accordion.js',
-		array(),
-		(string) filemtime( $script_path ),
-		true
-	);
+	somvio_enqueue_theme_script( 'somvio-accordion', 'assets/js/accordion.js' );
 }
 add_action( 'wp_enqueue_scripts', 'somvio_enqueue_faq_assets' );

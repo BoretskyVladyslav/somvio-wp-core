@@ -63,8 +63,8 @@ $somvio_steps = array(
 	),
 );
 
-$somvio_preview_path = get_stylesheet_directory() . '/assets/images/how-it-works-preview.jpg';
-$somvio_preview_uri  = get_stylesheet_directory_uri() . '/assets/images/how-it-works-preview.jpg';
+$somvio_preview_path = get_stylesheet_directory() . '/assets/images/hero-bg.jpg';
+$somvio_preview_uri  = get_stylesheet_directory_uri() . '/assets/images/hero-bg.jpg';
 
 if ( file_exists( $somvio_preview_path ) ) {
 	$somvio_preview_uri .= '?v=' . rawurlencode( (string) filemtime( $somvio_preview_path ) );

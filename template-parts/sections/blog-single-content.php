@@ -20,12 +20,12 @@ $somvio_blog_url    = (int) get_option( 'page_for_posts' )
 	: esc_url( home_url( '/blog/' ) );
 
 // Article image: local Figma export, else featured image.
-$somvio_img_path = get_stylesheet_directory() . '/assets/images/blog-single-content.png';
+$somvio_img_path = get_stylesheet_directory() . '/assets/images/blog/featured-1.png';
 $somvio_img_uri  = '';
 $somvio_img_alt  = get_the_title( $somvio_post_id );
 
 if ( file_exists( $somvio_img_path ) ) {
-	$somvio_img_uri  = get_stylesheet_directory_uri() . '/assets/images/blog-single-content.png';
+	$somvio_img_uri  = get_stylesheet_directory_uri() . '/assets/images/blog/featured-1.png';
 	$somvio_img_uri .= '?v=' . rawurlencode( (string) filemtime( $somvio_img_path ) );
 } elseif ( has_post_thumbnail( $somvio_post_id ) ) {
 	$somvio_img_uri = (string) get_the_post_thumbnail_url( $somvio_post_id, 'large' );

@@ -66,7 +66,7 @@ function somvio_get_demo_blog_post_definition() {
 		'category' => 'Cleaning Tips',
 		'date'     => '2024-12-16 10:00:00',
 		'content'  => $content,
-		'image'    => 'assets/images/blog-single-hero-bg.jpg',
+		'image'    => 'assets/images/blog-hero-bg.jpg',
 	);
 }
 

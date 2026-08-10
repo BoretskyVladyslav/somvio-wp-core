@@ -160,19 +160,9 @@ function somvio_enqueue_contact_form_assets() {
 		return;
 	}
 
-	$script_path = get_stylesheet_directory() . '/assets/js/contact-form.js';
-
-	if ( ! file_exists( $script_path ) ) {
+	if ( ! somvio_enqueue_theme_script( 'somvio-contact-form', 'assets/js/contact-form.js' ) ) {
 		return;
 	}
-
-	wp_enqueue_script(
-		'somvio-contact-form',
-		get_stylesheet_directory_uri() . '/assets/js/contact-form.js',
-		array(),
-		(string) filemtime( $script_path ),
-		true
-	);
 
 	wp_localize_script(
 		'somvio-contact-form',

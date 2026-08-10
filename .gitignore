@@ -1,0 +1,25 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local Cursor tooling (optional — keep if you want shared agent rules)
+# .cursor/
+
+# Node (asset rebuild tooling)
+node_modules/
+package-lock.json
+npm-debug.log*
+
+# Env / secrets (never commit)
+.env
+.env.*
+*.pem
+
+# WP noise if theme is ever scanned from a full install
+.sass-cache/
+*.map
