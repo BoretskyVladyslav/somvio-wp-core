@@ -1,4 +1,5 @@
-![Somvio Homepage Screenshot](./screenshot.png)
+<img width="1280" height="733" alt="image" src="https://github.com/user-attachments/assets/329db17c-522b-4222-ab28-8aecbdc3e1b0" />
+
 
 # Somvio — Cleaning Service Booking Platform
 
