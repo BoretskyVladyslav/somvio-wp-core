@@ -71,7 +71,19 @@ function somvio_process_booking_submission( array $payload ) {
 		}
 
 		$payload['_payload_key'] = wp_generate_uuid4();
-		$stripe = somvio_stripe_create_payment_intent( (float) ( $payload['total'] ?? 0 ), $payload );
+		$payload['charged_total'] = round( (float) ( $payload['total'] ?? 0 ), 2 );
+		$payload['charged_total_cents'] = function_exists( 'somvio_stripe_to_cents' )
+			? somvio_stripe_to_cents( $payload['charged_total'] )
+			: (int) round( (float) $payload['charged_total'] * 100 );
+		if ( $payload['charged_total_cents'] < 50 ) {
+			$result['payment'] = array(
+				'success' => false,
+				'error'   => 'invalid_amount',
+				'message' => __( 'Unable to charge this booking. Please contact us.', 'somvio' ),
+			);
+			return $result;
+		}
+		$stripe = somvio_stripe_create_payment_intent( (float) $payload['charged_total'], $payload );
 		$result['payment'] = $stripe;
 
 		if ( ! empty( $stripe['success'] ) && ! empty( $stripe['payment_intent_id'] ) ) {
@@ -145,8 +157,16 @@ function somvio_rest_confirm_payment( WP_REST_Request $request ) {
 	}
 	if ( empty( $fulfill['success'] ) ) {
 		$error = (string) ( $fulfill['error'] ?? '' );
-		if ( 'payment_not_complete' === $error ) {
-			somvio_stripe_abandon_payment_intent( $payment_intent_id );
+
+		if ( 'locked' === $error ) {
+			return new WP_Error(
+				'pending_fulfillment',
+				__( 'Payment succeeded. Booking confirmation is still in progress.', 'somvio' ),
+				array(
+					'status' => 503,
+					'detail' => $error,
+				)
+			);
 		}
 
 		return new WP_Error(

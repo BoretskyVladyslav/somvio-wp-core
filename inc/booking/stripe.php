@@ -90,6 +90,89 @@ function somvio_stripe_is_configured() {
 }
 
 /**
+ * GBP major units → integer pence.
+ *
+ * @param mixed $amount Major units.
+ * @return int
+ */
+function somvio_stripe_to_cents( $amount ) {
+	if ( function_exists( 'somvio_money_to_cents' ) ) {
+		return somvio_money_to_cents( $amount );
+	}
+
+	if ( ! is_numeric( $amount ) ) {
+		return 0;
+	}
+
+	return (int) round( (float) $amount * 100 );
+}
+
+/**
+ * Acquire an atomic fulfill lock (add_option UNIQUE). Stale locks > 120s are replaced.
+ * Never deletes the booking slot — a live 'pending' claim must not be wiped.
+ *
+ * @param string $payment_intent_id Intent ID.
+ * @return bool
+ */
+function somvio_stripe_acquire_fulfill_lock( $payment_intent_id ) {
+	$key = somvio_stripe_intent_key( $payment_intent_id, 'flock' );
+	$now = time();
+
+	if ( add_option( $key, $now, '', false ) ) {
+		return true;
+	}
+
+	$held = absint( get_option( $key, 0 ) );
+	if ( $held > 0 && ( $now - $held ) < 120 ) {
+		return false;
+	}
+
+	delete_option( $key );
+
+	return add_option( $key, $now, '', false );
+}
+
+/**
+ * Release fulfill lock.
+ *
+ * @param string $payment_intent_id Intent ID.
+ * @return void
+ */
+function somvio_stripe_release_fulfill_lock( $payment_intent_id ) {
+	delete_option( somvio_stripe_intent_key( $payment_intent_id, 'flock' ) );
+}
+
+/**
+ * Whether confirmation emails were already sent for this PaymentIntent.
+ *
+ * @param string $payment_intent_id Intent ID.
+ * @return bool
+ */
+function somvio_stripe_emails_sent_for_intent( $payment_intent_id ) {
+	return (bool) get_option( somvio_stripe_intent_key( $payment_intent_id, 'emails' ), false );
+}
+
+/**
+ * Atomically claim the email-send slot for this PaymentIntent.
+ *
+ * @param string $payment_intent_id Intent ID.
+ * @return bool True if this caller should send.
+ */
+function somvio_stripe_claim_email_send( $payment_intent_id ) {
+	return add_option( somvio_stripe_intent_key( $payment_intent_id, 'emails' ), 1, '', false );
+}
+
+/**
+ * Mark confirmation emails as sent for this PaymentIntent.
+ *
+ * @param string $payment_intent_id Intent ID.
+ * @return void
+ */
+function somvio_stripe_mark_emails_sent( $payment_intent_id ) {
+	update_option( somvio_stripe_intent_key( $payment_intent_id, 'emails' ), 1, false );
+}
+
+/**
  * Create a Stripe PaymentIntent for a booking total (GBP).
  *
  * @param float                $amount  Amount in major units (e.g. 75.00).
@@ -115,8 +198,15 @@ function somvio_stripe_create_payment_intent( $amount, array $payload = array() 
 		);
 	}
 
-	$amount_minor = (int) round( $amount * 100 );
-	$currency     = 'gbp';
+	$amount_minor = somvio_stripe_to_cents( $amount );
+	if ( $amount_minor < 50 ) {
+		return array(
+			'success' => false,
+			'error'   => 'invalid_amount',
+		);
+	}
+
+	$currency = 'gbp';
 
 	$meta = array(
 		'source'     => sanitize_key( (string) ( $payload['source'] ?? 'booking' ) ),
@@ -201,20 +291,28 @@ function somvio_stripe_create_payment_intent( $amount, array $payload = array() 
 }
 
 /**
- * Retrieve a PaymentIntent and verify it succeeded for the expected amount.
+ * Retrieve a PaymentIntent and verify it succeeded for the expected integer pence.
  *
  * @param string $payment_intent_id Intent ID.
- * @param float  $expected_amount   Expected major-unit amount.
+ * @param int    $expected_cents    Frozen charged_total_cents from pending payload.
  * @return array{success:bool,status?:string,error?:string}
  */
-function somvio_stripe_verify_payment_intent( $payment_intent_id, $expected_amount ) {
+function somvio_stripe_verify_payment_intent( $payment_intent_id, $expected_cents ) {
 	$payment_intent_id = sanitize_text_field( (string) $payment_intent_id );
+	$expected_cents    = absint( $expected_cents );
 	$secret            = somvio_get_stripe_secret_key();
 
 	if ( '' === $payment_intent_id || '' === $secret ) {
 		return array(
 			'success' => false,
 			'error'   => 'invalid_request',
+		);
+	}
+
+	if ( $expected_cents < 50 ) {
+		return array(
+			'success' => false,
+			'error'   => 'expected_amount_missing',
 		);
 	}
 
@@ -252,16 +350,17 @@ function somvio_stripe_verify_payment_intent( $payment_intent_id, $expected_amou
 		);
 	}
 
-	$paid_minor     = isset( $data['amount_received'] ) ? (int) $data['amount_received'] : (int) ( $data['amount'] ?? 0 );
-	$expected_minor = (int) round( (float) $expected_amount * 100 );
-	// Online confirmation must always bind to a positive expected total.
-	if ( $expected_minor <= 0 ) {
+	$currency = strtolower( (string) ( $data['currency'] ?? '' ) );
+	if ( 'gbp' !== $currency ) {
 		return array(
 			'success' => false,
-			'error'   => 'expected_amount_missing',
+			'status'  => $status,
+			'error'   => 'currency_mismatch',
 		);
 	}
-	if ( abs( $paid_minor - $expected_minor ) > 1 ) {
+
+	$paid_minor = isset( $data['amount_received'] ) ? (int) $data['amount_received'] : (int) ( $data['amount'] ?? 0 );
+	if ( $paid_minor !== $expected_cents ) {
 		return array(
 			'success' => false,
 			'error'   => 'amount_mismatch',
@@ -287,6 +386,40 @@ function somvio_stripe_intent_key( $payment_intent_id, $suffix ) {
 }
 
 /**
+ * Pending payload TTL (Stripe retry window).
+ *
+ * @return int
+ */
+function somvio_stripe_pending_payload_ttl() {
+	return 72 * HOUR_IN_SECONDS;
+}
+
+/**
+ * Unwrap a stored pending record (option wrapper or legacy raw payload).
+ *
+ * @param mixed $data Option / transient value.
+ * @return array<string, mixed>|null
+ */
+function somvio_stripe_unwrap_pending_record( $data ) {
+	if ( ! is_array( $data ) ) {
+		return null;
+	}
+
+	if ( isset( $data['expires_at'] ) ) {
+		if ( (int) $data['expires_at'] < time() ) {
+			return null;
+		}
+		return isset( $data['payload'] ) && is_array( $data['payload'] ) ? $data['payload'] : null;
+	}
+
+	if ( isset( $data['charged_total_cents'] ) || isset( $data['total'] ) || isset( $data['service'] ) ) {
+		return $data;
+	}
+
+	return null;
+}
+
+/**
  * Store sanitized booking payload until payment succeeds or expires.
  *
  * @param string               $payment_intent_id Intent ID.
@@ -294,8 +427,17 @@ function somvio_stripe_intent_key( $payment_intent_id, $suffix ) {
  * @return void
  */
 function somvio_stripe_store_pending_payload( $payment_intent_id, array $payload ) {
-	$key = somvio_stripe_intent_key( $payment_intent_id, 'pending' );
-	set_transient( $key, $payload, 12 * HOUR_IN_SECONDS );
+	$key    = somvio_stripe_intent_key( $payment_intent_id, 'pending' );
+	$record = array(
+		'payload'    => $payload,
+		'expires_at' => time() + somvio_stripe_pending_payload_ttl(),
+	);
+
+	if ( ! add_option( $key, $record, '', false ) ) {
+		update_option( $key, $record, false );
+	}
+
+	delete_transient( $key );
 }
 
 /**
@@ -306,18 +448,36 @@ function somvio_stripe_store_pending_payload( $payment_intent_id, array $payload
  */
 function somvio_stripe_get_pending_payload( $payment_intent_id ) {
 	$key  = somvio_stripe_intent_key( $payment_intent_id, 'pending' );
-	$data = get_transient( $key );
-	return is_array( $data ) ? $data : null;
+	$data = get_option( $key, false );
+
+	if ( is_array( $data ) ) {
+		if ( isset( $data['expires_at'] ) && (int) $data['expires_at'] < time() ) {
+			delete_option( $key );
+			delete_transient( $key );
+			return null;
+		}
+
+		$payload = somvio_stripe_unwrap_pending_record( $data );
+		if ( is_array( $payload ) ) {
+			return $payload;
+		}
+	}
+
+	$legacy = get_transient( $key );
+	$payload = somvio_stripe_unwrap_pending_record( $legacy );
+	return is_array( $payload ) ? $payload : null;
 }
 
 /**
- * Drop pending payload (failed / cancelled / fulfilled).
+ * Drop pending payload (cancelled / fulfilled).
  *
  * @param string $payment_intent_id Intent ID.
  * @return void
  */
 function somvio_stripe_delete_pending_payload( $payment_intent_id ) {
-	delete_transient( somvio_stripe_intent_key( $payment_intent_id, 'pending' ) );
+	$key = somvio_stripe_intent_key( $payment_intent_id, 'pending' );
+	delete_option( $key );
+	delete_transient( $key );
 }
 
 /**
@@ -328,7 +488,50 @@ function somvio_stripe_delete_pending_payload( $payment_intent_id ) {
  */
 function somvio_stripe_get_booking_for_intent( $payment_intent_id ) {
 	$key = somvio_stripe_intent_key( $payment_intent_id, 'booking' );
-	return absint( get_option( $key, 0 ) );
+	$raw = get_option( $key, 0 );
+	if ( 'pending' === $raw ) {
+		return 0;
+	}
+
+	return absint( $raw );
+}
+
+/**
+ * Claim the booking slot before LatePoint create. Returns existing id, 0 if claimed, or -1 if pending elsewhere.
+ *
+ * @param string $payment_intent_id Intent ID.
+ * @return int
+ */
+function somvio_stripe_claim_booking_slot( $payment_intent_id ) {
+	$key      = somvio_stripe_intent_key( $payment_intent_id, 'booking' );
+	$existing = somvio_stripe_get_booking_for_intent( $payment_intent_id );
+	if ( $existing > 0 ) {
+		return $existing;
+	}
+
+	if ( add_option( $key, 'pending', '', false ) ) {
+		return 0;
+	}
+
+	$raw = get_option( $key, 0 );
+	if ( 'pending' === $raw ) {
+		return -1;
+	}
+
+	return absint( $raw );
+}
+
+/**
+ * Drop a pending booking claim after a failed LatePoint create.
+ *
+ * @param string $payment_intent_id Intent ID.
+ * @return void
+ */
+function somvio_stripe_release_booking_slot( $payment_intent_id ) {
+	$key = somvio_stripe_intent_key( $payment_intent_id, 'booking' );
+	if ( 'pending' === get_option( $key, '' ) ) {
+		delete_option( $key );
+	}
 }
 
 /**
