@@ -115,7 +115,13 @@
 	};
 
 	const syncViewport = () => {
-		if ( mqDesktop.matches ) {
+		const isDesktop = mqDesktop.matches;
+
+		toggle.hidden = isDesktop;
+		toggle.setAttribute( 'aria-hidden', isDesktop ? 'true' : 'false' );
+		toggle.tabIndex = isDesktop ? -1 : 0;
+
+		if ( isDesktop ) {
 			header.classList.remove( 'somvio-header--nav-open' );
 			toggle.setAttribute( 'aria-expanded', 'false' );
 			toggle.setAttribute( 'aria-label', labelOpen );

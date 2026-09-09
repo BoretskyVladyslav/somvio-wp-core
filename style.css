@@ -1076,12 +1076,20 @@ body.somvio-no-scroll .somvio-header {
 	}
 }
 
-/* Desktop: keep icon buttons / backdrop out of flow; Book Now stays in the bar only */
+/* Desktop: burger / WhatsApp icon / backdrop must not sit next to phone + Book Now */
 @media (min-width: 1024px) {
-	.somvio-header__phone-btn,
+	#masthead.somvio-header .somvio-header__toggle,
+	#masthead.somvio-header .somvio-header__phone-btn,
+	#masthead.somvio-header .somvio-header__backdrop,
+	.somvio-header .somvio-header__toggle,
+	.somvio-header .somvio-header__phone-btn,
+	.somvio-header .somvio-header__backdrop,
 	.somvio-header__toggle,
+	.somvio-header__phone-btn,
 	.somvio-header__backdrop {
-		display: none;
+		display: none !important;
+		visibility: hidden !important;
+		pointer-events: none !important;
 	}
 
 	.somvio-header__drawer-actions {
