@@ -55,7 +55,7 @@ if ( file_exists( $somvio_bg_path ) ) {
 		</nav>
 
 		<h1 id="contact-hero-title" class="contact-hero__title reveal-on-scroll" style="--reveal-delay: 0.05s;">
-			<?php esc_html_e( 'Contact', 'somvio' ); ?>
+			<?php esc_html_e( 'Contact Somvio Cleaning', 'somvio' ); ?>
 		</h1>
 
 		<p class="contact-hero__text reveal-on-scroll" style="--reveal-delay: 0.1s;">

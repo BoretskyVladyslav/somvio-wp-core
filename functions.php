@@ -19,9 +19,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 /**
- * Theme supports for SEO plugins (Rank Math hooks document title via title-tag).
+ * Theme supports for SEO plugins (Rank Math / Yoast hook document title via title-tag).
  * Parent GeneratePress also declares this; re-declare so the child is self-sufficient.
- * wp_head() / wp_footer() live in the parent header.php / footer.php (not overridden).
+ * Do not print a hard-coded <title>. wp_head() / wp_footer() live in the parent
+ * GeneratePress header.php / footer.php — never copy those files into the child.
  *
  * @return void
  */
@@ -226,6 +227,7 @@ require_once get_stylesheet_directory() . '/inc/footer.php';
 require_once get_stylesheet_directory() . '/inc/cookie-consent.php';
 require_once get_stylesheet_directory() . '/inc/scroll-reveal.php';
 require_once get_stylesheet_directory() . '/inc/setup-pages.php';
+require_once get_stylesheet_directory() . '/inc/seo.php';
 require_once get_stylesheet_directory() . '/inc/calculator.php';
 require_once get_stylesheet_directory() . '/inc/postcode.php';
 require_once get_stylesheet_directory() . '/inc/booking/bootstrap.php';

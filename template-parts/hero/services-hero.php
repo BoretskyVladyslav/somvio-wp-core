@@ -37,7 +37,7 @@ $somvio_home_url = esc_url( home_url( '/' ) );
 		</nav>
 
 		<h1 class="services-hero__title reveal-on-scroll" style="--reveal-delay: 0.05s;">
-			<?php esc_html_e( 'Services', 'somvio' ); ?>
+			<?php esc_html_e( 'Cleaning Services in Glasgow', 'somvio' ); ?>
 		</h1>
 
 		<p class="services-hero__subtitle reveal-on-scroll" style="--reveal-delay: 0.1s;">

@@ -64,7 +64,14 @@ $somvio_quote_url = function_exists( 'somvio_get_book_now_url' )
 				</nav>
 
 				<h1 class="service-single-hero__title reveal-on-scroll" style="--reveal-delay: 0.05s;">
-					<?php echo esc_html( $somvio_title ); ?>
+					<?php
+					$somvio_h1 = $somvio_title;
+					if ( false === stripos( $somvio_h1, 'glasgow' ) ) {
+						/* translators: %s: service name */
+						$somvio_h1 = sprintf( __( '%s in Glasgow', 'somvio' ), $somvio_title );
+					}
+					echo esc_html( $somvio_h1 );
+					?>
 				</h1>
 
 				<p class="service-single-hero__text reveal-on-scroll" style="--reveal-delay: 0.1s;">

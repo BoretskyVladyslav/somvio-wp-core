@@ -51,6 +51,6 @@ function somvio_force_one_container( $settings ) {
 add_filter( 'option_generate_settings', 'somvio_force_one_container' );
 
 /**
- * Hide default GeneratePress page titles (section H2s own the headings).
+ * Hide default GeneratePress page titles so each template owns exactly one H1.
  */
 add_filter( 'generate_show_title', '__return_false' );

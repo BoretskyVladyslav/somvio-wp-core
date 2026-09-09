@@ -45,6 +45,10 @@ function somvio_get_quote_rates() {
 	$cache_key = somvio_quote_rates_cache_key();
 	$cached    = get_transient( $cache_key );
 	if ( false !== $cached && is_array( $cached ) ) {
+		if ( ! isset( $cached['linen_change'] ) || ! is_numeric( $cached['linen_change'] ) ) {
+			$cached['linen_change'] = 14;
+		}
+
 		return $cached;
 	}
 
@@ -363,7 +367,13 @@ function somvio_quote_linen_total( $service, $linen_changes ) {
 	}
 
 	$rates = somvio_get_quote_rates();
-	$rate  = isset( $rates['linen_change'] ) ? (float) $rates['linen_change'] : 14.0;
+	$rate  = 14.0;
+	if ( isset( $rates['linen_change'] ) && is_numeric( $rates['linen_change'] ) ) {
+		$rate = (float) $rates['linen_change'];
+	}
+	if ( $rate < 0 ) {
+		$rate = 14.0;
+	}
 	$qty   = max( 0, min( 10, absint( $linen_changes ) ) );
 
 	return round( $rate * $qty, 2 );

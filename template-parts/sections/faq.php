@@ -77,6 +77,7 @@ $somvio_faq_items = array(
 $somvio_faq_args      = ( isset( $args ) && is_array( $args ) ) ? $args : array();
 $somvio_faq_variant   = isset( $somvio_faq_args['variant'] ) ? sanitize_key( (string) $somvio_faq_args['variant'] ) : 'default';
 $somvio_faq_hide_title = ! empty( $somvio_faq_args['hide_title'] );
+$somvio_faq_q_tag      = $somvio_faq_hide_title ? 'h2' : 'h3';
 
 if ( 'airbnb' === $somvio_faq_variant ) {
 	$somvio_faq_items = array(
@@ -158,7 +159,7 @@ $somvio_faq_labelledby = $somvio_faq_hide_title ? 'faq-hero-title' : 'faq-title'
 						aria-controls="<?php echo esc_attr( $panel_id ); ?>"
 						data-accordion-trigger
 					>
-						<span class="faq__item-title"><?php echo esc_html( $item['title'] ); ?></span>
+						<<?php echo tag_escape( $somvio_faq_q_tag ); ?> class="faq__item-title"><?php echo esc_html( $item['title'] ); ?></<?php echo tag_escape( $somvio_faq_q_tag ); ?>>
 						<span class="faq__icon" aria-hidden="true">
 							<span class="faq__icon-plus">
 								<?php echo $somvio_faq_icon( 'icon-plus', $uid . '-plus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>

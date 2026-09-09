@@ -48,7 +48,7 @@ $somvio_booking_url  = function_exists( 'somvio_get_book_now_url' )
 
 		<h1 class="about-hero__title reveal-on-scroll" style="--reveal-delay: 0.05s;">
 			<?php esc_html_e( 'About', 'somvio' ); ?>
-			<span class="about-hero__title-accent"><?php esc_html_e( 'Somvio', 'somvio' ); ?></span>
+			<span class="about-hero__title-accent"><?php esc_html_e( 'Somvio Cleaning', 'somvio' ); ?></span>
 		</h1>
 
 		<p class="about-hero__text reveal-on-scroll" style="--reveal-delay: 0.1s;">

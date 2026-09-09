@@ -81,7 +81,10 @@
 			return 0;
 		}
 		var qty = Math.max(0, Math.min(10, parseInt(state.linen_changes, 10) || 0));
-		var rate = rates.linen_change != null ? Number(rates.linen_change) : 14;
+		var rate = Number(rates && rates.linen_change);
+		if (!isFinite(rate) || rate < 0) {
+			rate = 14;
+		}
 		return roundMoney(rate * qty);
 	}
 

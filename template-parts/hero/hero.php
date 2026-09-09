@@ -120,7 +120,7 @@ $somvio_render_hero_ratings = static function ( $icons_uri, $duplicate = false )
 	<div class="somvio-hero__inner">
 		<div class="somvio-hero__grid">
 			<div class="somvio-hero__content">
-				<h1 class="somvio-hero__title"><?php esc_html_e( 'Professional Cleaning Services', 'somvio' ); ?></h1>
+				<h1 class="somvio-hero__title"><?php esc_html_e( 'Professional Cleaning Services in Glasgow', 'somvio' ); ?></h1>
 
 				<p class="somvio-hero__text">
 					<?php esc_html_e( 'Clean spaces. Better living. High-quality cleaning services for homes and businesses across the UK.', 'somvio' ); ?>

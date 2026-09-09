@@ -2914,6 +2914,7 @@ button.how-it-works__trigger:focus-visible {
 .how-it-works__item-title {
 	flex: 1 1 auto;
 	min-width: 0;
+	margin: 0;
 	font-family: var(--somvio-font-sans);
 	font-size: 20px;
 	font-weight: 600;
@@ -8596,6 +8597,7 @@ button.faq__trigger:focus-visible {
 .faq__item-title {
 	flex: 1 1 auto;
 	min-width: 0;
+	margin: 0;
 	font-family: var(--somvio-font-sans);
 	font-size: 20px;
 	font-weight: 600;
@@ -13435,6 +13437,7 @@ a.contact-page__detail-value:focus-visible {
 	box-sizing: border-box;
 }
 
+.contact-page__info-title,
 .contact-page__form-title {
 	margin: 0;
 	font-family: var(--somvio-font-sans);
@@ -13442,6 +13445,10 @@ a.contact-page__detail-value:focus-visible {
 	font-weight: 600;
 	line-height: 1.1;
 	color: var(--somvio-color-text);
+}
+
+.contact-page__info-title {
+	margin-bottom: 0;
 }
 
 .contact-form {
@@ -13811,6 +13818,7 @@ a.contact-page__detail-value:focus-visible {
 		padding: 24px 20px;
 	}
 
+	.contact-page__info-title,
 	.contact-page__form-title {
 		font-size: 20px;
 	}

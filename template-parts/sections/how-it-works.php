@@ -118,7 +118,7 @@ if ( file_exists( $somvio_preview_path ) ) {
 							aria-controls="<?php echo esc_attr( $panel_id ); ?>"
 							data-accordion-trigger
 						>
-							<span class="how-it-works__item-title"><?php echo esc_html( $step['title'] ); ?></span>
+							<h3 class="how-it-works__item-title"><?php echo esc_html( $step['title'] ); ?></h3>
 							<span class="how-it-works__icon" aria-hidden="true">
 								<span class="how-it-works__icon-plus">
 									<?php echo $somvio_accordion_icon( 'icon-plus', $uid . '-plus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>

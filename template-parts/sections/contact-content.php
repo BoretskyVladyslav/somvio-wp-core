@@ -59,6 +59,7 @@ if ( function_exists( 'somvio_get_terms_conditions_page_id' ) ) {
 	<div class="contact-page__inner">
 		<div class="contact-page__grid reveal-on-scroll">
 			<div class="contact-page__info">
+				<h2 class="contact-page__info-title"><?php esc_html_e( 'Get in Touch', 'somvio' ); ?></h2>
 				<ul class="contact-page__details">
 					<li class="contact-page__detail">
 						<span class="contact-page__detail-icon" aria-hidden="true">
