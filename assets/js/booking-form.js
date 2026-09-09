@@ -87,6 +87,19 @@
 		return trim(address).length >= 3;
 	}
 
+	function extractUkPostcode(raw) {
+		var compact = String(raw || '').replace(/\s+/g, '').toUpperCase();
+		if (!compact) {
+			return '';
+		}
+		var full = compact.match(/[A-Z]{1,2}[0-9][0-9A-Z]?[0-9][A-Z]{2}/);
+		if (full) {
+			return full[0];
+		}
+		var outward = compact.match(/[A-Z]{1,2}[0-9][0-9A-Z]?$/);
+		return outward ? outward[0] : '';
+	}
+
 	function getPriceBedroomCount(state) {
 		if (state.service === 'after-builders') {
 			return Math.max(1, Math.min(5, parseInt(state.main_rooms, 10) || 1));
@@ -537,13 +550,14 @@
 			if (!globalError) {
 				return;
 			}
+			var textEl = globalError.querySelector('[data-booking-error-text]') || globalError;
 			if (!msg) {
 				globalError.hidden = true;
-				globalError.textContent = '';
+				textEl.textContent = '';
 				return;
 			}
 			globalError.hidden = false;
-			globalError.textContent = msg;
+			textEl.textContent = msg;
 		}
 
 		function setFieldError(name, msg) {
@@ -860,6 +874,7 @@
 				isValidEmail(state.email) &&
 				isValidPhone(state.phone) &&
 				isValidAddress(state.address) &&
+				!!extractUkPostcode(state.address) &&
 				!!state.access_method &&
 				(state.payment_method === 'cash' || state.payment_method === 'online')
 			);
@@ -897,6 +912,9 @@
 			if (key === 'address') {
 				if (!isValidAddress(value)) {
 					return i18n.invalidAddress || 'Please enter your street address.';
+				}
+				if (!extractUkPostcode(value)) {
+					return i18n.invalidPostcode || 'Please provide a valid Glasgow / PA postcode (e.g. G20 8NN)';
 				}
 				return '';
 			}
@@ -1889,6 +1907,63 @@
 			return true;
 		}
 
+		function getRestErrorCode(data) {
+			if (!data || typeof data !== 'object') {
+				return '';
+			}
+			if (data.code) {
+				return String(data.code);
+			}
+			if (data.data && data.data.code) {
+				return String(data.data.code);
+			}
+			return '';
+		}
+
+		function getRestErrorMessage(data) {
+			if (!data || typeof data !== 'object') {
+				return '';
+			}
+			if (data.message) {
+				return String(data.message);
+			}
+			if (data.data && data.data.message) {
+				return String(data.data.message);
+			}
+			return '';
+		}
+
+		function isPostcodeSubmitError(data) {
+			var code = getRestErrorCode(data);
+			var msg = getRestErrorMessage(data);
+			return (
+				code === 'invalid_postcode' ||
+				/postcode|cover this area/i.test(msg)
+			);
+		}
+
+		function applyPostcodeFieldError() {
+			var msg =
+				i18n.invalidPostcode ||
+				'Please provide a valid Glasgow / PA postcode (e.g. G20 8NN)';
+			setFieldError('address', msg);
+			scrollToFieldError('address', field('address'));
+		}
+
+		function applySubmitFailure(result) {
+			releaseBookingLock();
+			var data = result && result.data;
+			if (isPostcodeSubmitError(data)) {
+				applyPostcodeFieldError();
+				return;
+			}
+			showError(
+				getRestErrorMessage(data) ||
+					i18n.submitError ||
+					'Something went wrong. Please try again.'
+			);
+		}
+
 		function submitBooking() {
 			if (state.submitting || state.bookingLocked) {
 				return Promise.resolve();
@@ -1922,8 +1997,7 @@
 			setLoading(true);
 
 			if (!cfg.restUrl || !cfg.nonce) {
-				state.submitting = false;
-				setLoading(false);
+				releaseBookingLock();
 				showError(i18n.submitError || 'Something went wrong. Please try again.');
 				return Promise.resolve();
 			}
@@ -1980,8 +2054,7 @@
 					});
 				})
 				.then(function (result) {
-					state.submitting = false;
-					setLoading(false);
+					releaseBookingLock();
 
 					if (result.status === 409 && result.data && result.data.data && result.data.data.total != null) {
 						state.previewTotal = Number(result.data.data.total);
@@ -1992,11 +2065,7 @@
 					}
 
 					if (!result.ok || !result.data || !result.data.success) {
-						var msg =
-							(result.data && (result.data.message || (result.data.data && result.data.data.message))) ||
-							i18n.submitError ||
-							'Something went wrong. Please try again.';
-						showError(msg);
+						applySubmitFailure(result);
 						return;
 					}
 
@@ -2792,11 +2861,6 @@
 		syncRoomFields();
 		syncState();
 		setStep(1);
-
-		var startPostcodeError = (root.getAttribute('data-booking-start-postcode-error') || '').trim();
-		if (startPostcodeError) {
-			showError(startPostcodeError);
-		}
 	}
 
 	function boot() {

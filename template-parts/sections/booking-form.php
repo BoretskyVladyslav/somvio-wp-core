@@ -151,12 +151,21 @@ $somvio_bf_counters = array(
 >
 	<div class="booking-form__layout">
 		<form class="booking-form__form" data-booking-form-el novalidate>
-			<p
-				class="booking-form__error"
+			<?php if ( '' !== $somvio_bf_start_postcode_error ) : ?>
+			<div class="booking-form__alert" data-booking-coverage-alert role="alert">
+				<span class="booking-form__alert-icon" aria-hidden="true"></span>
+				<p class="booking-form__alert-text"><?php echo esc_html( $somvio_bf_start_postcode_error ); ?></p>
+			</div>
+			<?php endif; ?>
+			<div
+				class="booking-form__alert"
 				data-booking-error
 				role="alert"
-				<?php echo '' !== $somvio_bf_start_postcode_error ? '' : 'hidden'; ?>
-			><?php echo '' !== $somvio_bf_start_postcode_error ? esc_html( $somvio_bf_start_postcode_error ) : ''; ?></p>
+				hidden
+			>
+				<span class="booking-form__alert-icon" aria-hidden="true"></span>
+				<p class="booking-form__alert-text" data-booking-error-text></p>
+			</div>
 
 			<nav class="booking-form__stepper" data-booking-stepper aria-label="<?php esc_attr_e( 'Booking progress', 'somvio' ); ?>">
 				<ol class="booking-form__stepper-list">

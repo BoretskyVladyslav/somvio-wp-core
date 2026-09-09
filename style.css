@@ -12470,12 +12470,64 @@ body.booking-form-modal-open {
 	justify-self: start;
 }
 
-.booking-form__field-error,
-.booking-form__error {
+.booking-form__field-error {
 	margin: 0;
 	font-size: 0.875rem;
 	line-height: 1.4;
-	color: #e85d5d;
+	color: #ff8a8a;
+}
+
+.booking-form__alert {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	width: 100%;
+	max-width: 1170px;
+	margin: 0 0 20px;
+	padding: 14px 18px;
+	border: 1px solid rgba(232, 168, 93, 0.55);
+	border-radius: 8px;
+	background: rgba(232, 93, 93, 0.14);
+	box-sizing: border-box;
+	color: #ffd7a8;
+	font-family: var(--somvio-font-sans);
+	font-size: 0.9375rem;
+	font-weight: 600;
+	line-height: 1.5;
+}
+
+.booking-form__alert[hidden] {
+	display: none !important;
+}
+
+.booking-form__alert-icon {
+	position: relative;
+	flex-shrink: 0;
+	width: 22px;
+	height: 22px;
+	margin-top: 1px;
+	border-radius: 50%;
+	background: #e8a85d;
+	color: #00050e;
+}
+
+.booking-form__alert-icon::before {
+	content: "!";
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+	font-weight: 800;
+	line-height: 22px;
+	text-align: center;
+}
+
+.booking-form__alert-text {
+	margin: 0;
+	color: inherit;
+	font: inherit;
 }
 
 .booking-form__summary {

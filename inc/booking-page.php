@@ -108,6 +108,7 @@ function somvio_enqueue_booking_form_assets() {
 				'invalidPhone'          => __( 'Please enter a valid phone number.', 'somvio' ),
 				'invalidName'           => __( 'Please enter your name.', 'somvio' ),
 				'invalidAddress'        => __( 'Please enter your street address.', 'somvio' ),
+				'invalidPostcode'       => __( 'Please provide a valid Glasgow / PA postcode (e.g. G20 8NN)', 'somvio' ),
 				'termsRequired'         => __( 'You must accept the Terms & Conditions and Privacy Policy to complete your booking.', 'somvio' ),
 				'selectPayment'         => __( 'Please select a payment method.', 'somvio' ),
 				'onlinePaymentUnavailable' => __( 'Stripe API keys are missing. Cannot process online payment.', 'somvio' ),
