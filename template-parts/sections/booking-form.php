@@ -58,11 +58,28 @@ $somvio_bf_terms_url = $somvio_bf_terms_id > 0
 
 $somvio_bf_stripe_ok = function_exists( 'somvio_stripe_is_configured' ) && somvio_stripe_is_configured();
 
-$somvio_bf_start_service = '';
+$somvio_bf_start_service        = '';
+$somvio_bf_start_postcode       = '';
+$somvio_bf_start_postcode_error = '';
 if ( isset( $_GET['service'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	$somvio_bf_start_service = sanitize_key( wp_unslash( (string) $_GET['service'] ) );
 	if ( '' !== $somvio_bf_start_service && ! isset( $somvio_bf_services[ $somvio_bf_start_service ] ) ) {
 		$somvio_bf_start_service = '';
+	}
+}
+if ( isset( $_GET['postcode'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$somvio_bf_raw_postcode = sanitize_text_field( wp_unslash( (string) $_GET['postcode'] ) );
+	if ( '' !== $somvio_bf_raw_postcode && function_exists( 'somvio_validate_postcode' ) ) {
+		$somvio_bf_pc_check = somvio_validate_postcode( $somvio_bf_raw_postcode );
+		if ( ! empty( $somvio_bf_pc_check['valid'] ) ) {
+			$somvio_bf_start_postcode = function_exists( 'somvio_format_uk_postcode_display' )
+				? somvio_format_uk_postcode_display( (string) $somvio_bf_pc_check['postcode'] )
+				: (string) $somvio_bf_pc_check['postcode'];
+		} else {
+			$somvio_bf_start_postcode_error = isset( $somvio_bf_pc_check['message'] ) && '' !== (string) $somvio_bf_pc_check['message']
+				? (string) $somvio_bf_pc_check['message']
+				: __( 'Sorry, we do not cover this area yet', 'somvio' );
+		}
 	}
 }
 
@@ -124,11 +141,22 @@ $somvio_bf_counters = array(
 	<?php if ( '' !== $somvio_bf_start_service ) : ?>
 		data-booking-start-service="<?php echo esc_attr( $somvio_bf_start_service ); ?>"
 	<?php endif; ?>
+	<?php if ( '' !== $somvio_bf_start_postcode ) : ?>
+		data-booking-start-postcode="<?php echo esc_attr( $somvio_bf_start_postcode ); ?>"
+	<?php endif; ?>
+	<?php if ( '' !== $somvio_bf_start_postcode_error ) : ?>
+		data-booking-start-postcode-error="<?php echo esc_attr( $somvio_bf_start_postcode_error ); ?>"
+	<?php endif; ?>
 	data-step="1"
 >
 	<div class="booking-form__layout">
 		<form class="booking-form__form" data-booking-form-el novalidate>
-			<p class="booking-form__error" data-booking-error hidden role="alert"></p>
+			<p
+				class="booking-form__error"
+				data-booking-error
+				role="alert"
+				<?php echo '' !== $somvio_bf_start_postcode_error ? '' : 'hidden'; ?>
+			><?php echo '' !== $somvio_bf_start_postcode_error ? esc_html( $somvio_bf_start_postcode_error ) : ''; ?></p>
 
 			<nav class="booking-form__stepper" data-booking-stepper aria-label="<?php esc_attr_e( 'Booking progress', 'somvio' ); ?>">
 				<ol class="booking-form__stepper-list">

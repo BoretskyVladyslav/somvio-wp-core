@@ -24,18 +24,20 @@
 			credentials: 'same-origin',
 		});
 
-		if (!res.ok) {
+		let json = {};
+		try {
+			json = await res.json();
+		} catch (err) {
 			throw new Error('http_' + res.status);
 		}
 
-		const json = await res.json();
 		const data = json && json.data && typeof json.data === 'object' ? json.data : {};
 
 		return {
-			valid: json.valid === true || data.valid === true,
-			postcode: data.postcode || json.postcode || '',
-			prefix: data.prefix || json.prefix || '',
-			message: json.message || data.message || '',
+			valid: Boolean(json.success && data.valid),
+			postcode: data.postcode || '',
+			prefix: data.prefix || '',
+			message: data.message || json.message || '',
 		};
 	}
 
@@ -88,11 +90,18 @@
 		let blurGen = 0;
 		let submitting = false;
 
+		function isAllowedService(service) {
+			if (!serviceEl || !service) {
+				return false;
+			}
+			return Array.prototype.some.call(serviceEl.options, (opt) => opt.value === service);
+		}
+
 		async function validatePostcode() {
 			const service = serviceEl ? serviceEl.value.trim() : '';
 			const postcode = postcodeEl.value.trim();
 
-			if (!service) {
+			if (!service || !isAllowedService(service)) {
 				return { ok: false, error: serviceMsg };
 			}
 

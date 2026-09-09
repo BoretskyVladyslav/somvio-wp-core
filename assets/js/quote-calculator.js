@@ -69,7 +69,25 @@
 	 */
 	function formatMoney(n) {
 		var symbol = rates.symbol || '£';
-		return symbol + Number(n).toFixed(2);
+		var amount = Number(n);
+		if (!isFinite(amount)) {
+			amount = 0;
+		}
+		return symbol + amount.toFixed(2);
+	}
+
+	function safeMoney(n, fallback) {
+		var v = Number(n);
+		return isFinite(v) && v >= 0 ? v : (fallback != null ? fallback : 0);
+	}
+
+	function safeMult(n) {
+		var v = Number(n);
+		return isFinite(v) && v > 0 ? v : 1;
+	}
+
+	function clampBaths(n) {
+		return Math.max(1, Math.min(4, parseInt(n, 10) || 1));
 	}
 
 	/**
@@ -187,7 +205,7 @@
 		}
 		var qty = Math.max(0, Math.min(10, parseInt(state.linen_changes, 10) || 0));
 		var rate = Number(rates && rates.linen_change);
-		if (!isFinite(rate) || rate < 0) {
+		if (!isFinite(rate) || rate <= 0) {
 			rate = 14;
 		}
 		return Math.round(rate * qty * 100) / 100;
@@ -197,19 +215,19 @@
 		var bedKey = String(getPriceBedroomCount(state));
 		var base =
 			rates.bedroom_base && rates.bedroom_base[bedKey] != null
-				? Number(rates.bedroom_base[bedKey])
+				? safeMoney(rates.bedroom_base[bedKey], 0)
 				: (rates.bedroom_base && rates.bedroom_base['1'] != null
-					? Number(rates.bedroom_base['1'])
+					? safeMoney(rates.bedroom_base['1'], 0)
 					: 0);
-		var baths = Math.max(1, parseInt(state.bathrooms, 10) || 1);
-		var bathExtra = Math.max(0, baths - 1) * Number(rates.bathroom_extra || 0);
+		var baths = clampBaths(state.bathrooms);
+		var bathExtra = Math.max(0, baths - 1) * Math.max(0, safeMoney(rates.bathroom_extra, 0));
 		var svcMult =
 			rates.service_mult && rates.service_mult[state.service] != null
-				? Number(rates.service_mult[state.service])
+				? safeMult(rates.service_mult[state.service])
 				: 1;
 		var propMult =
 			rates.property_mult && rates.property_mult[state.property] != null
-				? Number(rates.property_mult[state.property])
+				? safeMult(rates.property_mult[state.property])
 				: 1;
 
 		var addonTotal = 0;
@@ -218,17 +236,18 @@
 			if (isQtyAddon(key) || !addonDefs[key] || addonDefs[key].price == null) {
 				return;
 			}
-			addonTotal += Number(addonDefs[key].price);
+			addonTotal += Math.max(0, safeMoney(addonDefs[key].price, 0));
 		});
 		Object.keys(state.addon_quantities || {}).forEach(function (key) {
 			var qty = getAddonQty(state, key);
 			if (qty < 1 || !isQtyAddon(key) || !addonDefs[key] || addonDefs[key].price == null) {
 				return;
 			}
-			addonTotal += Number(addonDefs[key].price) * qty;
+			addonTotal += Math.max(0, safeMoney(addonDefs[key].price, 0)) * qty;
 		});
 
-		return Math.round(((base + bathExtra) * svcMult * propMult + addonTotal + getLinenTotal(state)) * 100) / 100;
+		var total = Math.round(((base + bathExtra) * svcMult * propMult + addonTotal + getLinenTotal(state)) * 100) / 100;
+		return isFinite(total) && total >= 0 ? total : 0;
 	}
 
 	/**
@@ -923,8 +942,8 @@
 			var payload = {
 				service: state.service,
 				property: state.property,
-				bedrooms: parseInt(state.bedrooms, 10) || 1,
-				bathrooms: parseInt(state.bathrooms, 10) || 1,
+				bedrooms: Math.max(1, Math.min(5, parseInt(state.bedrooms, 10) || 1)),
+				bathrooms: Math.max(1, Math.min(4, parseInt(state.bathrooms, 10) || 1)),
 				main_rooms: parseInt(state.main_rooms, 10) || 0,
 				linen_changes: parseInt(state.linen_changes, 10) || 0,
 				toilets: parseInt(state.toilets, 10) || 0,

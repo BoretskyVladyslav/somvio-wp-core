@@ -62,7 +62,23 @@ function somvio_postcode_outward( $normalized ) {
 }
 
 /**
+ * Glasgow G-district number from an outward code (G1, G20, G84).
+ *
+ * @param string $outward Outward code.
+ * @return int 0 when not a G district.
+ */
+function somvio_postcode_g_district_number( $outward ) {
+	if ( ! preg_match( '/^G([0-9]{1,2})[A-Z]?$/', (string) $outward, $match ) ) {
+		return 0;
+	}
+
+	return (int) $match[1];
+}
+
+/**
  * Whether outward matches an allowed zone (exact or prefix).
+ *
+ * Zone `G` is further limited to districts 1–84 (G85+ rejected).
  *
  * @param string $outward Outward code.
  * @param string $zone    Allowed prefix.
@@ -77,6 +93,10 @@ function somvio_postcode_zone_matches( $outward, $zone ) {
 	}
 
 	if ( $outward === $zone ) {
+		if ( 'G' === $zone ) {
+			return false;
+		}
+
 		return true;
 	}
 
@@ -85,8 +105,32 @@ function somvio_postcode_zone_matches( $outward, $zone ) {
 	}
 
 	$next = substr( $outward, strlen( $zone ), 1 );
+	if ( '' === $next || ! ctype_digit( $next ) ) {
+		return false;
+	}
 
-	return '' !== $next && ctype_digit( $next );
+	if ( 'G' === $zone ) {
+		$district = somvio_postcode_g_district_number( $outward );
+
+		return $district >= 1 && $district <= 84;
+	}
+
+	return true;
+}
+
+/**
+ * Display form of a compact UK postcode (space before inward).
+ *
+ * @param string $raw Raw or compact postcode.
+ * @return string
+ */
+function somvio_format_uk_postcode_display( $raw ) {
+	$compact = somvio_normalize_uk_postcode( $raw );
+	if ( strlen( $compact ) < 5 ) {
+		return $compact;
+	}
+
+	return substr( $compact, 0, -3 ) . ' ' . substr( $compact, -3 );
 }
 
 /**
@@ -158,7 +202,7 @@ function somvio_validate_postcode( $raw ) {
 }
 
 /**
- * AJAX: validate postcode. Shape: { success: true, valid, message, data }.
+ * AJAX: validate postcode. Success/error JSON with keys valid, postcode, prefix.
  *
  * @return void
  */
@@ -166,18 +210,12 @@ function somvio_ajax_validate_postcode() {
 	check_ajax_referer( 'somvio_validate_postcode', 'nonce' );
 
 	$result = somvio_validate_postcode( wp_unslash( $_POST['postcode'] ?? '' ) );
-	$valid  = ! empty( $result['valid'] );
 
-	wp_send_json(
-		array(
-			'success'  => true,
-			'valid'    => $valid,
-			'message'  => isset( $result['message'] ) ? (string) $result['message'] : '',
-			'postcode' => $result['postcode'],
-			'prefix'   => $result['prefix'],
-			'data'     => $result,
-		)
-	);
+	if ( empty( $result['valid'] ) ) {
+		wp_send_json_error( $result, 400 );
+	}
+
+	wp_send_json_success( $result );
 }
 add_action( 'wp_ajax_somvio_validate_postcode', 'somvio_ajax_validate_postcode' );
 add_action( 'wp_ajax_nopriv_somvio_validate_postcode', 'somvio_ajax_validate_postcode' );

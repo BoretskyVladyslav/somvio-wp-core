@@ -33,7 +33,25 @@
 	var PHONE_RE = /^(\+?[1-9]\d{9,14}|0[1-9]\d{9,10})$/;
 
 	function formatMoney(n) {
-		return (rates.symbol || '£') + Number(n).toFixed(2);
+		var amount = Number(n);
+		if (!isFinite(amount)) {
+			amount = 0;
+		}
+		return (rates.symbol || '£') + amount.toFixed(2);
+	}
+
+	function safeMoney(n, fallback) {
+		var v = Number(n);
+		return isFinite(v) && v >= 0 ? v : (fallback != null ? fallback : 0);
+	}
+
+	function safeMult(n) {
+		var v = Number(n);
+		return isFinite(v) && v > 0 ? v : 1;
+	}
+
+	function clampBaths(n) {
+		return Math.max(1, Math.min(4, parseInt(n, 10) || 1));
 	}
 
 	function trim(value) {
@@ -82,7 +100,7 @@
 		}
 		var qty = Math.max(0, Math.min(10, parseInt(state.linen_changes, 10) || 0));
 		var rate = Number(rates && rates.linen_change);
-		if (!isFinite(rate) || rate < 0) {
+		if (!isFinite(rate) || rate <= 0) {
 			rate = 14;
 		}
 		return roundMoney(rate * qty);
@@ -92,19 +110,19 @@
 		var bedKey = String(getPriceBedroomCount(state));
 		var base =
 			rates.bedroom_base && rates.bedroom_base[bedKey] != null
-				? Number(rates.bedroom_base[bedKey])
+				? safeMoney(rates.bedroom_base[bedKey], 0)
 				: (rates.bedroom_base && rates.bedroom_base['1'] != null
-					? Number(rates.bedroom_base['1'])
+					? safeMoney(rates.bedroom_base['1'], 0)
 					: 0);
-		var baths = Math.max(1, parseInt(state.bathrooms, 10) || 1);
-		var bathExtra = Math.max(0, baths - 1) * Number(rates.bathroom_extra || 0);
+		var baths = clampBaths(state.bathrooms);
+		var bathExtra = Math.max(0, baths - 1) * Math.max(0, safeMoney(rates.bathroom_extra, 0));
 		var svcMult =
 			rates.service_mult && rates.service_mult[state.service] != null
-				? Number(rates.service_mult[state.service])
+				? safeMult(rates.service_mult[state.service])
 				: 1;
 		var propMult =
 			rates.property_mult && rates.property_mult[state.property] != null
-				? Number(rates.property_mult[state.property])
+				? safeMult(rates.property_mult[state.property])
 				: 1;
 
 		var addonTotal = 0;
@@ -116,17 +134,18 @@
 			if (isQtyAddon(key)) {
 				return;
 			}
-			addonTotal += Number(addonDefs[key].price);
+			addonTotal += Math.max(0, safeMoney(addonDefs[key].price, 0));
 		});
 		Object.keys(state.addonQty || {}).forEach(function (key) {
 			var qty = Math.max(0, Math.min(10, parseInt(state.addonQty[key], 10) || 0));
 			if (qty < 1 || !isQtyAddon(key) || !addonDefs[key] || addonDefs[key].price == null) {
 				return;
 			}
-			addonTotal += Number(addonDefs[key].price) * qty;
+			addonTotal += Math.max(0, safeMoney(addonDefs[key].price, 0)) * qty;
 		});
 
-		return Math.round(((base + bathExtra) * svcMult * propMult + addonTotal + getLinenTotal(state)) * 100) / 100;
+		var total = Math.round(((base + bathExtra) * svcMult * propMult + addonTotal + getLinenTotal(state)) * 100) / 100;
+		return isFinite(total) && total >= 0 ? total : 0;
 	}
 
 	function isQtyAddon(key) {
@@ -184,21 +203,21 @@
 		var fields = getRoomFieldsForService(state.service);
 		var bedKey = String(getPriceBedroomCount(state));
 		var beds = parseInt(state.bedrooms, 10) || 1;
-		var baths = Math.max(1, parseInt(state.bathrooms, 10) || 1);
+		var baths = clampBaths(state.bathrooms);
 		var base =
 			rates.bedroom_base && rates.bedroom_base[bedKey] != null
-				? Number(rates.bedroom_base[bedKey])
+				? safeMoney(rates.bedroom_base[bedKey], 0)
 				: (rates.bedroom_base && rates.bedroom_base['1'] != null
-					? Number(rates.bedroom_base['1'])
+					? safeMoney(rates.bedroom_base['1'], 0)
 					: 0);
-		var bathExtra = Math.max(0, baths - 1) * Number(rates.bathroom_extra || 0);
+		var bathExtra = Math.max(0, baths - 1) * Math.max(0, safeMoney(rates.bathroom_extra, 0));
 		var svcMult =
 			rates.service_mult && rates.service_mult[state.service] != null
-				? Number(rates.service_mult[state.service])
+				? safeMult(rates.service_mult[state.service])
 				: 1;
 		var propMult =
 			rates.property_mult && rates.property_mult[state.property] != null
-				? Number(rates.property_mult[state.property])
+				? safeMult(rates.property_mult[state.property])
 				: 1;
 		var mult = svcMult * propMult;
 
@@ -273,7 +292,7 @@
 				}
 				extras.push({
 					label: addonDefs[key].label || key,
-					amount: roundMoney(addonDefs[key].price != null ? addonDefs[key].price : 0),
+					amount: roundMoney(Math.max(0, safeMoney(addonDefs[key].price, 0))),
 				});
 			});
 			Object.keys(state.addonQty || {}).forEach(function (key) {
@@ -281,7 +300,7 @@
 				if (qty < 1 || !addonDefs[key] || !isQtyAddon(key)) {
 					return;
 				}
-				var unit = Number(addonDefs[key].price != null ? addonDefs[key].price : 0);
+				var unit = Math.max(0, safeMoney(addonDefs[key].price, 0));
 				extras.push({
 					label: formatAddonQtyLabel(addonDefs[key].label || key, qty),
 					amount: roundMoney(unit * qty),
@@ -453,10 +472,9 @@
 		}
 
 		function applyStartQuery() {
-			var params = new URLSearchParams(window.location.search);
 			var fromAttr = (root.getAttribute('data-booking-start-service') || '');
-			var serviceKey = (params.get('service') || fromAttr || '').replace(/[^a-z0-9\-]/gi, '').toLowerCase();
-			var postcode = formatUkPostcode(params.get('postcode') || '');
+			var serviceKey = fromAttr.replace(/[^a-z0-9\-]/gi, '').toLowerCase();
+			var postcode = formatUkPostcode(root.getAttribute('data-booking-start-postcode') || '');
 
 			if (serviceKey && services[serviceKey]) {
 				state.service = serviceKey;
@@ -502,6 +520,8 @@
 			calYear: today.getFullYear(),
 			calMonth: today.getMonth(),
 			submitting: false,
+			bookingLocked: false,
+			paymentComplete: false,
 			serviceBtn: null,
 		};
 
@@ -804,10 +824,13 @@
 				var needsServiceGate = panelStep === 1 || onStep1;
 				var needsDateTimeGate = panelStep === 3 || onStep3;
 				var needsContactGate = panelStep === 4 || onStep4;
-				var disabled = state.submitting;
+				var disabled = state.submitting || state.bookingLocked;
 				var title = '';
 
 				if (state.submitting) {
+					title = i18n.submitting || 'Submitting…';
+				} else if (state.bookingLocked) {
+					disabled = true;
 					title = i18n.submitting || 'Submitting…';
 				} else if (needsServiceGate && !hasService) {
 					disabled = true;
@@ -1636,11 +1659,21 @@
 				});
 		}
 
+		function releaseBookingLock() {
+			state.bookingLocked = false;
+			state.submitting = false;
+			setLoading(false);
+			updateNextAvailability();
+		}
+
 		function closeSuccessModal() {
 			root.classList.remove('is-success');
 			document.body.classList.remove('booking-form-modal-open');
 			setModalIsolation(false);
 			if (!successModal) {
+				if (!state.paymentComplete) {
+					releaseBookingLock();
+				}
 				return;
 			}
 			successModal.classList.remove('is-open');
@@ -1650,6 +1683,9 @@
 				previousFocus.focus();
 			}
 			previousFocus = null;
+			if (!state.paymentComplete) {
+				releaseBookingLock();
+			}
 		}
 
 		function openSuccessModal() {
@@ -1854,7 +1890,7 @@
 		}
 
 		function submitBooking() {
-			if (state.submitting) {
+			if (state.submitting || state.bookingLocked) {
 				return Promise.resolve();
 			}
 
@@ -1895,8 +1931,8 @@
 			var payload = {
 				service: state.service,
 				property: state.property || 'house',
-				bedrooms: parseInt(state.bedrooms, 10) || 1,
-				bathrooms: parseInt(state.bathrooms, 10) || 1,
+				bedrooms: Math.max(1, Math.min(5, parseInt(state.bedrooms, 10) || 1)),
+				bathrooms: Math.max(1, Math.min(4, parseInt(state.bathrooms, 10) || 1)),
 				main_rooms: parseInt(state.main_rooms, 10) || 0,
 				linen_changes: parseInt(state.linen_changes, 10) || 0,
 				toilets: parseInt(state.toilets, 10) || 0,
@@ -1950,6 +1986,7 @@
 					if (result.status === 409 && result.data && result.data.data && result.data.data.total != null) {
 						state.previewTotal = Number(result.data.data.total);
 						state.quotedTotal = state.previewTotal;
+						syncState();
 						showError(result.data.message || i18n.submitError || 'Something went wrong. Please try again.');
 						return;
 					}
@@ -1995,8 +2032,11 @@
 					);
 
 					if (needsPayment) {
+						state.paymentComplete = false;
+						state.bookingLocked = true;
 						initStripePayment(result.data);
 					} else if (result.data.payment_error || (result.data.requires_payment && !needsPayment)) {
+						releaseBookingLock();
 						openSuccessModal();
 						showStripeError(
 							result.data.message ||
@@ -2004,11 +2044,14 @@
 								i18n.paymentError ||
 								'Online payment could not be started. Please try again or choose pay on completion.'
 						);
+					} else {
+						state.bookingLocked = true;
+						state.paymentComplete = true;
 					}
+					updateNextAvailability();
 				})
 				.catch(function () {
-					state.submitting = false;
-					setLoading(false);
+					releaseBookingLock();
 					showError(i18n.submitError || 'Something went wrong. Please try again.');
 				});
 		}
@@ -2097,6 +2140,7 @@
 			var mountEl = root.querySelector('[data-booking-stripe-element]');
 			var payBtn = root.querySelector('[data-booking-stripe-pay]');
 			if (!wrap || !mountEl || !data.payment) {
+				releaseBookingLock();
 				return;
 			}
 
@@ -2119,6 +2163,7 @@
 						i18n.paymentError ||
 						'Online payment could not be started. Please try again or choose pay on completion.'
 				);
+				releaseBookingLock();
 				return;
 			}
 
@@ -2178,12 +2223,13 @@
 											label.textContent = i18n.complete || 'Pay now';
 										}
 										showStripeError(result.error.message || i18n.paymentError);
+										releaseBookingLock();
 										return;
 									}
 
 									var intentStatus =
 										(result.paymentIntent && result.paymentIntent.status) || '';
-									if (intentStatus && intentStatus !== 'succeeded') {
+									if (intentStatus !== 'succeeded') {
 										payBtn.disabled = false;
 										if (label) {
 											label.textContent = i18n.complete || 'Pay now';
@@ -2193,6 +2239,7 @@
 												i18n.paymentError ||
 												'Payment was not confirmed. Please try again or contact us.'
 										);
+										releaseBookingLock();
 										return;
 									}
 
@@ -2227,9 +2274,12 @@
 												i18n.paymentError ||
 												'Payment could not be completed. Please try again.'
 										);
+										releaseBookingLock();
 										return;
 									}
 								wrap.hidden = true;
+								state.paymentComplete = true;
+								state.bookingLocked = true;
 								var subtitle = root.querySelector('.booking-form__success-subtitle');
 								var text = root.querySelector('.booking-form__success-text');
 								if (subtitle) {
@@ -2261,6 +2311,7 @@
 									label.textContent = i18n.complete || 'Pay now';
 								}
 								showStripeError(i18n.paymentError || 'Payment could not be completed. Please try again.');
+								releaseBookingLock();
 							});
 					};
 				})
@@ -2269,6 +2320,7 @@
 						payBtn.disabled = true;
 					}
 					showStripeError(i18n.paymentError || 'Payment could not be completed. Please try again.');
+					releaseBookingLock();
 				});
 			}
 
@@ -2695,6 +2747,11 @@
 		}
 
 		document.addEventListener('keydown', function (event) {
+			if (event.key === 'Escape' && successModal && !successModal.hidden && !state.paymentComplete) {
+				event.preventDefault();
+				setStep(TOTAL_STEPS);
+				return;
+			}
 			if (!successModal || successModal.hidden || event.key !== 'Tab') {
 				return;
 			}
@@ -2717,6 +2774,14 @@
 			}
 		});
 
+		if (successModal) {
+			successModal.addEventListener('click', function (event) {
+				if (event.target === successModal && !state.paymentComplete) {
+					setStep(TOTAL_STEPS);
+				}
+			});
+		}
+
 		setupRadioKeyboard('.booking-form__services', '[data-booking-service]');
 		setupRadioKeyboard('[data-booking-slots]', '[data-booking-slot]');
 
@@ -2727,6 +2792,11 @@
 		syncRoomFields();
 		syncState();
 		setStep(1);
+
+		var startPostcodeError = (root.getAttribute('data-booking-start-postcode-error') || '').trim();
+		if (startPostcodeError) {
+			showError(startPostcodeError);
+		}
 	}
 
 	function boot() {
