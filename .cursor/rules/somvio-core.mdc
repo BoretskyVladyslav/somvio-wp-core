@@ -1,0 +1,68 @@
+---
+description: "Стандарти розробки для Somvio. Використовувати при будь-якій взаємодії з PHP та LatePoint"
+globs: "**/*.php"
+alwaysApply: false
+---
+
+# Somvio core (PHP / LatePoint)
+
+## Plugins
+
+Never edit files under `wp-content/plugins/` (LatePoint, Stripe, ACF).
+
+Extend only via WordPress hooks/filters from this child theme.
+
+Register hooks in `functions.php` (bootstrap) with `require_once` into `inc/` — same pattern as today. Put handler logic in `inc/`, not inline in `functions.php`.
+
+```php
+// functions.php — bootstrap only
+require_once get_stylesheet_directory() . '/inc/booking/latepoint.php';
+
+// inc/booking/latepoint.php
+add_action( 'latepoint_booking_created', 'somvio_on_latepoint_booking_created' );
+```
+
+## AJAX
+
+All AJAX goes through `admin-ajax.php`.
+
+- Actions: `wp_ajax_somvio_*` and `wp_ajax_nopriv_somvio_*` when public
+- Nonce: `check_ajax_referer( 'somvio_<action>', 'nonce' )` or `wp_verify_nonce`
+- Input: sanitize (`sanitize_text_field`, `absint`, `sanitize_key`)
+- Output: `wp_send_json_success( $data )` / `wp_send_json_error( $data, $code )`
+
+```php
+add_action( 'wp_ajax_somvio_validate_postcode', 'somvio_ajax_validate_postcode' );
+add_action( 'wp_ajax_nopriv_somvio_validate_postcode', 'somvio_ajax_validate_postcode' );
+
+function somvio_ajax_validate_postcode() {
+	check_ajax_referer( 'somvio_validate_postcode', 'nonce' );
+	$postcode = sanitize_text_field( wp_unslash( $_POST['postcode'] ?? '' ) );
+	wp_send_json_success( array( 'postcode' => $postcode ) );
+}
+```
+
+Client: POST to `admin-ajax.php` with `action` + `nonce` from `wp_localize_script` (`wp_create_nonce( 'somvio_<action>' )`).
+
+Do not add new `register_rest_route` handlers for Phase 2 AJAX (postcode, Stripe webhook receiver in theme). Existing REST in `inc/calculator.php`, `inc/booking/bootstrap.php`, `inc/contact-page.php` stays; do not rewrite it in this rule's scope.
+
+## LatePoint
+
+Prefix: `somvio_` / `Somvio_`.
+
+Before calling LatePoint APIs, verify the function/class exists in `inc/booking/latepoint.php` (or LatePoint if already used there). Do not invent helpers.
+
+Confirmed in theme: `OsBookingModel`, `OsCustomerModel`, `OsServiceModel`, `somvio_latepoint_create_booking()`, `somvio_latepoint_mark_booking_paid()`, `somvio_latepoint_is_available()`.
+
+Sanitize in, escape HTML out (`esc_html`, `esc_url`, `esc_attr`). JSON via `wp_send_json_*` only.
+
+## Git Workflow
+
+After finishing each global block of work (a feature, integration, or completed UI/UX batch), the agent **must**:
+
+1. Create a Conventional Commit locally (`feat:`, `fix:`, `refactor:`, `style:` — lowercase, short, no AI narration).
+2. `git push` the current branch to its GitHub remote. Do not wait for a second confirmation when this rule applies to a completed block.
+
+If `git` is missing from PATH, invoke the Git binary directly (Windows: `"C:\Program Files\Git\cmd\git.exe"`). Never skip the commit+push because PATH lookup failed.
+
+Do not `git push --force` to `main`/`master`. Do not change git config. Do not skip hooks.

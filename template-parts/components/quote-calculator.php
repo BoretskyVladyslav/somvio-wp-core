@@ -80,6 +80,16 @@ if ( ! isset( $somvio_qc_services[ $somvio_qc_default ] ) ) {
 	$somvio_qc_default = 'regular-cleaning';
 }
 
+$somvio_qc_initial_total = function_exists( 'somvio_calculate_quote_price' )
+	? somvio_calculate_quote_price( $somvio_qc_default, 'house', 1, 1 )
+	: 0;
+$somvio_qc_initial_label = function_exists( 'somvio_format_money' )
+	? somvio_format_money( $somvio_qc_initial_total )
+	: ( $somvio_qc_symbol . number_format( (float) $somvio_qc_initial_total, 2, '.', '' ) );
+$somvio_qc_rates_json    = function_exists( 'somvio_quote_rates_data_attr' )
+	? somvio_quote_rates_data_attr( $somvio_qc_rates )
+	: '{}';
+
 $somvio_qc_classes = array( 'quote-card', 'quote-calculator' );
 if ( 'solid' === $somvio_qc_variant ) {
 	$somvio_qc_classes[] = 'quote-card--solid';
@@ -101,6 +111,7 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 	<?php endif; ?>
 	class="<?php echo esc_attr( $somvio_qc_class_attr ); ?>"
 	data-quote-calculator
+	data-somvio-rates="<?php echo esc_attr( $somvio_qc_rates_json ); ?>"
 	data-step="1"
 	data-quote-uid="<?php echo esc_attr( $somvio_qc_uid ); ?>"
 	aria-label="<?php esc_attr_e( 'Get Your Instant Quote', 'somvio' ); ?>"
@@ -497,7 +508,7 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 
 			<div class="quote-calculator__summary" data-quote-summary>
 				<p class="quote-calculator__summary-label"><?php esc_html_e( 'Estimated total', 'somvio' ); ?></p>
-				<p class="quote-calculator__summary-total" data-price-total aria-hidden="false">£0.00</p>
+				<p class="quote-calculator__summary-total" data-price-total aria-hidden="false"><?php echo esc_html( $somvio_qc_initial_label ); ?></p>
 				<p class="quote-calculator__summary-note"><?php esc_html_e( 'Preview only — final price confirmed after review.', 'somvio' ); ?></p>
 				<p class="sr-only" data-price-live aria-live="polite" aria-atomic="true"></p>
 			</div>

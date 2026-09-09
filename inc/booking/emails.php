@@ -377,13 +377,17 @@ function somvio_booking_email_cost_rows( array $payload ) {
 	$addon_defs = isset( $rates['addons'] ) && is_array( $rates['addons'] ) ? $rates['addons'] : array();
 	$rows       = array();
 
+	$service = sanitize_key( (string) ( $payload['service'] ?? '' ) );
 	$base = function_exists( 'somvio_calculate_quote_price' )
 		? somvio_calculate_quote_price(
-			(string) ( $payload['service'] ?? '' ),
+			$service,
 			(string) ( $payload['property'] ?? 'house' ),
 			(int) ( $payload['bedrooms'] ?? 1 ),
 			(int) ( $payload['bathrooms'] ?? 1 ),
-			array()
+			array(),
+			array(),
+			0,
+			(int) ( $payload['main_rooms'] ?? 0 )
 		)
 		: 0.0;
 
@@ -391,6 +395,18 @@ function somvio_booking_email_cost_rows( array $payload ) {
 		'label' => __( 'Base service', 'somvio' ),
 		'value' => $symbol . number_format_i18n( $base, 2 ),
 	);
+
+	$linen_total = function_exists( 'somvio_quote_linen_total' )
+		? somvio_quote_linen_total( $service, (int) ( $payload['linen_changes'] ?? 0 ) )
+		: 0.0;
+	if ( $linen_total > 0 ) {
+		$linen_qty = absint( $payload['linen_changes'] ?? 0 );
+		$rows[]    = array(
+			/* translators: %d: linen change count */
+			'label' => sprintf( __( 'Linen changes (x%d)', 'somvio' ), $linen_qty ),
+			'value' => $symbol . number_format_i18n( $linen_total, 2 ),
+		);
+	}
 
 	$addon_keys = isset( $payload['addons'] ) && is_array( $payload['addons'] ) ? $payload['addons'] : array();
 	$quantities = isset( $payload['addon_quantities'] ) && is_array( $payload['addon_quantities'] )

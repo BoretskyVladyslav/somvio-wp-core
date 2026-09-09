@@ -12,6 +12,22 @@
 	var services = cfg.services || {};
 	var i18n = cfg.i18n || {};
 
+	function parseRatesAttr(el) {
+		if (!el || !el.getAttribute) {
+			return null;
+		}
+		var raw = el.getAttribute('data-somvio-rates');
+		if (!raw) {
+			return null;
+		}
+		try {
+			var parsed = JSON.parse(raw);
+			return parsed && typeof parsed === 'object' ? parsed : null;
+		} catch (e) {
+			return null;
+		}
+	}
+
 	var EMAIL_RE = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
 	/* E.164-ish or UK national: +44… / 07… after digit normalize */
 	var PHONE_RE = /^(\+?[1-9]\d{9,14}|0[1-9]\d{9,10})$/;
@@ -53,14 +69,32 @@
 		return trim(address).length >= 3;
 	}
 
+	function getPriceBedroomCount(state) {
+		if (state.service === 'after-builders') {
+			return Math.max(1, Math.min(5, parseInt(state.main_rooms, 10) || 1));
+		}
+		return Math.max(1, Math.min(5, parseInt(state.bedrooms, 10) || 1));
+	}
+
+	function getLinenTotal(state) {
+		if (state.service !== 'airbnb-cleaning') {
+			return 0;
+		}
+		var qty = Math.max(0, Math.min(10, parseInt(state.linen_changes, 10) || 0));
+		var rate = rates.linen_change != null ? Number(rates.linen_change) : 14;
+		return roundMoney(rate * qty);
+	}
+
 	function getPreviewTotal(state) {
-		var bedKey = String(Math.max(1, Math.min(5, parseInt(state.bedrooms, 10) || 1)));
+		var bedKey = String(getPriceBedroomCount(state));
 		var base =
 			rates.bedroom_base && rates.bedroom_base[bedKey] != null
 				? Number(rates.bedroom_base[bedKey])
-				: 55;
+				: (rates.bedroom_base && rates.bedroom_base['1'] != null
+					? Number(rates.bedroom_base['1'])
+					: 0);
 		var baths = Math.max(1, parseInt(state.bathrooms, 10) || 1);
-		var bathExtra = Math.max(0, baths - 1) * Number(rates.bathroom_extra || 10);
+		var bathExtra = Math.max(0, baths - 1) * Number(rates.bathroom_extra || 0);
 		var svcMult =
 			rates.service_mult && rates.service_mult[state.service] != null
 				? Number(rates.service_mult[state.service])
@@ -89,7 +123,7 @@
 			addonTotal += Number(addonDefs[key].price) * qty;
 		});
 
-		return Math.round(((base + bathExtra) * svcMult * propMult + addonTotal) * 100) / 100;
+		return Math.round(((base + bathExtra) * svcMult * propMult + addonTotal + getLinenTotal(state)) * 100) / 100;
 	}
 
 	function isQtyAddon(key) {
@@ -145,14 +179,16 @@
 	 */
 	function getLineItems(state) {
 		var fields = getRoomFieldsForService(state.service);
-		var bedKey = String(Math.max(1, Math.min(5, parseInt(state.bedrooms, 10) || 1)));
+		var bedKey = String(getPriceBedroomCount(state));
 		var beds = parseInt(state.bedrooms, 10) || 1;
 		var baths = Math.max(1, parseInt(state.bathrooms, 10) || 1);
 		var base =
 			rates.bedroom_base && rates.bedroom_base[bedKey] != null
 				? Number(rates.bedroom_base[bedKey])
-				: 55;
-		var bathExtra = Math.max(0, baths - 1) * Number(rates.bathroom_extra || 10);
+				: (rates.bedroom_base && rates.bedroom_base['1'] != null
+					? Number(rates.bedroom_base['1'])
+					: 0);
+		var bathExtra = Math.max(0, baths - 1) * Number(rates.bathroom_extra || 0);
 		var svcMult =
 			rates.service_mult && rates.service_mult[state.service] != null
 				? Number(rates.service_mult[state.service])
@@ -177,7 +213,7 @@
 					: i18n.mainRoomsCount || '%d Main rooms';
 			rooms.push({
 				label: countLabel(mainTpl, state.main_rooms, mainTpl),
-				amount: null,
+				amount: state.service === 'after-builders' ? roundMoney(base * mult) : null,
 			});
 		}
 		if (fields.indexOf('bedrooms') !== -1) {
@@ -212,9 +248,10 @@
 			});
 		}
 		if (fields.indexOf('linen_changes') !== -1) {
+			var linenAmount = getLinenTotal(state);
 			rooms.push({
 				label: countLabel(i18n.linenChangesCount, state.linen_changes, '%d Linen changes'),
-				amount: null,
+				amount: linenAmount > 0 ? linenAmount : null,
 			});
 		}
 		if (state.service === 'airbnb-cleaning' && state.welcome_pack === 'yes') {
@@ -347,11 +384,10 @@
 		if (service === 'airbnb-cleaning') {
 			return ['bedrooms', 'bathrooms', 'linen_changes'];
 		}
-		if (
-			service === 'deep-cleaning' ||
-			service === 'end-of-tenancy' ||
-			service === 'after-builders'
-		) {
+		if (service === 'after-builders') {
+			return ['main_rooms', 'bathrooms', 'toilets', 'kitchens'];
+		}
+		if (service === 'deep-cleaning' || service === 'end-of-tenancy') {
 			return ['main_rooms', 'bedrooms', 'bathrooms', 'toilets', 'kitchens'];
 		}
 		return [];
@@ -379,6 +415,11 @@
 		}
 		root.setAttribute('data-booking-ready', '1');
 
+		var localRates = parseRatesAttr(root);
+		if (localRates && localRates.bedroom_base) {
+			rates = localRates;
+		}
+
 		var panels = Array.prototype.slice.call(root.querySelectorAll('[data-booking-panel]'));
 		var dateDisplay = root.querySelector('[data-booking-date-display]');
 		var dateToggle = root.querySelector('[data-booking-date-toggle]');
@@ -399,6 +440,33 @@
 
 		var today = new Date();
 		today.setHours(0, 0, 0, 0);
+
+		function formatUkPostcode(raw) {
+			var compact = String(raw || '').replace(/\s+/g, '').toUpperCase();
+			if (compact.length < 5) {
+				return compact;
+			}
+			return compact.slice(0, -3) + ' ' + compact.slice(-3);
+		}
+
+		function applyStartQuery() {
+			var params = new URLSearchParams(window.location.search);
+			var fromAttr = (root.getAttribute('data-booking-start-service') || '');
+			var serviceKey = (params.get('service') || fromAttr || '').replace(/[^a-z0-9\-]/gi, '').toLowerCase();
+			var postcode = formatUkPostcode(params.get('postcode') || '');
+
+			if (serviceKey && services[serviceKey]) {
+				state.service = serviceKey;
+			}
+
+			if (postcode) {
+				state.address = postcode;
+				var addressEl = field('address');
+				if (addressEl) {
+					addressEl.value = postcode;
+				}
+			}
+		}
 
 		var state = {
 			step: 1,
@@ -1931,7 +1999,7 @@
 							result.data.message ||
 								i18n.paymentUnavailable ||
 								i18n.paymentError ||
-								'Booking was received but online payment could not be started. Please contact us or choose pay on completion.'
+								'Online payment could not be started. Please try again or choose pay on completion.'
 						);
 					}
 				})
@@ -2038,7 +2106,7 @@
 			var bookingId = parseInt(data.booking_id, 10) || 0;
 			var mounted = false;
 
-			if (bookingId < 1 || !clientSecret) {
+			if (!clientSecret) {
 				if (payBtn) {
 					payBtn.disabled = true;
 				}
@@ -2046,7 +2114,7 @@
 					(data.message) ||
 						i18n.paymentUnavailable ||
 						i18n.paymentError ||
-						'Booking was received but online payment could not be started. Please contact us or choose pay on completion.'
+						'Online payment could not be started. Please try again or choose pay on completion.'
 				);
 				return;
 			}
@@ -2135,9 +2203,6 @@
 										body: JSON.stringify({
 											payment_intent_id:
 												intentId || (result.paymentIntent && result.paymentIntent.id) || '',
-											booking_id: bookingId,
-											client_total:
-												state.confirmedTotal != null ? state.confirmedTotal : state.previewTotal,
 										}),
 									}).then(function (res) {
 										return res.json().then(function (body) {
@@ -2174,7 +2239,10 @@
 									new CustomEvent('somvio:booking-paid', {
 										bubbles: true,
 										detail: buildSuccessDetail({
-											booking_id: (data && data.booking_id) || 0,
+											booking_id:
+												(confirmResult.body && confirmResult.body.booking_id) ||
+												bookingId ||
+												0,
 											message:
 												i18n.paymentSuccess ||
 												'Payment successful — your booking is confirmed.',
@@ -2649,6 +2717,7 @@
 		setupRadioKeyboard('.booking-form__services', '[data-booking-service]');
 		setupRadioKeyboard('[data-booking-slots]', '[data-booking-slot]');
 
+		applyStartQuery();
 		renderWeekdays();
 		renderServiceCards();
 		renderAddons();

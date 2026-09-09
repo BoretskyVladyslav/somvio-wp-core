@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** @var int Bump to re-run page seeding on admin_init / theme switch. */
-const SOMVIO_CORE_PAGES_VERSION = 18;
+const SOMVIO_CORE_PAGES_VERSION = 19;
 
 /**
  * Whether a site title looks like a Local / stock WordPress default.
@@ -254,12 +254,6 @@ function somvio_get_services_menu_entries() {
 			'title' => $title,
 		);
 	}
-
-	/* 6th grid card — duplicate Regular Cleaning link. */
-	$entries[] = array(
-		'slug'  => 'regular-cleaning',
-		'title' => $pages['regular-cleaning'],
-	);
 
 	return $entries;
 }
@@ -831,8 +825,7 @@ function somvio_setup_core_pages() {
 }
 
 /**
- * Sync primary nav Services children to the 6 homepage grid entries
- * (5 unique services + duplicate Regular Cleaning).
+ * Sync primary nav Services children to the unique service pages.
  *
  * @return void
  */

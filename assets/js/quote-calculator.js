@@ -11,6 +11,22 @@
 	var rates = cfg.rates || {};
 	var i18n = cfg.i18n || {};
 
+	function parseRatesAttr(el) {
+		if (!el || !el.getAttribute) {
+			return null;
+		}
+		var raw = el.getAttribute('data-somvio-rates');
+		if (!raw) {
+			return null;
+		}
+		try {
+			var parsed = JSON.parse(raw);
+			return parsed && typeof parsed === 'object' ? parsed : null;
+		} catch (e) {
+			return null;
+		}
+	}
+
 	var EMAIL_RE = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
 	var PHONE_RE = /^(\+?[1-9]\d{9,14}|0[1-9]\d{9,10})$/;
 	var ADDON_QTY_MAX = 10;
@@ -139,11 +155,10 @@
 		if (service === 'airbnb-cleaning') {
 			return ['bedrooms', 'bathrooms', 'linen_changes'];
 		}
-		if (
-			service === 'deep-cleaning' ||
-			service === 'end-of-tenancy' ||
-			service === 'after-builders'
-		) {
+		if (service === 'after-builders') {
+			return ['main_rooms', 'bathrooms', 'toilets', 'kitchens'];
+		}
+		if (service === 'deep-cleaning' || service === 'end-of-tenancy') {
 			return ['main_rooms', 'bedrooms', 'bathrooms', 'toilets', 'kitchens'];
 		}
 		return ['bedrooms', 'bathrooms'];
@@ -159,14 +174,32 @@
 	 * @param {object} state
 	 * @returns {number}
 	 */
+	function getPriceBedroomCount(state) {
+		if (state.service === 'after-builders') {
+			return Math.max(1, Math.min(5, parseInt(state.main_rooms, 10) || 1));
+		}
+		return Math.max(1, Math.min(5, parseInt(state.bedrooms, 10) || 1));
+	}
+
+	function getLinenTotal(state) {
+		if (state.service !== 'airbnb-cleaning') {
+			return 0;
+		}
+		var qty = Math.max(0, Math.min(10, parseInt(state.linen_changes, 10) || 0));
+		var rate = rates.linen_change != null ? Number(rates.linen_change) : 14;
+		return Math.round(rate * qty * 100) / 100;
+	}
+
 	function getPreviewTotal(state) {
-		var bedKey = String(Math.max(1, Math.min(5, parseInt(state.bedrooms, 10) || 1)));
+		var bedKey = String(getPriceBedroomCount(state));
 		var base =
 			rates.bedroom_base && rates.bedroom_base[bedKey] != null
 				? Number(rates.bedroom_base[bedKey])
-				: 55;
+				: (rates.bedroom_base && rates.bedroom_base['1'] != null
+					? Number(rates.bedroom_base['1'])
+					: 0);
 		var baths = Math.max(1, parseInt(state.bathrooms, 10) || 1);
-		var bathExtra = Math.max(0, baths - 1) * Number(rates.bathroom_extra || 10);
+		var bathExtra = Math.max(0, baths - 1) * Number(rates.bathroom_extra || 0);
 		var svcMult =
 			rates.service_mult && rates.service_mult[state.service] != null
 				? Number(rates.service_mult[state.service])
@@ -192,7 +225,7 @@
 			addonTotal += Number(addonDefs[key].price) * qty;
 		});
 
-		return Math.round(((base + bathExtra) * svcMult * propMult + addonTotal) * 100) / 100;
+		return Math.round(((base + bathExtra) * svcMult * propMult + addonTotal + getLinenTotal(state)) * 100) / 100;
 	}
 
 	/**
@@ -232,6 +265,11 @@
 			return;
 		}
 		root.setAttribute('data-quote-ready', '1');
+
+		var localRates = parseRatesAttr(root);
+		if (localRates && localRates.bedroom_base) {
+			rates = localRates;
+		}
 
 		var form = root.querySelector('[data-quote-form]');
 		var titleEl = root.querySelector('[data-quote-title]');
@@ -1289,6 +1327,14 @@
 		}
 
 		renderWeekdays();
+		var serviceField = field('service');
+		if (serviceField) {
+			var params = new URLSearchParams(window.location.search);
+			var startService = (params.get('service') || '').replace(/[^a-z0-9\-]/gi, '').toLowerCase();
+			if (startService && serviceField.querySelector('option[value="' + startService + '"]')) {
+				serviceField.value = startService;
+			}
+		}
 		readFields();
 		syncRoomFields();
 		renderAddons();

@@ -11,10 +11,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$somvio_quote_anchor = '#booking-calculator';
-$somvio_book_url     = get_permalink()
-	? esc_url( get_permalink() ) . $somvio_quote_anchor
-	: $somvio_quote_anchor;
+$somvio_service_key = function_exists( 'somvio_get_current_service_key' )
+	? somvio_get_current_service_key()
+	: 'regular-cleaning';
+$somvio_book_url    = function_exists( 'somvio_get_book_now_url' )
+	? somvio_get_book_now_url( $somvio_service_key )
+	: home_url( '/booking/?service=' . rawurlencode( $somvio_service_key ) );
 
 $somvio_rooms = array(
 	array(

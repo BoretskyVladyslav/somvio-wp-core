@@ -11,12 +11,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $somvio_home_url     = esc_url( home_url( '/' ) );
 $somvio_services_url = esc_url( home_url( '/services/' ) );
-$somvio_quote_url    = '#booking-calculator';
 $somvio_title        = get_the_title();
 
 if ( ! is_string( $somvio_title ) || '' === $somvio_title ) {
 	$somvio_title = __( 'Regular Cleaning', 'somvio' );
 }
+
+$somvio_default_service = function_exists( 'somvio_get_current_service_key' )
+	? somvio_get_current_service_key()
+	: ( function_exists( 'somvio_quote_service_key_from_title' )
+		? somvio_quote_service_key_from_title( $somvio_title )
+		: 'regular-cleaning' );
+
+$somvio_quote_url = function_exists( 'somvio_get_book_now_url' )
+	? somvio_get_book_now_url( $somvio_default_service )
+	: home_url( '/booking/?service=' . rawurlencode( $somvio_default_service ) );
 ?>
 <section
 	class="service-single-hero"
@@ -78,10 +87,6 @@ if ( ! is_string( $somvio_title ) || '' === $somvio_title ) {
 			</div>
 
 			<?php
-			$somvio_default_service = function_exists( 'somvio_quote_service_key_from_title' )
-				? somvio_quote_service_key_from_title( $somvio_title )
-				: 'regular-cleaning';
-
 			get_template_part(
 				'template-parts/components/quote',
 				'calculator',

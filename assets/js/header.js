@@ -76,12 +76,21 @@
 
 	const setNavOpen = ( isOpen ) => {
 		const open = Boolean( isOpen ) && ! mqDesktop.matches;
+		const wasOpen = header.classList.contains( 'somvio-header--nav-open' );
 
 		header.classList.toggle( 'somvio-header--nav-open', open );
 		toggle.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
 		toggle.setAttribute( 'aria-label', open ? labelClose : labelOpen );
 		nav.setAttribute( 'aria-hidden', mqDesktop.matches ? 'false' : open ? 'false' : 'true' );
-		body.classList.toggle( 'somvio-no-scroll', open );
+
+		if ( open ) {
+			const gap = Math.max( 0, window.innerWidth - document.documentElement.clientWidth );
+			document.documentElement.style.setProperty( '--somvio-scrollbar-compensation', gap + 'px' );
+			body.classList.add( 'somvio-no-scroll' );
+		} else {
+			document.documentElement.style.removeProperty( '--somvio-scrollbar-compensation' );
+			body.classList.remove( 'somvio-no-scroll' );
+		}
 
 		if ( 'inert' in nav ) {
 			nav.inert = ! mqDesktop.matches && ! open;
@@ -89,10 +98,19 @@
 
 		if ( backdrop ) {
 			backdrop.setAttribute( 'aria-hidden', open ? 'false' : 'true' );
+			backdrop.tabIndex = open ? 0 : -1;
 		}
 
 		if ( ! open ) {
 			closeSubmenus();
+			if ( wasOpen && document.activeElement && nav.contains( document.activeElement ) ) {
+				toggle.focus();
+			}
+		} else {
+			const closeBtn = header.querySelector( '[data-header-drawer-close]' );
+			if ( closeBtn ) {
+				closeBtn.focus();
+			}
 		}
 	};
 
@@ -105,6 +123,7 @@
 			if ( 'inert' in nav ) {
 				nav.inert = false;
 			}
+			document.documentElement.style.removeProperty( '--somvio-scrollbar-compensation' );
 			body.classList.remove( 'somvio-no-scroll' );
 			closeSubmenus();
 			if ( backdrop ) {
@@ -118,6 +137,12 @@
 
 	toggle.addEventListener( 'click', () => {
 		setNavOpen( ! header.classList.contains( 'somvio-header--nav-open' ) );
+	} );
+
+	header.querySelectorAll( '[data-header-drawer-close]' ).forEach( ( closeBtn ) => {
+		closeBtn.addEventListener( 'click', () => {
+			setNavOpen( false );
+		} );
 	} );
 
 	if ( backdrop ) {

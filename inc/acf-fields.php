@@ -287,10 +287,11 @@ function somvio_acf_register_field_groups() {
 					'instructions' => __( 'Server-only. Prefer SOMVIO_STRIPE_SECRET_KEY in wp-config when possible.', 'somvio' ),
 				),
 				array(
-					'key'   => 'field_somvio_stripe_publishable_key',
-					'label' => __( 'Stripe Publishable Key', 'somvio' ),
-					'name'  => 'somvio_stripe_publishable_key',
-					'type'  => 'text',
+					'key'          => 'field_somvio_stripe_webhook_secret',
+					'label'        => __( 'Stripe Webhook Signing Secret', 'somvio' ),
+					'name'         => 'somvio_stripe_webhook_secret',
+					'type'         => 'password',
+					'instructions' => __( 'whsec_… from Stripe Dashboard → Webhooks. Endpoint: /wp-json/somvio/v1/stripe/webhook. Prefer SOMVIO_STRIPE_WEBHOOK_SECRET in wp-config.', 'somvio' ),
 				),
 				array(
 					'key'   => 'field_somvio_tab_company',
@@ -403,7 +404,16 @@ function somvio_acf_register_field_groups() {
 			'type'    => 'number',
 			'step'    => '0.01',
 			'min'     => 0,
-			'wrapper' => array( 'width' => '33' ),
+			'wrapper' => array( 'width' => '25' ),
+		),
+		array(
+			'key'     => 'field_somvio_rate_linen_change',
+			'label'   => __( 'Linen change (£ per set)', 'somvio' ),
+			'name'    => 'somvio_rate_linen_change',
+			'type'    => 'number',
+			'step'    => '0.01',
+			'min'     => 0,
+			'wrapper' => array( 'width' => '25' ),
 		),
 		array(
 			'key'     => 'field_somvio_rate_prop_house',
@@ -412,7 +422,7 @@ function somvio_acf_register_field_groups() {
 			'type'    => 'number',
 			'step'    => '0.01',
 			'min'     => 0,
-			'wrapper' => array( 'width' => '33' ),
+			'wrapper' => array( 'width' => '25' ),
 		),
 		array(
 			'key'     => 'field_somvio_rate_prop_apartment',
@@ -421,7 +431,7 @@ function somvio_acf_register_field_groups() {
 			'type'    => 'number',
 			'step'    => '0.01',
 			'min'     => 0,
-			'wrapper' => array( 'width' => '33' ),
+			'wrapper' => array( 'width' => '25' ),
 		),
 		array(
 			'key'   => 'field_somvio_tab_service_mult',
@@ -706,18 +716,25 @@ function somvio_acf_get_service_rate_overrides() {
  */
 function somvio_acf_on_save_post( $post_id ) {
 	delete_transient( 'somvio_quote_rates_v8' );
+	if ( function_exists( 'somvio_flush_quote_rates_cache' ) ) {
+		somvio_flush_quote_rates_cache();
+	}
 
 	$is_options = ( 'options' === $post_id || 'option' === $post_id );
 
 	if ( $is_options && function_exists( 'get_field' ) ) {
-		$secret = get_field( 'somvio_stripe_secret_key', 'option' );
-		$pub    = get_field( 'somvio_stripe_publishable_key', 'option' );
+		$secret  = get_field( 'somvio_stripe_secret_key', 'option' );
+		$pub     = get_field( 'somvio_stripe_publishable_key', 'option' );
+		$webhook = get_field( 'somvio_stripe_webhook_secret', 'option' );
 
 		if ( is_string( $secret ) && '' !== trim( $secret ) ) {
 			update_option( 'somvio_stripe_secret_key', sanitize_text_field( $secret ), false );
 		}
 		if ( is_string( $pub ) && '' !== trim( $pub ) ) {
 			update_option( 'somvio_stripe_publishable_key', sanitize_text_field( $pub ), false );
+		}
+		if ( is_string( $webhook ) && '' !== trim( $webhook ) ) {
+			update_option( 'somvio_stripe_webhook_secret', sanitize_text_field( $webhook ), false );
 		}
 	}
 
@@ -853,6 +870,30 @@ function somvio_acf_filter_stripe_publishable( $key ) {
 add_filter( 'somvio_stripe_publishable_key', 'somvio_acf_filter_stripe_publishable' );
 
 /**
+ * Prefer ACF Stripe webhook secret when set.
+ *
+ * @param string $key Current secret.
+ * @return string
+ */
+function somvio_acf_filter_stripe_webhook_secret( $key ) {
+	if ( defined( 'SOMVIO_STRIPE_WEBHOOK_SECRET' ) && SOMVIO_STRIPE_WEBHOOK_SECRET ) {
+		return $key;
+	}
+
+	if ( ! function_exists( 'get_field' ) ) {
+		return $key;
+	}
+
+	$acf = get_field( 'somvio_stripe_webhook_secret', 'option' );
+	if ( is_string( $acf ) && '' !== trim( $acf ) ) {
+		return trim( $acf );
+	}
+
+	return $key;
+}
+add_filter( 'somvio_stripe_webhook_secret', 'somvio_acf_filter_stripe_webhook_secret' );
+
+/**
  * Merge ACF options + per-page overrides into quote rates.
  *
  * @param array<string, mixed> $rates Rate table.
@@ -877,6 +918,11 @@ function somvio_acf_filter_quote_rates( $rates ) {
 	$bath = somvio_acf_get_option_float( 'somvio_rate_bathroom_extra' );
 	if ( null !== $bath ) {
 		$rates['bathroom_extra'] = $bath;
+	}
+
+	$linen = somvio_acf_get_option_float( 'somvio_rate_linen_change' );
+	if ( null !== $linen ) {
+		$rates['linen_change'] = $linen;
 	}
 
 	if ( ! isset( $rates['property_mult'] ) || ! is_array( $rates['property_mult'] ) ) {

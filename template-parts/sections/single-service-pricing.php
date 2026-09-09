@@ -14,31 +14,38 @@ if ( ! defined( 'ABSPATH' ) ) {
 $somvio_image_path = get_stylesheet_directory() . '/assets/images/service-single-pricing.jpg';
 $somvio_image_uri  = get_stylesheet_directory_uri() . '/assets/images/service-single-pricing.jpg';
 
-$somvio_quote_anchor = '#booking-calculator';
-$somvio_quote_url    = get_permalink()
-	? esc_url( get_permalink() ) . $somvio_quote_anchor
-	: $somvio_quote_anchor;
+$somvio_service_key = function_exists( 'somvio_get_current_service_key' )
+	? somvio_get_current_service_key()
+	: 'regular-cleaning';
+$somvio_quote_url   = function_exists( 'somvio_get_book_now_url' )
+	? somvio_get_book_now_url( $somvio_service_key )
+	: home_url( '/booking/?service=' . rawurlencode( $somvio_service_key ) );
 
 $somvio_pricing_rows = array(
 	array(
-		'label' => __( 'Studio Apartment', 'somvio' ),
-		'price' => __( 'From £35', 'somvio' ),
+		'label'    => __( 'Studio Apartment', 'somvio' ),
+		'bedrooms' => 1,
+		'property' => 'apartment',
 	),
 	array(
-		'label' => __( '1 Bedroom', 'somvio' ),
-		'price' => __( 'From £55', 'somvio' ),
+		'label'    => __( '1 Bedroom', 'somvio' ),
+		'bedrooms' => 1,
+		'property' => 'house',
 	),
 	array(
-		'label' => __( '2 Bedroom', 'somvio' ),
-		'price' => __( 'From £75', 'somvio' ),
+		'label'    => __( '2 Bedroom', 'somvio' ),
+		'bedrooms' => 2,
+		'property' => 'house',
 	),
 	array(
-		'label' => __( '3 Bedroom', 'somvio' ),
-		'price' => __( 'From £95', 'somvio' ),
+		'label'    => __( '3 Bedroom', 'somvio' ),
+		'bedrooms' => 3,
+		'property' => 'house',
 	),
 	array(
-		'label' => __( '4+ Bedrooms', 'somvio' ),
-		'price' => __( 'Custom Quote', 'somvio' ),
+		'label'    => __( '4+ Bedrooms', 'somvio' ),
+		'bedrooms' => 4,
+		'property' => 'house',
 	),
 );
 ?>
@@ -50,7 +57,7 @@ $somvio_pricing_rows = array(
 				<?php esc_html_e( 'Transparent Pricing', 'somvio' ); ?>
 			</h2>
 			<p class="service-pricing__subtitle reveal-on-scroll" style="--reveal-delay: 0.05s;">
-				<?php esc_html_e( 'Placeholder prices — final pricing depends on property size and cleaning requirements.', 'somvio' ); ?>
+				<?php esc_html_e( 'Prices from Somvio Settings. Final total depends on property size and extras.', 'somvio' ); ?>
 			</p>
 		</header>
 
@@ -76,9 +83,17 @@ $somvio_pricing_rows = array(
 			<div class="service-pricing__panel reveal-on-scroll" style="--reveal-delay: 0.08s;">
 				<ul class="service-pricing__list">
 					<?php foreach ( $somvio_pricing_rows as $row ) : ?>
+						<?php
+						$amount = function_exists( 'somvio_get_bedroom_display_price' )
+							? somvio_get_bedroom_display_price( $somvio_service_key, (int) $row['bedrooms'], $row['property'] )
+							: 0;
+						$label_price = function_exists( 'somvio_format_from_price' )
+							? somvio_format_from_price( $amount )
+							: '';
+						?>
 						<li class="service-pricing__row">
 							<span class="service-pricing__label"><?php echo esc_html( $row['label'] ); ?></span>
-							<span class="service-pricing__price"><?php echo esc_html( $row['price'] ); ?></span>
+							<span class="service-pricing__price"><?php echo esc_html( $label_price ); ?></span>
 						</li>
 					<?php endforeach; ?>
 				</ul>

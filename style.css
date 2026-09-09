@@ -51,8 +51,8 @@ Text Domain: somvio
 	--somvio-container-pad: clamp(1.25rem, 2.2vw + 0.75rem, 9.375rem);
 	--somvio-header-pad-y: 30px;
 	--somvio-header-z: 999;
-	--somvio-logo-width: 222px;
-	--somvio-logo-height: 65px;
+	--somvio-logo-width: 236px;
+	--somvio-logo-height: 72px;
 	--somvio-header-height: calc(var(--somvio-logo-height) + (var(--somvio-header-pad-y) * 2));
 	--somvio-nav-gap: 20px;
 	--somvio-header-end-gap: clamp(1.25rem, 2vw + 0.5rem, 3.75rem);
@@ -78,11 +78,6 @@ Text Domain: somvio
 	--somvio-btn-outline-border: #33aca6;
 	--somvio-btn-text: #ffffff;
 	--somvio-btn-font: "Montserrat", "Segoe UI", system-ui, -apple-system, sans-serif;
-}
-
-body.somvio-no-scroll {
-	overflow: hidden;
-	touch-action: none;
 }
 
 /* -------------------------------------------------------------------------
@@ -114,6 +109,7 @@ html {
 }
 
 #booking-calculator,
+#quote,
 #somvio-instant-quote,
 .scroll-mt-24 {
 	scroll-margin-top: calc(var(--somvio-header-height) + 1.5rem);
@@ -367,8 +363,22 @@ body:not(.somvio-has-hero) {
 	display: contents;
 }
 
+.somvio-header__drawer-close {
+	display: none;
+}
+
 .somvio-header__drawer-actions {
 	display: none;
+}
+
+body.somvio-no-scroll {
+	overflow: hidden;
+	padding-right: var(--somvio-scrollbar-compensation, 0px);
+}
+
+body.somvio-no-scroll .somvio-header {
+	width: auto;
+	right: var(--somvio-scrollbar-compensation, 0px);
 }
 
 .somvio-header__menu {
@@ -615,8 +625,8 @@ body:not(.somvio-has-hero) {
 	:root {
 		--somvio-container-pad: 20px;
 		--somvio-header-pad-y: 20px;
-		--somvio-logo-width: 186px;
-		--somvio-logo-height: 54px;
+		--somvio-logo-width: 198px;
+		--somvio-logo-height: 60px;
 		--somvio-actions-gap: 20px;
 		--somvio-header-end-gap: 0;
 		--somvio-icon-btn-pad: 15px;
@@ -738,6 +748,49 @@ body:not(.somvio-has-hero) {
 		height: 24px;
 	}
 
+	.somvio-header__toggle {
+		position: relative;
+	}
+
+	.somvio-header__toggle-close {
+		position: absolute;
+		inset: 0;
+		margin: auto;
+		width: 18px;
+		height: 18px;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.2s ease;
+	}
+
+	.somvio-header__toggle-close::before,
+	.somvio-header__toggle-close::after {
+		content: "";
+		position: absolute;
+		top: 50%;
+		left: 0;
+		width: 100%;
+		height: 2px;
+		background: currentColor;
+		border-radius: 1px;
+	}
+
+	.somvio-header__toggle-close::before {
+		transform: rotate(45deg);
+	}
+
+	.somvio-header__toggle-close::after {
+		transform: rotate(-45deg);
+	}
+
+	.somvio-header--nav-open .somvio-header__toggle-burger {
+		opacity: 0;
+	}
+
+	.somvio-header--nav-open .somvio-header__toggle-close {
+		opacity: 1;
+	}
+
 	.somvio-header--nav-open .somvio-header__toggle {
 		background-color: rgba(51, 172, 166, 0.2);
 	}
@@ -748,44 +801,94 @@ body:not(.somvio-has-hero) {
 	}
 
 	.somvio-header__nav {
-		position: absolute;
-		top: 100%;
-		left: 0;
+		position: fixed;
+		top: var(--somvio-header-height);
 		right: 0;
-		z-index: 2;
-		display: block;
-		max-height: 0;
+		left: auto;
+		z-index: 3;
+		display: flex;
+		flex-direction: column;
+		width: min(100%, 400px);
+		height: calc(100vh - var(--somvio-header-height));
+		height: calc(100dvh - var(--somvio-header-height));
+		max-height: none;
 		overflow: hidden;
 		pointer-events: none;
-		visibility: hidden;
-		opacity: 0;
+		visibility: visible;
+		opacity: 1;
 		background-color: var(--somvio-color-header-bg-alt);
 		border-top: 0;
+		transform: translate3d(100%, 0, 0);
+		box-shadow: none;
 		transition:
-			max-height var(--somvio-drawer-duration) ease,
-			opacity var(--somvio-drawer-duration) ease,
-			visibility var(--somvio-drawer-duration) ease;
+			transform var(--somvio-drawer-duration) cubic-bezier(0.22, 1, 0.36, 1),
+			box-shadow var(--somvio-drawer-duration) ease;
 	}
 
 	.somvio-header--nav-open .somvio-header__nav {
 		display: flex;
 		flex-direction: column;
-		max-height: calc(100vh - var(--somvio-header-height));
-		max-height: calc(100dvh - var(--somvio-header-height));
+		max-height: none;
 		overflow: hidden;
 		pointer-events: auto;
 		visibility: visible;
 		opacity: 1;
+		transform: translate3d(0, 0, 0);
+		box-shadow: -16px 0 40px rgba(0, 5, 14, 0.45);
 	}
 
 	.somvio-header__drawer {
 		display: flex;
 		flex-direction: column;
 		flex: 1 1 auto;
-		gap: 20px;
+		gap: 16px;
 		min-height: 0;
-		padding: 20px;
+		padding: 16px 20px 24px;
 		overflow: hidden;
+	}
+
+	.somvio-header__drawer-close {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		align-self: flex-end;
+		flex-shrink: 0;
+		width: 48px;
+		height: 48px;
+		margin: 0 -8px 4px 0;
+		padding: 0;
+		border: 1px solid var(--somvio-color-accent-mid);
+		border-radius: 4px;
+		background: transparent;
+		color: var(--somvio-color-text);
+		cursor: pointer;
+	}
+
+	.somvio-header__drawer-close-icon {
+		position: relative;
+		display: block;
+		width: 18px;
+		height: 18px;
+	}
+
+	.somvio-header__drawer-close-icon::before,
+	.somvio-header__drawer-close-icon::after {
+		content: "";
+		position: absolute;
+		top: 50%;
+		left: 0;
+		width: 100%;
+		height: 2px;
+		background: currentColor;
+		border-radius: 1px;
+	}
+
+	.somvio-header__drawer-close-icon::before {
+		transform: rotate(45deg);
+	}
+
+	.somvio-header__drawer-close-icon::after {
+		transform: rotate(-45deg);
 	}
 
 	.somvio-header__drawer-actions {
@@ -841,8 +944,8 @@ body:not(.somvio-has-hero) {
 	.somvio-header__link {
 		justify-content: space-between;
 		width: 100%;
-		min-height: 42px;
-		padding: 10px;
+		min-height: 48px;
+		padding: 12px 10px;
 		font-size: 18px;
 		font-weight: 600;
 		line-height: normal;
@@ -899,8 +1002,8 @@ body:not(.somvio-has-hero) {
 	}
 
 	.somvio-header__sublink {
-		min-height: 40px;
-		padding: 10px 40px;
+		min-height: 48px;
+		padding: 12px 40px;
 		font-size: 16px;
 		font-weight: 600;
 		line-height: normal;
@@ -1496,6 +1599,35 @@ body:not(.somvio-has-hero) {
 	line-height: 1.4;
 	color: rgba(255, 255, 255, 0.5);
 	white-space: nowrap;
+}
+
+.quote-start {
+	min-height: 0;
+}
+
+.quote-start__input {
+	cursor: text;
+	padding-right: 10px;
+}
+
+.quote-start__input::placeholder {
+	color: rgba(255, 255, 255, 0.45);
+}
+
+.quote-start__input[aria-invalid="true"] {
+	border-color: #ff8a8a;
+}
+
+.quote-start__error {
+	margin: 4px 0 0;
+	font-family: var(--somvio-font-sans);
+	font-size: 13px;
+	line-height: 1.4;
+	color: #ff8a8a;
+}
+
+.quote-start__error[hidden] {
+	display: none !important;
 }
 
 /* Reviews bar */
@@ -3680,12 +3812,13 @@ button.how-it-works__trigger:focus-visible .how-it-works__icon {
 
 .site-footer__tagline {
 	margin: 0;
-	max-width: 220px;
+	max-width: 280px;
 	font-family: var(--somvio-font-sans);
-	font-size: 16px;
-	font-weight: 400;
-	line-height: 1.1;
-	color: var(--somvio-color-text-soft);
+	font-size: 18px;
+	font-weight: 500;
+	line-height: 1.4;
+	letter-spacing: 0.01em;
+	color: var(--somvio-color-text);
 }
 
 .site-footer__social {
@@ -4967,7 +5100,7 @@ a.site-footer__contact-text:focus-visible {
 
 .about-why__grid {
 	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
+	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 30px;
 	align-items: stretch;
 	width: 100%;
@@ -10726,7 +10859,7 @@ body.somvio-has-hero.page-booking .site-main > * {
 	margin-right: 0.25em;
 }
 
-/* Step 1 services: 3×2 grid (6 cards). Step 2 addons stay 4 cols. */
+/* Step 1 services: unique cards. Step 2 addons stay 4 cols. */
 .booking-form__services,
 .booking-form__card--step1 .booking-form__services {
 	display: grid;
@@ -13619,7 +13752,7 @@ a.contact-page__detail-value:focus-visible {
 	position: relative;
 	overflow: hidden;
 	width: 100%;
-	height: 600px;
+	height: 720px;
 	border-radius: 4px;
 	background-color: #091e2c;
 }
@@ -13688,6 +13821,6 @@ a.contact-page__detail-value:focus-visible {
 	}
 
 	.contact-page__map-frame {
-		height: 320px;
+		height: 380px;
 	}
 }

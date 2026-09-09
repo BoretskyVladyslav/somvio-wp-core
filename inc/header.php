@@ -54,12 +54,25 @@ function somvio_filter_header_alignment_body_class( $classes ) {
 add_filter( 'body_class', 'somvio_filter_header_alignment_body_class', 20 );
 
 /**
- * Book Now CTA URL — booking page Step 1 anchor (filterable).
+ * Book Now CTA URL — /booking/ with optional service preselect.
  *
+ * @param string $service Optional calculator service key.
  * @return string
  */
-function somvio_get_book_now_url() {
-	return esc_url( apply_filters( 'somvio_book_now_url', home_url( '/booking/#booking-calculator' ) ) );
+function somvio_get_book_now_url( $service = '' ) {
+	$url     = home_url( '/booking/' );
+	$service = sanitize_key( (string) $service );
+	$options = function_exists( 'somvio_get_quote_service_options' )
+		? somvio_get_quote_service_options()
+		: array();
+
+	if ( '' !== $service && isset( $options[ $service ] ) ) {
+		$url = add_query_arg( 'service', $service, $url );
+	}
+
+	$url .= '#booking-calculator';
+
+	return esc_url( apply_filters( 'somvio_book_now_url', $url, $service ) );
 }
 
 /**

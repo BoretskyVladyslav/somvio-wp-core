@@ -26,8 +26,8 @@ $somvio_whatsapp  = function_exists( 'somvio_get_whatsapp_url' ) ? somvio_get_wh
 					class="somvio-logo"
 					src="<?php echo $somvio_logo_src; ?>"
 					alt="<?php echo esc_attr( $somvio_site_name ); ?>"
-					width="222"
-					height="65"
+					width="236"
+					height="72"
 					loading="eager"
 					decoding="async"
 				>
@@ -41,6 +41,14 @@ $somvio_whatsapp  = function_exists( 'somvio_get_whatsapp_url' ) ? somvio_get_wh
 				aria-label="<?php esc_attr_e( 'Primary', 'somvio' ); ?>"
 			>
 				<div class="somvio-header__drawer">
+					<button
+						type="button"
+						class="somvio-header__drawer-close"
+						data-header-drawer-close
+						aria-label="<?php esc_attr_e( 'Close menu', 'somvio' ); ?>"
+					>
+						<span class="somvio-header__drawer-close-icon" aria-hidden="true"></span>
+					</button>
 					<?php
 					wp_nav_menu(
 						array(
@@ -125,12 +133,13 @@ $somvio_whatsapp  = function_exists( 'somvio_get_whatsapp_url' ) ? somvio_get_wh
 					aria-expanded="false"
 					aria-label="<?php esc_attr_e( 'Open menu', 'somvio' ); ?>"
 				>
-					<span class="somvio-header__icon-btn-icon" aria-hidden="true">
+					<span class="somvio-header__icon-btn-icon somvio-header__toggle-burger" aria-hidden="true">
 						<?php
 						// Trusted local theme SVG from assets/icons/.
 						echo somvio_get_icon( 'icon-burger-menu' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						?>
 					</span>
+					<span class="somvio-header__toggle-close" aria-hidden="true"></span>
 				</button>
 			</div>
 		</div>

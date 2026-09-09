@@ -365,8 +365,8 @@ function somvio_latepoint_create_booking( array $payload ) {
 	$is_online      = in_array( $payment_method, array( 'online', 'stripe' ), true );
 
 	/*
-	 * Online: payment_pending until Stripe confirms.
-	 * Cash / pay on completion: approved (confirmed) with unpaid order.
+	 * Cash / pay on completion: approved booking, order Payment: Pending (not_paid).
+	 * Card: created only after payment_intent.succeeded, then marked paid.
 	 */
 	$booking_status = $is_online
 		? ( defined( 'LATEPOINT_BOOKING_STATUS_PAYMENT_PENDING' ) ? LATEPOINT_BOOKING_STATUS_PAYMENT_PENDING : 'payment_pending' )

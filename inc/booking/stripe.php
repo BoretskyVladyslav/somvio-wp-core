@@ -56,6 +56,28 @@ function somvio_get_stripe_publishable_key() {
 }
 
 /**
+ * Stripe webhook signing secret (whsec_…).
+ *
+ * @return string
+ */
+function somvio_get_stripe_webhook_secret() {
+	$key = '';
+
+	if ( defined( 'SOMVIO_STRIPE_WEBHOOK_SECRET' ) && SOMVIO_STRIPE_WEBHOOK_SECRET ) {
+		$key = (string) SOMVIO_STRIPE_WEBHOOK_SECRET;
+	} else {
+		$key = (string) get_option( 'somvio_stripe_webhook_secret', '' );
+	}
+
+	/**
+	 * Filter Stripe webhook signing secret.
+	 *
+	 * @param string $key Secret.
+	 */
+	return trim( (string) apply_filters( 'somvio_stripe_webhook_secret', $key ) );
+}
+
+/**
  * Whether Stripe is configured for PaymentIntent creation.
  *
  * @return bool
@@ -97,14 +119,13 @@ function somvio_stripe_create_payment_intent( $amount, array $payload = array() 
 	$currency     = 'gbp';
 
 	$meta = array(
-		'source'      => sanitize_key( (string) ( $payload['source'] ?? 'booking' ) ),
-		'service'     => sanitize_key( (string) ( $payload['service'] ?? '' ) ),
-		'customer'    => sanitize_text_field( (string) ( $payload['name'] ?? '' ) ),
-		'email'       => sanitize_email( (string) ( $payload['email'] ?? '' ) ),
-		'date'        => sanitize_text_field( (string) ( $payload['date'] ?? '' ) ),
-		'time'        => sanitize_text_field( (string) ( $payload['time'] ?? '' ) ),
-		'booking_id'  => isset( $payload['booking_id'] ) ? (string) absint( $payload['booking_id'] ) : '',
-		'order_id'    => isset( $payload['order_id'] ) ? (string) absint( $payload['order_id'] ) : '',
+		'source'     => sanitize_key( (string) ( $payload['source'] ?? 'booking' ) ),
+		'service'    => sanitize_key( (string) ( $payload['service'] ?? '' ) ),
+		'customer'   => sanitize_text_field( (string) ( $payload['name'] ?? '' ) ),
+		'email'      => sanitize_email( (string) ( $payload['email'] ?? '' ) ),
+		'date'       => sanitize_text_field( (string) ( $payload['date'] ?? '' ) ),
+		'time'       => sanitize_text_field( (string) ( $payload['time'] ?? '' ) ),
+		'payload_key'=> sanitize_text_field( (string) ( $payload['_payload_key'] ?? '' ) ),
 	);
 
 	$body = array(
@@ -223,7 +244,7 @@ function somvio_stripe_verify_payment_intent( $payment_intent_id, $expected_amou
 	}
 
 	$status = isset( $data['status'] ) ? (string) $data['status'] : '';
-	if ( ! in_array( $status, array( 'succeeded', 'processing', 'requires_capture' ), true ) ) {
+	if ( 'succeeded' !== $status ) {
 		return array(
 			'success' => false,
 			'status'  => $status,
@@ -251,4 +272,125 @@ function somvio_stripe_verify_payment_intent( $payment_intent_id, $expected_amou
 		'success' => true,
 		'status'  => $status,
 	);
+}
+
+/**
+ * Option key for a PaymentIntent-scoped value.
+ *
+ * @param string $payment_intent_id Intent ID.
+ * @param string $suffix            Suffix (pending|booking).
+ * @return string
+ */
+function somvio_stripe_intent_key( $payment_intent_id, $suffix ) {
+	$id = sanitize_text_field( (string) $payment_intent_id );
+	return 'somvio_stripe_' . sanitize_key( $suffix ) . '_' . md5( $id );
+}
+
+/**
+ * Store sanitized booking payload until payment succeeds or expires.
+ *
+ * @param string               $payment_intent_id Intent ID.
+ * @param array<string, mixed> $payload           Payload with server total.
+ * @return void
+ */
+function somvio_stripe_store_pending_payload( $payment_intent_id, array $payload ) {
+	$key = somvio_stripe_intent_key( $payment_intent_id, 'pending' );
+	set_transient( $key, $payload, 12 * HOUR_IN_SECONDS );
+}
+
+/**
+ * Retrieve pending payload for an intent.
+ *
+ * @param string $payment_intent_id Intent ID.
+ * @return array<string, mixed>|null
+ */
+function somvio_stripe_get_pending_payload( $payment_intent_id ) {
+	$key  = somvio_stripe_intent_key( $payment_intent_id, 'pending' );
+	$data = get_transient( $key );
+	return is_array( $data ) ? $data : null;
+}
+
+/**
+ * Drop pending payload (failed / cancelled / fulfilled).
+ *
+ * @param string $payment_intent_id Intent ID.
+ * @return void
+ */
+function somvio_stripe_delete_pending_payload( $payment_intent_id ) {
+	delete_transient( somvio_stripe_intent_key( $payment_intent_id, 'pending' ) );
+}
+
+/**
+ * Idempotent booking id already created for this PaymentIntent.
+ *
+ * @param string $payment_intent_id Intent ID.
+ * @return int
+ */
+function somvio_stripe_get_booking_for_intent( $payment_intent_id ) {
+	$key = somvio_stripe_intent_key( $payment_intent_id, 'booking' );
+	return absint( get_option( $key, 0 ) );
+}
+
+/**
+ * Remember LatePoint booking created for this PaymentIntent.
+ *
+ * @param string $payment_intent_id Intent ID.
+ * @param int    $booking_id        LatePoint booking ID.
+ * @return void
+ */
+function somvio_stripe_set_booking_for_intent( $payment_intent_id, $booking_id ) {
+	$booking_id = absint( $booking_id );
+	if ( $booking_id < 1 ) {
+		return;
+	}
+	update_option( somvio_stripe_intent_key( $payment_intent_id, 'booking' ), $booking_id, false );
+}
+
+/**
+ * Verify Stripe-Signature header against the raw request body.
+ *
+ * @param string $payload   Raw body.
+ * @param string $sig_header Stripe-Signature header.
+ * @return bool
+ */
+function somvio_stripe_verify_webhook_signature( $payload, $sig_header ) {
+	$secret  = somvio_get_stripe_webhook_secret();
+	$payload = (string) $payload;
+	$header  = (string) $sig_header;
+
+	if ( '' === $secret || '' === $payload || '' === $header ) {
+		return false;
+	}
+
+	$timestamp = '';
+	$v1        = array();
+	foreach ( explode( ',', $header ) as $part ) {
+		$kv = explode( '=', trim( $part ), 2 );
+		if ( 2 !== count( $kv ) ) {
+			continue;
+		}
+		if ( 't' === $kv[0] ) {
+			$timestamp = $kv[1];
+		}
+		if ( 'v1' === $kv[0] ) {
+			$v1[] = $kv[1];
+		}
+	}
+
+	if ( '' === $timestamp || empty( $v1 ) ) {
+		return false;
+	}
+
+	if ( abs( time() - (int) $timestamp ) > 300 ) {
+		return false;
+	}
+
+	$expected = hash_hmac( 'sha256', $timestamp . '.' . $payload, $secret );
+	foreach ( $v1 as $sig ) {
+		if ( hash_equals( $expected, $sig ) ) {
+			return true;
+		}
+	}
+
+	return false;
 }

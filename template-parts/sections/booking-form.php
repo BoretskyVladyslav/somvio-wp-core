@@ -58,6 +58,24 @@ $somvio_bf_terms_url = $somvio_bf_terms_id > 0
 
 $somvio_bf_stripe_ok = function_exists( 'somvio_stripe_is_configured' ) && somvio_stripe_is_configured();
 
+$somvio_bf_start_service = '';
+if ( isset( $_GET['service'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$somvio_bf_start_service = sanitize_key( wp_unslash( (string) $_GET['service'] ) );
+	if ( '' !== $somvio_bf_start_service && ! isset( $somvio_bf_services[ $somvio_bf_start_service ] ) ) {
+		$somvio_bf_start_service = '';
+	}
+}
+
+$somvio_bf_rates_json = function_exists( 'somvio_quote_rates_data_attr' )
+	? somvio_quote_rates_data_attr( $somvio_bf_rates )
+	: '{}';
+$somvio_bf_initial_total = ( '' !== $somvio_bf_start_service && function_exists( 'somvio_calculate_quote_price' ) )
+	? somvio_calculate_quote_price( $somvio_bf_start_service, 'house', 1, 1 )
+	: 0;
+$somvio_bf_initial_label = function_exists( 'somvio_format_money' )
+	? somvio_format_money( $somvio_bf_initial_total )
+	: ( $somvio_bf_symbol . number_format( (float) $somvio_bf_initial_total, 2, '.', '' ) );
+
 $somvio_bf_counters = array(
 	'main_rooms'     => array(
 		'label' => __( 'Main rooms', 'somvio' ),
@@ -102,6 +120,10 @@ $somvio_bf_counters = array(
 	class="booking-form"
 	aria-label="<?php esc_attr_e( 'Book your cleaning', 'somvio' ); ?>"
 	data-booking-form
+	data-somvio-rates="<?php echo esc_attr( $somvio_bf_rates_json ); ?>"
+	<?php if ( '' !== $somvio_bf_start_service ) : ?>
+		data-booking-start-service="<?php echo esc_attr( $somvio_bf_start_service ); ?>"
+	<?php endif; ?>
 	data-step="1"
 >
 	<div class="booking-form__layout">
@@ -204,56 +226,6 @@ $somvio_bf_counters = array(
 							</span>
 						</button>
 					<?php endforeach; ?>
-					<?php
-					/* Figma 6th card — duplicate Regular Cleaning with hallway alt image. */
-					$somvio_bf_alt_file  = 'service-regular-cleaning-alt.png';
-					$somvio_bf_alt_path  = $somvio_bf_images_dir . '/' . $somvio_bf_alt_file;
-					$somvio_bf_alt_label = __( 'Regular Cleaning', 'somvio' );
-					$somvio_bf_alt_src   = $somvio_bf_img_fallback_uri;
-					if ( file_exists( $somvio_bf_alt_path ) ) {
-						$somvio_bf_alt_src = $somvio_bf_images_uri . '/' . $somvio_bf_alt_file
-							. '?v=' . rawurlencode( (string) filemtime( $somvio_bf_alt_path ) );
-					}
-					?>
-					<button
-						type="button"
-						class="booking-form__service"
-						data-booking-service="regular-cleaning"
-						role="radio"
-						aria-checked="false"
-						tabindex="-1"
-					>
-						<span class="booking-form__service-media">
-							<img
-								class="booking-form__service-img"
-								src="<?php echo esc_url( $somvio_bf_alt_src ); ?>"
-								alt="<?php echo esc_attr( $somvio_bf_alt_label ); ?>"
-								width="240"
-								height="200"
-								loading="lazy"
-								decoding="async"
-							>
-						</span>
-						<span class="booking-form__service-footer">
-							<span class="booking-form__service-check" aria-hidden="true">
-								<img
-									class="booking-form__service-check-img booking-form__service-check-img--off"
-									src="<?php echo esc_url( $somvio_bf_icons_uri . 'icon-check-circle-outline.svg' ); ?>"
-									alt=""
-									width="24"
-									height="24"
-								>
-								<img
-									class="booking-form__service-check-img booking-form__service-check-img--on"
-									src="<?php echo esc_url( $somvio_bf_icons_uri . 'icon-check-circle-filled.svg' ); ?>"
-									alt=""
-									width="24"
-									height="24"
-								>
-							</span>
-							<span class="booking-form__service-label"><?php echo esc_html( $somvio_bf_alt_label ); ?></span>
-						</span>
-					</button>
 				</div>
 				<input type="hidden" name="service" data-booking-field="service" value="">
 
@@ -885,7 +857,7 @@ $somvio_bf_counters = array(
 
 						<div class="booking-form__summary-row booking-form__summary-row--total">
 							<span class="booking-form__summary-dt"><?php esc_html_e( 'Total Price', 'somvio' ); ?></span>
-							<span class="booking-form__summary-dd booking-form__summary-total" data-booking-total aria-hidden="false">£0.00</span>
+							<span class="booking-form__summary-dd booking-form__summary-total" data-booking-total aria-hidden="false"><?php echo esc_html( $somvio_bf_initial_label ); ?></span>
 						</div>
 					</div>
 

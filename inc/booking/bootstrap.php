@@ -13,6 +13,7 @@ require_once get_stylesheet_directory() . '/inc/booking/emails.php';
 require_once get_stylesheet_directory() . '/inc/booking/latepoint.php';
 require_once get_stylesheet_directory() . '/inc/booking/latepoint-seed.php';
 require_once get_stylesheet_directory() . '/inc/booking/stripe.php';
+require_once get_stylesheet_directory() . '/inc/booking/stripe-webhook.php';
 
 /**
  * Normalize payment method from request.
@@ -27,7 +28,7 @@ function somvio_normalize_payment_method( $method ) {
 		return 'online';
 	}
 
-	if ( in_array( $method, array( 'cash', 'pay_on_completion', 'local', 'later' ), true ) ) {
+	if ( in_array( $method, array( 'cash', 'pay_on_completion', 'local', 'later', 'bank', 'bank_transfer' ), true ) ) {
 		return 'cash';
 	}
 
@@ -36,74 +37,67 @@ function somvio_normalize_payment_method( $method ) {
 }
 
 /**
- * Process a validated submission: LatePoint, emails, optional Stripe PI.
+ * Process a validated submission.
+ *
+ * Card: PaymentIntent only — LatePoint is created on payment_intent.succeeded.
+ * Cash / bank: LatePoint immediately with payment pending.
  *
  * @param array<string, mixed> $payload Sanitized payload with server `total`.
  * @return array<string, mixed>
  */
 function somvio_process_booking_submission( array $payload ) {
 	$payment_method = somvio_normalize_payment_method( $payload['payment_method'] ?? 'cash' );
-
-	// REST layer must reject online without keys; never silently downgrade to cash here.
-	if ( 'online' === $payment_method && function_exists( 'somvio_stripe_is_configured' ) && ! somvio_stripe_is_configured() ) {
-		$payment_method = 'cash';
-	}
-
+	$source         = sanitize_key( (string) ( $payload['source'] ?? '' ) );
 	$payload['payment_method'] = $payment_method;
 
 	$result = array(
-		'latepoint' => null,
-		'emails'    => null,
-		'payment'   => null,
-		'booking_id'=> 0,
-		'order_id'  => 0,
+		'latepoint'  => null,
+		'emails'     => null,
+		'payment'    => null,
+		'booking_id' => 0,
+		'order_id'   => 0,
 	);
+
+	$is_card = ( 'online' === $payment_method && 'booking' === $source );
+
+	if ( $is_card ) {
+		if ( ! function_exists( 'somvio_stripe_is_configured' ) || ! somvio_stripe_is_configured() ) {
+			$result['payment'] = array(
+				'success' => false,
+				'error'   => 'stripe_not_configured',
+				'message' => __( 'Stripe API keys are missing. Cannot process online payment.', 'somvio' ),
+			);
+			return $result;
+		}
+
+		$payload['_payload_key'] = wp_generate_uuid4();
+		$stripe = somvio_stripe_create_payment_intent( (float) ( $payload['total'] ?? 0 ), $payload );
+		$result['payment'] = $stripe;
+
+		if ( ! empty( $stripe['success'] ) && ! empty( $stripe['payment_intent_id'] ) ) {
+			somvio_stripe_store_pending_payload( (string) $stripe['payment_intent_id'], $payload );
+		}
+
+		do_action( 'somvio_booking_processed', $payload, $result );
+
+		return $result;
+	}
 
 	$latepoint = somvio_latepoint_create_booking( $payload );
 	$result['latepoint'] = $latepoint;
 
 	if ( ! empty( $latepoint['success'] ) ) {
-		$result['booking_id'] = (int) ( $latepoint['booking_id'] ?? 0 );
-		$result['order_id']   = (int) ( $latepoint['order_id'] ?? 0 );
+		$result['booking_id']  = (int) ( $latepoint['booking_id'] ?? 0 );
+		$result['order_id']    = (int) ( $latepoint['order_id'] ?? 0 );
 		$payload['booking_id'] = $result['booking_id'];
 		$payload['order_id']   = $result['order_id'];
-	} else {
-		// Log but do not fail the whole request — emails should still go out.
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			error_log( 'Somvio LatePoint create failed: ' . wp_json_encode( $latepoint ) );
-		}
+	} elseif ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		error_log( 'Somvio LatePoint create failed: ' . wp_json_encode( $latepoint ) );
 	}
 
 	$result['emails'] = somvio_send_booking_notification_emails( $payload );
 
-	if ( 'online' === $payment_method && 'booking' === ( $payload['source'] ?? '' ) ) {
-		if ( $result['booking_id'] > 0 ) {
-			$stripe = somvio_stripe_create_payment_intent( (float) ( $payload['total'] ?? 0 ), $payload );
-			$result['payment'] = $stripe;
-
-			if ( ! empty( $stripe['success'] ) && class_exists( 'OsBookingModel' ) ) {
-				$booking = new OsBookingModel( $result['booking_id'] );
-				if ( ! empty( $booking->id ) && method_exists( $booking, 'save_meta_by_key' ) ) {
-					$booking->save_meta_by_key( 'somvio_stripe_payment_intent', (string) ( $stripe['payment_intent_id'] ?? '' ) );
-				}
-			}
-		} else {
-			// Never create an orphan PaymentIntent without a LatePoint booking to bind it to.
-			$result['payment'] = array(
-				'success' => false,
-				'error'   => 'missing_booking',
-				'message' => __( 'Booking was received but online payment could not be started. Please contact us or choose pay on completion.', 'somvio' ),
-			);
-		}
-	}
-
-	/**
-	 * After full booking processing.
-	 *
-	 * @param array<string, mixed> $payload Payload.
-	 * @param array<string, mixed> $result  Processing result.
-	 */
 	do_action( 'somvio_booking_processed', $payload, $result );
 
 	return $result;
@@ -131,62 +125,46 @@ function somvio_on_quote_submitted( $payload ) {
 add_action( 'somvio_quote_submitted', 'somvio_on_quote_submitted', 10, 1 );
 
 /**
- * Confirm Stripe payment after client-side confirmation.
+ * After client-side Stripe.js confirm: re-verify PI with Stripe and fulfill
+ * (same path as the webhook — never trust the browser as sole authority).
  *
  * @param WP_REST_Request $request Request.
  * @return WP_REST_Response|WP_Error
  */
 function somvio_rest_confirm_payment( WP_REST_Request $request ) {
 	$payment_intent_id = sanitize_text_field( (string) $request['payment_intent_id'] );
-	$booking_id        = absint( $request['booking_id'] ?? 0 );
 
 	if ( '' === $payment_intent_id ) {
 		return new WP_Error( 'invalid_intent', __( 'Missing payment intent.', 'somvio' ), array( 'status' => 400 ) );
 	}
 
-	if ( $booking_id < 1 ) {
-		return new WP_Error( 'invalid_booking', __( 'Missing booking ID.', 'somvio' ), array( 'status' => 400 ) );
+	$fulfill = somvio_stripe_fulfill_payment_intent( $payment_intent_id );
+	if ( empty( $fulfill['success'] ) && 'locked' === ( $fulfill['error'] ?? '' ) ) {
+		usleep( 600000 );
+		$fulfill = somvio_stripe_fulfill_payment_intent( $payment_intent_id );
 	}
+	if ( empty( $fulfill['success'] ) ) {
+		$error = (string) ( $fulfill['error'] ?? '' );
+		if ( 'payment_not_complete' === $error ) {
+			somvio_stripe_abandon_payment_intent( $payment_intent_id );
+		}
 
-	if ( ! class_exists( 'OsBookingModel' ) ) {
-		return new WP_Error( 'booking_unavailable', __( 'Booking system is unavailable.', 'somvio' ), array( 'status' => 503 ) );
-	}
-
-	$booking = new OsBookingModel( $booking_id );
-	if ( empty( $booking->id ) || ! method_exists( $booking, 'get_meta_by_key' ) ) {
-		return new WP_Error( 'booking_not_found', __( 'Booking not found.', 'somvio' ), array( 'status' => 404 ) );
-	}
-
-	$stored_intent = (string) $booking->get_meta_by_key( 'somvio_stripe_payment_intent', '' );
-	if ( '' === $stored_intent || $stored_intent !== $payment_intent_id ) {
-		return new WP_Error( 'intent_mismatch', __( 'Payment intent does not match this booking.', 'somvio' ), array( 'status' => 400 ) );
-	}
-
-	$stored_total = $booking->get_meta_by_key( 'somvio_server_total', '' );
-	if ( '' === $stored_total ) {
-		return new WP_Error( 'missing_total', __( 'Booking total could not be verified.', 'somvio' ), array( 'status' => 400 ) );
-	}
-
-	$expected = (float) $stored_total;
-	$verify   = somvio_stripe_verify_payment_intent( $payment_intent_id, $expected );
-	if ( empty( $verify['success'] ) ) {
 		return new WP_Error(
 			'payment_unverified',
 			__( 'Payment could not be verified.', 'somvio' ),
 			array(
 				'status' => 402,
-				'detail' => $verify['error'] ?? '',
+				'detail' => $error,
 			)
 		);
 	}
 
-	somvio_latepoint_mark_booking_paid( $booking_id );
-
 	return rest_ensure_response(
 		array(
 			'success'    => true,
-			'booking_id' => $booking_id,
-			'status'     => $verify['status'] ?? 'succeeded',
+			'booking_id' => (int) ( $fulfill['booking_id'] ?? 0 ),
+			'order_id'   => (int) ( $fulfill['order_id'] ?? 0 ),
+			'status'     => 'succeeded',
 			'message'    => __( 'Payment confirmed. Your booking is confirmed.', 'somvio' ),
 		)
 	);
@@ -212,7 +190,7 @@ function somvio_register_booking_payment_rest_routes() {
 					'sanitize_callback' => 'sanitize_text_field',
 				),
 				'booking_id'        => array(
-					'required'          => true,
+					'required'          => false,
 					'type'              => 'integer',
 					'sanitize_callback' => 'absint',
 				),

@@ -116,7 +116,7 @@ function somvio_enqueue_booking_form_assets() {
 				'requiredField'         => __( 'This field is required.', 'somvio' ),
 				'submitError'           => __( 'Something went wrong. Please try again.', 'somvio' ),
 				'paymentError'          => __( 'Payment could not be completed. Please try again.', 'somvio' ),
-				'paymentUnavailable'    => __( 'Booking was received but online payment could not be started. Please contact us or choose pay on completion.', 'somvio' ),
+				'paymentUnavailable'    => __( 'Online payment could not be started. Please try again or choose pay on completion.', 'somvio' ),
 				'paymentUnconfirmed'    => __( 'Payment was not confirmed. Please try again or contact us.', 'somvio' ),
 				'paymentSuccess'        => __( 'Payment successful — your booking is confirmed.', 'somvio' ),
 				'paying'                => __( 'Processing payment…', 'somvio' ),

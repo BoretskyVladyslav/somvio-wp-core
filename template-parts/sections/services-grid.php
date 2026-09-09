@@ -19,43 +19,30 @@ $somvio_services = array(
 		'image' => 'service-regular-cleaning.png',
 		'title' => __( 'Regular Cleaning', 'somvio' ),
 		'text'  => __( 'Keep your home consistently clean, tidy, and fresh.', 'somvio' ),
-		'price' => __( 'From £35', 'somvio' ),
 	),
 	array(
 		'slug'  => 'deep-cleaning',
 		'image' => 'service-deep-cleaning.png',
 		'title' => __( 'Deep Cleaning', 'somvio' ),
 		'text'  => __( 'Keep your home consistently clean, tidy, and fresh.', 'somvio' ),
-		'price' => __( 'From £35', 'somvio' ),
 	),
 	array(
 		'slug'  => 'end-of-tenancy',
 		'image' => 'service-end-of-tenancy.png',
 		'title' => __( 'End of Tenancy', 'somvio' ),
 		'text'  => __( 'Keep your home consistently clean, tidy, and fresh.', 'somvio' ),
-		'price' => __( 'From £35', 'somvio' ),
 	),
 	array(
 		'slug'  => 'airbnb-cleaning',
 		'image' => 'service-airbnb-cleaning.png',
 		'title' => __( 'Airbnb Cleaning', 'somvio' ),
 		'text'  => __( 'Keep your home consistently clean, tidy, and fresh.', 'somvio' ),
-		'price' => __( 'From £35', 'somvio' ),
 	),
 	array(
 		'slug'  => 'after-builders',
 		'image' => 'service-after-builders.png',
 		'title' => __( 'After Builders', 'somvio' ),
 		'text'  => __( 'Keep your home consistently clean, tidy, and fresh.', 'somvio' ),
-		'price' => __( 'From £35', 'somvio' ),
-	),
-	array(
-		/* Figma 300:1413 — duplicate Regular Cleaning title, alternate hallway image. */
-		'slug'  => 'regular-cleaning',
-		'image' => 'service-regular-cleaning-alt.png',
-		'title' => __( 'Regular Cleaning', 'somvio' ),
-		'text'  => __( 'Keep your home consistently clean, tidy, and fresh.', 'somvio' ),
-		'price' => __( 'From £35', 'somvio' ),
 	),
 );
 ?>
@@ -76,9 +63,15 @@ $somvio_services = array(
 				<?php
 				$image_path = $somvio_images_dir . '/' . $service['image'];
 				$image_url  = esc_url( $somvio_images_uri . '/' . $service['image'] );
+				$service_key = function_exists( 'somvio_quote_service_key_from_title' )
+					? somvio_quote_service_key_from_title( $service['slug'] )
+					: sanitize_key( (string) $service['slug'] );
 				$service_url = function_exists( 'somvio_get_service_page_url' )
 					? esc_url( somvio_get_service_page_url( $service['slug'] ) )
 					: esc_url( home_url( '/services/' . $service['slug'] . '/' ) );
+				$from_price  = function_exists( 'somvio_get_service_starting_price' ) && function_exists( 'somvio_format_from_price' )
+					? somvio_format_from_price( somvio_get_service_starting_price( $service_key ) )
+					: '';
 				?>
 				<li class="services-card reveal-on-scroll" style="--reveal-delay: <?php echo esc_attr( (string) ( ( $index % 3 ) * 0.1 ) ); ?>s;">
 					<a class="services-card__link" href="<?php echo $service_url; ?>">
@@ -110,7 +103,7 @@ $somvio_services = array(
 						<div class="services-card__body">
 							<h3 class="services-card__title"><?php echo esc_html( $service['title'] ); ?></h3>
 							<p class="services-card__text"><?php echo esc_html( $service['text'] ); ?></p>
-							<p class="services-card__price"><?php echo esc_html( $service['price'] ); ?></p>
+							<p class="services-card__price"><?php echo esc_html( $from_price ); ?></p>
 						</div>
 					</a>
 				</li>

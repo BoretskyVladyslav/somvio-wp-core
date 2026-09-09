@@ -16,54 +16,38 @@ $somvio_images_uri = get_stylesheet_directory_uri() . '/assets/images';
 $somvio_images_dir = get_stylesheet_directory() . '/assets/images';
 
 /*
- * Figma 300:2170 — six service_item rows (no Office).
- * Even index = media start; odd = media end.
- * CTAs link to published Single Service pages via somvio_get_service_page_url().
- * 6th row is the hallway Regular Cleaning variation (same page URL as row 1).
+ * Figma 300:2170 — unique service rows (no Office).
  */
 $somvio_list_services = array(
 	array(
 		'id'    => 'regular-cleaning',
 		'image' => 'service-regular-cleaning.png',
 		'title' => __( 'Regular Cleaning', 'somvio' ),
-		'price' => __( 'From £35', 'somvio' ),
 		'text'  => __( 'Keep your home consistently fresh, clean, and welcoming with our routine maintenance service. Our trusted professionals handle dusting, vacuuming, and surface sanitization on a schedule that perfectly fits your lifestyle. Enjoy a stress-free, tidy living space every single week without lifting a finger.', 'somvio' ),
 	),
 	array(
 		'id'    => 'deep-cleaning',
 		'image' => 'service-deep-cleaning.png',
 		'title' => __( 'Deep Cleaning', 'somvio' ),
-		'price' => __( 'From £35', 'somvio' ),
 		'text'  => __( 'Give your home a comprehensive reset with our intensive, top-to-bottom detailing service. We target hidden dirt, stubborn grime, and overlooked areas that regular cleaning simply misses. It is the perfect seasonal refresh to restore absolute health and sparkle to your living spaces.', 'somvio' ),
 	),
 	array(
 		'id'    => 'end-of-tenancy',
 		'image' => 'service-end-of-tenancy.png',
 		'title' => __( 'End of Tenancy', 'somvio' ),
-		'price' => __( 'From £35', 'somvio' ),
 		'text'  => __( 'Move out with absolute confidence using our specialized deposit-back guaranteed cleaning service. Our team follows a rigorous post-cleaning inspection checklist to ensure every corner meets strict landlord standards. We take the stress out of moving by leaving your old property in flawless condition.', 'somvio' ),
 	),
 	array(
 		'id'    => 'airbnb-cleaning',
 		'image' => 'service-airbnb-cleaning.png',
 		'title' => __( 'Airbnb Cleaning', 'somvio' ),
-		'price' => __( 'From £35', 'somvio' ),
 		'text'  => __( 'Ensure a five-star guest experience with our ultra-reliable, high-speed turnover service. We meticulously clean, sanitize, and reset your rental property to look picture-perfect for every new arrival. Maximize your booking ratings while we handle the hard work behind the scenes.', 'somvio' ),
 	),
 	array(
 		'id'    => 'after-builders',
 		'image' => 'service-after-builders.png',
 		'title' => __( 'After Builders', 'somvio' ),
-		'price' => __( 'From £35', 'somvio' ),
 		'text'  => __( 'Clear away the heavy dust, debris, and residue left behind after your recent home renovation. Our professionals use specialized equipment to safely eliminate fine particles and construction mess from every surface. Step right into a beautifully completed, clean home ready for immediate living.', 'somvio' ),
-	),
-	array(
-		'id'         => 'regular-cleaning-alt',
-		'page_slug'  => 'regular-cleaning',
-		'image'      => 'service-regular-cleaning-alt.png',
-		'title'      => __( 'Regular Cleaning', 'somvio' ),
-		'price'      => __( 'From £35', 'somvio' ),
-		'text'       => __( 'Keep your home consistently fresh, clean, and welcoming with our routine maintenance service. Our trusted professionals handle dusting, vacuuming, and surface sanitization on a schedule that perfectly fits your lifestyle. Enjoy a stress-free, tidy living space every single week without lifting a finger.', 'somvio' ),
 	),
 );
 ?>
@@ -76,9 +60,18 @@ $somvio_list_services = array(
 			$media_start = ( 0 === ( $index % 2 ) );
 			$item_mod    = $media_start ? 'services-list__item--media-start' : 'services-list__item--media-end';
 			$page_slug   = isset( $service['page_slug'] ) ? (string) $service['page_slug'] : (string) $service['id'];
+			$service_key = function_exists( 'somvio_quote_service_key_from_title' )
+				? somvio_quote_service_key_from_title( $page_slug )
+				: sanitize_key( $page_slug );
 			$service_url = function_exists( 'somvio_get_service_page_url' )
 				? esc_url( somvio_get_service_page_url( $page_slug ) )
 				: esc_url( home_url( '/services/' . $page_slug . '/' ) );
+			$book_url    = function_exists( 'somvio_get_book_now_url' )
+				? somvio_get_book_now_url( $service_key )
+				: home_url( '/booking/?service=' . rawurlencode( $service_key ) );
+			$from_price  = function_exists( 'somvio_get_service_starting_price' ) && function_exists( 'somvio_format_from_price' )
+				? somvio_format_from_price( somvio_get_service_starting_price( $service_key ) )
+				: '';
 			?>
 			<article
 				id="<?php echo esc_attr( $service['id'] ); ?>"
@@ -119,9 +112,9 @@ $somvio_list_services = array(
 							<?php echo esc_html( $service['title'] ); ?>
 						</a>
 					</h2>
-					<p class="services-list__price"><?php echo esc_html( $service['price'] ); ?></p>
+					<p class="services-list__price"><?php echo esc_html( $from_price ); ?></p>
 					<p class="services-list__text"><?php echo esc_html( $service['text'] ); ?></p>
-					<a class="btn btn--primary btn--sm btn--has-icon services-list__cta" href="<?php echo esc_url( $service_url . '#booking-calculator' ); ?>">
+					<a class="btn btn--primary btn--sm btn--has-icon services-list__cta" href="<?php echo esc_url( $book_url ); ?>">
 						<span class="btn__label"><?php esc_html_e( 'Book Now', 'somvio' ); ?></span>
 						<span class="btn__icon" aria-hidden="true">
 							<?php

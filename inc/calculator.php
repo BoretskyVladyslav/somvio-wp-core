@@ -12,18 +12,38 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Preview / server rate table (GBP). Client totals are UI-only.
+ * Transient key for the merged quote rate table.
  *
- * @return array<string, mixed>
+ * @return string
  */
-function somvio_get_quote_rates() {
+function somvio_quote_rates_cache_key() {
+	return 'somvio_quote_rates_v12';
+}
+
+/**
+ * Drop cached quote rates (call after ACF / options save).
+ *
+ * @return void
+ */
+function somvio_flush_quote_rates_cache() {
 	delete_transient( 'somvio_quote_rates_v5' );
 	delete_transient( 'somvio_quote_rates_v6' );
 	delete_transient( 'somvio_quote_rates_v7' );
 	delete_transient( 'somvio_quote_rates_v8' );
 	delete_transient( 'somvio_quote_rates_v9' );
+	delete_transient( 'somvio_quote_rates_v10' );
+	delete_transient( 'somvio_quote_rates_v11' );
+	delete_transient( somvio_quote_rates_cache_key() );
+}
 
-	$cached = get_transient( 'somvio_quote_rates_v10' );
+/**
+ * Preview / server rate table (GBP). Client totals are UI-only.
+ *
+ * @return array<string, mixed>
+ */
+function somvio_get_quote_rates() {
+	$cache_key = somvio_quote_rates_cache_key();
+	$cached    = get_transient( $cache_key );
 	if ( false !== $cached && is_array( $cached ) ) {
 		return $cached;
 	}
@@ -40,6 +60,7 @@ function somvio_get_quote_rates() {
 			'5' => 150,
 		),
 		'bathroom_extra'   => 10,
+		'linen_change'     => 14,
 		'service_mult'     => array(
 			'regular-cleaning' => 1.0,
 			'deep-cleaning'    => 1.4,
@@ -133,9 +154,124 @@ function somvio_get_quote_rates() {
 	 */
 	$rates = apply_filters( 'somvio_quote_rates', $rates );
 
-	set_transient( 'somvio_quote_rates_v10', $rates, HOUR_IN_SECONDS );
+	set_transient( somvio_quote_rates_cache_key(), $rates, HOUR_IN_SECONDS );
 
 	return $rates;
+}
+
+/**
+ * Format a GBP amount the same way as the live sticky total (two decimals).
+ *
+ * @param float $amount Amount.
+ * @return string
+ */
+function somvio_format_money( $amount ) {
+	$rates  = function_exists( 'somvio_get_quote_rates' ) ? somvio_get_quote_rates() : array();
+	$symbol = isset( $rates['symbol'] ) ? (string) $rates['symbol'] : '£';
+
+	return $symbol . number_format( (float) $amount, 2, '.', '' );
+}
+
+/**
+ * Marketing "From £X" label from a live calculated amount.
+ *
+ * @param float $amount Amount.
+ * @return string
+ */
+function somvio_format_from_price( $amount ) {
+	$rates  = function_exists( 'somvio_get_quote_rates' ) ? somvio_get_quote_rates() : array();
+	$symbol = isset( $rates['symbol'] ) ? (string) $rates['symbol'] : '£';
+	$amount = (float) $amount;
+	$whole  = abs( $amount - round( $amount ) ) < 0.001;
+	$formatted = $whole
+		? $symbol . number_format( $amount, 0, '.', '' )
+		: $symbol . number_format( $amount, 2, '.', '' );
+
+	return sprintf(
+		/* translators: %s: formatted money amount, e.g. £55 */
+		__( 'From %s', 'somvio' ),
+		$formatted
+	);
+}
+
+/**
+ * Cheapest 1-bed / 1-bath total for a service (no add-ons).
+ *
+ * @param string $service Service key.
+ * @return float
+ */
+function somvio_get_service_starting_price( $service ) {
+	$service = sanitize_key( (string) $service );
+	$house   = somvio_calculate_quote_price( $service, 'house', 1, 1 );
+	$apt     = somvio_calculate_quote_price( $service, 'apartment', 1, 1 );
+
+	return min( $house, $apt );
+}
+
+/**
+ * Display price for a bedroom count on a service (1 bathroom, no add-ons).
+ *
+ * @param string $service  Service key.
+ * @param int    $bedrooms Bedroom count 1–5.
+ * @param string $property house|apartment.
+ * @return float
+ */
+function somvio_get_bedroom_display_price( $service, $bedrooms, $property = 'house' ) {
+	return somvio_calculate_quote_price(
+		sanitize_key( (string) $service ),
+		sanitize_key( (string) $property ),
+		(int) $bedrooms,
+		1
+	);
+}
+
+/**
+ * Resolve calculator service key from ACF, slug, or title.
+ *
+ * @param int $post_id Page ID. 0 = current.
+ * @return string
+ */
+function somvio_get_current_service_key( $post_id = 0 ) {
+	$post_id = absint( $post_id );
+	if ( $post_id < 1 ) {
+		$post_id = (int) get_the_ID();
+	}
+
+	$options = somvio_get_quote_service_options();
+
+	if ( $post_id > 0 && function_exists( 'get_field' ) ) {
+		$acf_key = sanitize_key( (string) get_field( 'somvio_service_key', $post_id ) );
+		if ( '' !== $acf_key && isset( $options[ $acf_key ] ) ) {
+			return $acf_key;
+		}
+	}
+
+	if ( $post_id > 0 ) {
+		$slug = sanitize_key( (string) get_post_field( 'post_name', $post_id ) );
+		if ( '' !== $slug && isset( $options[ $slug ] ) ) {
+			return $slug;
+		}
+
+		return somvio_quote_service_key_from_title( (string) get_the_title( $post_id ) );
+	}
+
+	return 'regular-cleaning';
+}
+
+/**
+ * JSON for a data-somvio-rates attribute (same table as wp_localize_script).
+ *
+ * @param array<string, mixed>|null $rates Rate table.
+ * @return string
+ */
+function somvio_quote_rates_data_attr( $rates = null ) {
+	if ( ! is_array( $rates ) ) {
+		$rates = somvio_get_quote_rates();
+	}
+
+	$json = wp_json_encode( $rates );
+
+	return is_string( $json ) ? $json : '{}';
 }
 
 /**
@@ -196,6 +332,44 @@ function somvio_get_access_method_options() {
 }
 
 /**
+ * Bedroom/size count used for bedroom_base pricing.
+ *
+ * After Builders sizes the job from Rooms (Living, Bed, Dining), not a separate bedrooms counter.
+ *
+ * @param string $service    Service key.
+ * @param int    $bedrooms   Bedroom count.
+ * @param int    $main_rooms Main rooms count.
+ * @return int
+ */
+function somvio_quote_price_size_count( $service, $bedrooms, $main_rooms = 0 ) {
+	$service = sanitize_key( (string) $service );
+	if ( 'after-builders' === $service ) {
+		return max( 1, min( 5, absint( $main_rooms ) ) );
+	}
+
+	return max( 1, min( 5, absint( $bedrooms ) ) );
+}
+
+/**
+ * Airbnb linen-change surcharge (£14 per change by default).
+ *
+ * @param string $service        Service key.
+ * @param int    $linen_changes  Linen change count.
+ * @return float
+ */
+function somvio_quote_linen_total( $service, $linen_changes ) {
+	if ( 'airbnb-cleaning' !== sanitize_key( (string) $service ) ) {
+		return 0.0;
+	}
+
+	$rates = somvio_get_quote_rates();
+	$rate  = isset( $rates['linen_change'] ) ? (float) $rates['linen_change'] : 14.0;
+	$qty   = max( 0, min( 10, absint( $linen_changes ) ) );
+
+	return round( $rate * $qty, 2 );
+}
+
+/**
  * Recalculate quote total from trusted inputs (server authority).
  *
  * @param string               $service          Service key.
@@ -204,17 +378,24 @@ function somvio_get_access_method_options() {
  * @param int                  $bathrooms        Bathroom count.
  * @param string[]             $addons           Selected add-on keys.
  * @param array<string, int>   $addon_quantities Qty map for per-unit addons.
+ * @param int                  $linen_changes    Airbnb linen changes.
+ * @param int                  $main_rooms       After Builders rooms (living/bed/dining).
  * @return float
  */
-function somvio_calculate_quote_price( $service, $property, $bedrooms, $bathrooms, $addons = array(), $addon_quantities = array() ) {
+function somvio_calculate_quote_price( $service, $property, $bedrooms, $bathrooms, $addons = array(), $addon_quantities = array(), $linen_changes = 0, $main_rooms = 0 ) {
 	$rates = somvio_get_quote_rates();
+	$service = sanitize_key( (string) $service );
 
-	$bed_key = (string) max( 1, min( 5, absint( $bedrooms ) ) );
-	$base    = isset( $rates['bedroom_base'][ $bed_key ] )
-		? (float) $rates['bedroom_base'][ $bed_key ]
-		: 55.0;
+	$bed_key = (string) somvio_quote_price_size_count( $service, $bedrooms, $main_rooms );
+	if ( isset( $rates['bedroom_base'][ $bed_key ] ) ) {
+		$base = (float) $rates['bedroom_base'][ $bed_key ];
+	} elseif ( isset( $rates['bedroom_base']['1'] ) ) {
+		$base = (float) $rates['bedroom_base']['1'];
+	} else {
+		$base = 0.0;
+	}
 
-	$bath_extra = max( 0, absint( $bathrooms ) - 1 ) * (float) $rates['bathroom_extra'];
+	$bath_extra = max( 0, absint( $bathrooms ) - 1 ) * (float) ( $rates['bathroom_extra'] ?? 0 );
 	$svc_mult   = isset( $rates['service_mult'][ $service ] )
 		? (float) $rates['service_mult'][ $service ]
 		: 1.0;
@@ -253,7 +434,9 @@ function somvio_calculate_quote_price( $service, $property, $bedrooms, $bathroom
 		$addon_total += $unit * min( 10, $qty );
 	}
 
-	return round( ( ( $base + $bath_extra ) * $svc_mult * $prop_mult ) + $addon_total, 2 );
+	$linen_total = somvio_quote_linen_total( $service, $linen_changes );
+
+	return round( ( ( $base + $bath_extra ) * $svc_mult * $prop_mult ) + $addon_total + $linen_total, 2 );
 }
 
 /**
@@ -358,8 +541,14 @@ function somvio_get_quote_property_options() {
  * @return string
  */
 function somvio_quote_service_key_from_title( $title ) {
-	$title = strtolower( trim( (string) $title ) );
-	$map   = array(
+	$raw     = strtolower( trim( (string) $title ) );
+	$options = somvio_get_quote_service_options();
+	$slug    = sanitize_key( str_replace( ' ', '-', $raw ) );
+	if ( '' !== $slug && isset( $options[ $slug ] ) ) {
+		return $slug;
+	}
+
+	$map = array(
 		'regular cleaning' => 'regular-cleaning',
 		'deep cleaning'    => 'deep-cleaning',
 		'end of tenancy'   => 'end-of-tenancy',
@@ -367,7 +556,7 @@ function somvio_quote_service_key_from_title( $title ) {
 		'after builders'   => 'after-builders',
 	);
 
-	return isset( $map[ $title ] ) ? $map[ $title ] : 'regular-cleaning';
+	return isset( $map[ $raw ] ) ? $map[ $raw ] : 'regular-cleaning';
 }
 
 /**
@@ -380,7 +569,7 @@ function somvio_needs_quote_calculator_assets() {
 		return false;
 	}
 
-	// Global header Book Now opens the floating quote modal.
+	// Quote modal + on-page calculators need rates on most public views.
 	/**
 	 * Force calculator assets off/on.
 	 *
@@ -638,6 +827,19 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 		if ( somvio_quote_text_length( trim( $address ) ) < 3 || somvio_quote_text_length( trim( $address ) ) > 255 ) {
 			return new WP_Error( 'invalid_address', __( 'Please enter your street address.', 'somvio' ), array( 'status' => 400 ) );
 		}
+		if ( function_exists( 'somvio_validate_postcode' ) && function_exists( 'somvio_extract_uk_postcode_from_text' ) ) {
+			$extracted = somvio_extract_uk_postcode_from_text( $address );
+			if ( '' !== $extracted ) {
+				$postcode = somvio_validate_postcode( $extracted );
+				if ( empty( $postcode['valid'] ) ) {
+					$pc_message = isset( $postcode['message'] ) && '' !== (string) $postcode['message']
+						? (string) $postcode['message']
+						: __( 'Sorry, we do not cover this area yet', 'somvio' );
+
+					return new WP_Error( 'invalid_postcode', $pc_message, array( 'status' => 400 ) );
+				}
+			}
+		}
 		if ( ! $terms ) {
 			return new WP_Error( 'terms_required', __( 'Please accept the Terms & Conditions and Privacy Policy.', 'somvio' ), array( 'status' => 400 ) );
 		}
@@ -689,7 +891,7 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 		}
 	}
 
-	$server_total = somvio_calculate_quote_price( $service, $property, $bedrooms, $bathrooms, $addons, $addon_quantities );
+	$server_total = somvio_calculate_quote_price( $service, $property, $bedrooms, $bathrooms, $addons, $addon_quantities, $linen_changes, $main_rooms );
 	$client_total = isset( $request['client_total'] ) ? (float) $request['client_total'] : null;
 
 	if ( null !== $client_total && ! is_finite( $client_total ) ) {
@@ -773,13 +975,13 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 				'payment_intent_id' => (string) ( $payment['payment_intent_id'] ?? '' ),
 				'publishable_key'   => (string) ( $payment['publishable_key'] ?? '' ),
 			);
-			$response['message'] = __( 'Booking created. Please complete your online payment.', 'somvio' );
+			$response['message'] = __( 'Please complete your online payment to confirm the booking.', 'somvio' );
 		} else {
 			$response['requires_payment'] = true;
 			$response['payment_error']    = (string) ( $payment['error'] ?? 'stripe_failed' );
 			$response['message']          = ! empty( $payment['message'] )
 				? (string) $payment['message']
-				: __( 'Booking saved, but online payment could not be started. We’ll contact you to arrange payment.', 'somvio' );
+				: __( 'Online payment could not be started. Please try again or choose pay on completion.', 'somvio' );
 		}
 	}
 

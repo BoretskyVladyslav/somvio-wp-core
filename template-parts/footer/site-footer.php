@@ -99,7 +99,7 @@ $somvio_year         = (int) gmdate( 'Y' );
 					>
 				</a>
 				<p class="site-footer__tagline">
-					<?php esc_html_e( 'Professional cleaning services you can rely on.', 'somvio' ); ?>
+					<?php esc_html_e( 'clean spaces. better living.', 'somvio' ); ?>
 				</p>
 				<?php if ( ! empty( $somvio_socials ) ) : ?>
 					<ul class="site-footer__social">

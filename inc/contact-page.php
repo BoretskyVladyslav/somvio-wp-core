@@ -85,14 +85,12 @@ function somvio_get_working_hours() {
  * @return string
  */
 function somvio_get_contact_map_embed_url() {
-	$location = function_exists( 'somvio_get_location' )
-		? somvio_get_location()
-		: __( 'Glasgow, United Kingdom', 'somvio' );
+	$query = __( 'Glasgow, Renfrewshire, East Dunbartonshire, West Dunbartonshire, United Kingdom', 'somvio' );
 
 	$url = add_query_arg(
 		array(
-			'q'      => $location,
-			'z'      => '11',
+			'q'      => $query,
+			'z'      => '9',
 			'output' => 'embed',
 		),
 		'https://maps.google.com/maps'

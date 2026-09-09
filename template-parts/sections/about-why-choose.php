@@ -2,7 +2,7 @@
 /**
  * About Us — Why Choose Somvio benefits grid.
  *
- * Figma node: 300:2112 (6-card promise grid).
+ * Figma node: 300:2112 (4 unique promise cards).
  * Note: composition 389:6012 is Numbers + Social Proof (not this grid).
  *
  * @package Somvio_Child
@@ -28,21 +28,10 @@ $somvio_about_why_cards = array(
 		'title' => __( 'Easy Online Booking', 'somvio' ),
 		'text'  => __( 'Book a professional clean in minutes, anytime, on any device.', 'somvio' ),
 	),
-	// Bottom row mirrors top row in Figma 300:2112.
 	array(
-		'icon'  => 'icon-user',
-		'title' => __( 'Trusted Professionals', 'somvio' ),
-		'text'  => __( 'Background-checked, vetted, and highly experienced cleaners.', 'somvio' ),
-	),
-	array(
-		'icon'  => 'icon-star',
-		'title' => __( 'Satisfaction Guarantee:', 'somvio' ),
-		'text'  => __( "We're not happy until you are. If you're unsatisfied, we re-clean for free.", 'somvio' ),
-	),
-	array(
-		'icon'  => 'icon-calendar',
-		'title' => __( 'Easy Online Booking', 'somvio' ),
-		'text'  => __( 'Book a professional clean in minutes, anytime, on any device.', 'somvio' ),
+		'icon'  => 'icon-check-circle',
+		'title' => __( 'Fully Insured & Reliable', 'somvio' ),
+		'text'  => __( 'Fully insured for your peace of mind, giving you confidence every time we clean.', 'somvio' ),
 	),
 );
 ?>
