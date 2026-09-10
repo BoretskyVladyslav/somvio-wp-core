@@ -45,6 +45,9 @@ $somvio_whatsapp  = function_exists( 'somvio_get_whatsapp_url' ) ? somvio_get_wh
 						type="button"
 						class="somvio-header__drawer-close"
 						data-header-drawer-close
+						hidden
+						tabindex="-1"
+						aria-hidden="true"
 						aria-label="<?php esc_attr_e( 'Close menu', 'somvio' ); ?>"
 					>
 						<span class="somvio-header__drawer-close-icon" aria-hidden="true"></span>

@@ -857,22 +857,9 @@ body.somvio-no-scroll .somvio-header {
 	}
 
 	.somvio-header__drawer-close {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		align-self: flex-end;
-		flex-shrink: 0;
-		width: 48px;
-		height: 48px;
-		margin: 0 -8px 4px 0;
-		padding: 0;
-		border: 1px solid var(--somvio-color-accent-mid);
-		border-radius: 4px;
-		appearance: none;
-		-webkit-appearance: none;
-		background: transparent;
-		color: var(--somvio-color-text);
-		cursor: pointer;
+		display: none !important;
+		visibility: hidden !important;
+		pointer-events: none !important;
 	}
 
 	.somvio-header__drawer-close-icon {
@@ -12965,8 +12952,12 @@ body.booking-form-modal-open {
 	.cookie-consent {
 		left: 16px;
 		right: 16px;
-		bottom: 16px;
+		bottom: max(16px, env(safe-area-inset-bottom, 0px));
 		max-width: none;
+	}
+
+	.cookie-consent__panel {
+		max-height: min(50dvh, 320px);
 	}
 
 	.cookie-consent__actions {
@@ -12979,6 +12970,10 @@ body.booking-form-modal-open {
 	.cookie-consent__btn {
 		width: 100%;
 		justify-content: center;
+	}
+
+	body:has(.cookie-consent.is-visible) .booking-form {
+		padding-bottom: calc(min(50dvh, 320px) + 32px + env(safe-area-inset-bottom, 0px));
 	}
 }
 

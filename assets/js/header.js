@@ -90,25 +90,65 @@
 
 	const getDrawerFocusable = () => {
 		const drawer = header.querySelector( '.somvio-header__drawer' );
-		if ( ! drawer ) {
-			return [];
+		const nodes = [];
+
+		if ( ! mqDesktop.matches && toggle && ! toggle.hidden && toggle.getAttribute( 'aria-hidden' ) !== 'true' ) {
+			nodes.push( toggle );
 		}
 
-		return Array.prototype.slice.call(
-			drawer.querySelectorAll(
-				'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-			)
-		).filter( ( el ) => {
-			if ( el.hidden || el.getAttribute( 'aria-hidden' ) === 'true' ) {
-				return false;
-			}
-			return el.offsetParent !== null || el.getClientRects().length > 0;
-		} );
+		if ( ! drawer ) {
+			return nodes;
+		}
+
+		Array.prototype.push.apply(
+			nodes,
+			Array.prototype.slice.call(
+				drawer.querySelectorAll(
+					'a[href], button:not([disabled]):not([hidden]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+				)
+			).filter( ( el ) => {
+				if ( el === toggle || el.hidden || el.getAttribute( 'aria-hidden' ) === 'true' ) {
+					return false;
+				}
+				if ( el.classList.contains( 'somvio-header__drawer-close' ) ) {
+					return false;
+				}
+				return el.offsetParent !== null || el.getClientRects().length > 0;
+			} )
+		);
+
+		return nodes;
+	};
+
+	const releaseNavFocus = () => {
+		const active = document.activeElement;
+		if ( ! active || active === document.body ) {
+			return;
+		}
+
+		const trapped = nav.contains( active )
+			|| ( backdrop && ( active === backdrop || backdrop.contains( active ) ) );
+		if ( ! trapped ) {
+			return;
+		}
+
+		if ( toggle && ! toggle.hidden && typeof toggle.focus === 'function' ) {
+			toggle.focus();
+			return;
+		}
+
+		if ( typeof active.blur === 'function' ) {
+			active.blur();
+		}
 	};
 
 	const setNavOpen = ( isOpen ) => {
 		const open = Boolean( isOpen ) && ! mqDesktop.matches;
 		const wasOpen = header.classList.contains( 'somvio-header--nav-open' );
+
+		if ( ! open ) {
+			releaseNavFocus();
+		}
 
 		header.classList.toggle( 'somvio-header--nav-open', open );
 		toggle.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
@@ -128,19 +168,25 @@
 
 		if ( ! open ) {
 			closeSubmenus();
-			if ( wasOpen && document.activeElement && nav.contains( document.activeElement ) ) {
+			if ( wasOpen && toggle && ! toggle.hidden && typeof toggle.focus === 'function' ) {
 				toggle.focus();
 			}
-		} else {
-			const closeBtn = header.querySelector( '[data-header-drawer-close]' );
-			if ( closeBtn ) {
-				closeBtn.focus();
-			}
+		} else if ( toggle && typeof toggle.focus === 'function' ) {
+			toggle.focus();
 		}
 	};
 
 	const syncViewport = () => {
 		const isDesktop = mqDesktop.matches;
+
+		if ( isDesktop && ( toggle === document.activeElement || nav.contains( document.activeElement ) ) ) {
+			const firstLink = nav.querySelector( '.somvio-header__link' );
+			if ( firstLink && typeof firstLink.focus === 'function' ) {
+				firstLink.focus();
+			} else if ( document.activeElement && typeof document.activeElement.blur === 'function' ) {
+				document.activeElement.blur();
+			}
+		}
 
 		toggle.hidden = isDesktop;
 		toggle.setAttribute( 'aria-hidden', isDesktop ? 'true' : 'false' );
@@ -287,7 +333,9 @@
 
 			const first = focusable[ 0 ];
 			const last = focusable[ focusable.length - 1 ];
-			const inside = drawer && drawer.contains( document.activeElement );
+			const active = document.activeElement;
+			const inside = ( toggle && ( active === toggle || toggle.contains( active ) ) )
+				|| ( drawer && drawer.contains( active ) );
 			if ( ! inside ) {
 				event.preventDefault();
 				( event.shiftKey ? last : first ).focus();
