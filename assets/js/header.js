@@ -74,6 +74,38 @@
 		return item && nav.contains( item ) ? item : null;
 	};
 
+	const setScrollLock = ( locked ) => {
+		if ( locked ) {
+			const gap = Math.max( 0, window.innerWidth - document.documentElement.clientWidth );
+			document.documentElement.style.setProperty( '--somvio-scrollbar-compensation', gap + 'px' );
+			document.documentElement.classList.add( 'somvio-no-scroll' );
+			body.classList.add( 'somvio-no-scroll' );
+			return;
+		}
+
+		document.documentElement.style.removeProperty( '--somvio-scrollbar-compensation' );
+		document.documentElement.classList.remove( 'somvio-no-scroll' );
+		body.classList.remove( 'somvio-no-scroll' );
+	};
+
+	const getDrawerFocusable = () => {
+		const drawer = header.querySelector( '.somvio-header__drawer' );
+		if ( ! drawer ) {
+			return [];
+		}
+
+		return Array.prototype.slice.call(
+			drawer.querySelectorAll(
+				'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+			)
+		).filter( ( el ) => {
+			if ( el.hidden || el.getAttribute( 'aria-hidden' ) === 'true' ) {
+				return false;
+			}
+			return el.offsetParent !== null || el.getClientRects().length > 0;
+		} );
+	};
+
 	const setNavOpen = ( isOpen ) => {
 		const open = Boolean( isOpen ) && ! mqDesktop.matches;
 		const wasOpen = header.classList.contains( 'somvio-header--nav-open' );
@@ -83,14 +115,7 @@
 		toggle.setAttribute( 'aria-label', open ? labelClose : labelOpen );
 		nav.setAttribute( 'aria-hidden', mqDesktop.matches ? 'false' : open ? 'false' : 'true' );
 
-		if ( open ) {
-			const gap = Math.max( 0, window.innerWidth - document.documentElement.clientWidth );
-			document.documentElement.style.setProperty( '--somvio-scrollbar-compensation', gap + 'px' );
-			body.classList.add( 'somvio-no-scroll' );
-		} else {
-			document.documentElement.style.removeProperty( '--somvio-scrollbar-compensation' );
-			body.classList.remove( 'somvio-no-scroll' );
-		}
+		setScrollLock( open );
 
 		if ( 'inert' in nav ) {
 			nav.inert = ! mqDesktop.matches && ! open;
@@ -98,7 +123,7 @@
 
 		if ( backdrop ) {
 			backdrop.setAttribute( 'aria-hidden', open ? 'false' : 'true' );
-			backdrop.tabIndex = open ? 0 : -1;
+			backdrop.tabIndex = -1;
 		}
 
 		if ( ! open ) {
@@ -129,11 +154,11 @@
 			if ( 'inert' in nav ) {
 				nav.inert = false;
 			}
-			document.documentElement.style.removeProperty( '--somvio-scrollbar-compensation' );
-			body.classList.remove( 'somvio-no-scroll' );
+			setScrollLock( false );
 			closeSubmenus();
 			if ( backdrop ) {
 				backdrop.setAttribute( 'aria-hidden', 'true' );
+				backdrop.tabIndex = -1;
 			}
 			return;
 		}
@@ -220,23 +245,65 @@
 		} );
 	} );
 
-	/* Close drawer after choosing a submenu link. */
+	/* Close drawer after choosing a submenu, top-level, or drawer CTA link. */
 	nav.addEventListener( 'click', ( event ) => {
 		const sublink = event.target.closest( '.somvio-header__sublink' );
-		if ( ! sublink || ! nav.contains( sublink ) ) {
+		if ( sublink && nav.contains( sublink ) ) {
+			if ( ! mqDesktop.matches ) {
+				setNavOpen( false );
+				return;
+			}
+
+			closeSubmenus();
+			parentLinks().forEach( ( link ) => setExpanded( link, false ) );
 			return;
 		}
 
-		if ( ! mqDesktop.matches ) {
+		if ( mqDesktop.matches ) {
+			return;
+		}
+
+		const parentToggle = event.target.closest( '.menu-item-has-children > a' );
+		if ( parentToggle && nav.contains( parentToggle ) ) {
+			return;
+		}
+
+		const closer = event.target.closest(
+			'.somvio-header__link, .somvio-header__cta--drawer, .somvio-header__whatsapp'
+		);
+		if ( closer && nav.contains( closer ) ) {
 			setNavOpen( false );
-			return;
 		}
-
-		closeSubmenus();
-		parentLinks().forEach( ( link ) => setExpanded( link, false ) );
 	} );
 
 	document.addEventListener( 'keydown', ( event ) => {
+		if ( event.key === 'Tab' && header.classList.contains( 'somvio-header--nav-open' ) ) {
+			const drawer = header.querySelector( '.somvio-header__drawer' );
+			const focusable = getDrawerFocusable();
+			if ( ! focusable.length ) {
+				event.preventDefault();
+				return;
+			}
+
+			const first = focusable[ 0 ];
+			const last = focusable[ focusable.length - 1 ];
+			const inside = drawer && drawer.contains( document.activeElement );
+			if ( ! inside ) {
+				event.preventDefault();
+				( event.shiftKey ? last : first ).focus();
+				return;
+			}
+
+			if ( event.shiftKey && document.activeElement === first ) {
+				event.preventDefault();
+				last.focus();
+			} else if ( ! event.shiftKey && document.activeElement === last ) {
+				event.preventDefault();
+				first.focus();
+			}
+			return;
+		}
+
 		if ( event.key !== 'Escape' ) {
 			return;
 		}

@@ -560,6 +560,20 @@
 			textEl.textContent = msg;
 		}
 
+		function bindDescribedBy(inputEl, errEl, on) {
+			if (!inputEl || !errEl) {
+				return;
+			}
+			if (!errEl.id) {
+				errEl.id = (inputEl.id || 'booking-field') + '-error';
+			}
+			if (on) {
+				inputEl.setAttribute('aria-describedby', errEl.id);
+			} else {
+				inputEl.removeAttribute('aria-describedby');
+			}
+		}
+
 		function setFieldError(name, msg) {
 			var errEl = fieldError(name);
 			var inputEl = field(name);
@@ -579,6 +593,15 @@
 				} else {
 					inputEl.removeAttribute('aria-invalid');
 					inputEl.classList.remove('is-invalid');
+				}
+				if (name === 'payment_method') {
+					var group = inputEl.closest('[role="radiogroup"]');
+					bindDescribedBy(group || inputEl, errEl, !!msg);
+					root.querySelectorAll('[data-booking-field="payment_method"]').forEach(function (radio) {
+						bindDescribedBy(radio, errEl, !!msg);
+					});
+				} else {
+					bindDescribedBy(inputEl, errEl, !!msg);
 				}
 				if (name === 'terms_accepted') {
 					var termsLabel = inputEl.closest('.booking-form__terms');
@@ -1673,7 +1696,7 @@
 					)
 				)
 				.filter(function (element) {
-					return !element.hidden && element.getAttribute('aria-hidden') !== 'true';
+					return !element.hidden && element.getAttribute('aria-hidden') !== 'true' && !element.closest('[hidden]');
 				});
 		}
 

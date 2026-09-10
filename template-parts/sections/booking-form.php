@@ -623,8 +623,8 @@ $somvio_bf_counters = array(
 					<?php endforeach; ?>
 				</div>
 				<input type="hidden" name="time" data-booking-field="time" value="" required>
-				<p class="booking-form__field-error" data-booking-field-error="time" hidden role="alert"></p>
-				<p class="booking-form__field-error" data-booking-field-error="date" hidden role="alert"></p>
+				<p class="booking-form__field-error" id="<?php echo esc_attr( $somvio_bf_uid ); ?>-time-error" data-booking-field-error="time" hidden role="alert"></p>
+				<p class="booking-form__field-error" id="<?php echo esc_attr( $somvio_bf_uid ); ?>-date-error" data-booking-field-error="date" hidden role="alert"></p>
 
 				<div class="booking-form__footer">
 					<button type="button" class="booking-form__back btn btn--outline" data-booking-back>
@@ -665,7 +665,7 @@ $somvio_bf_counters = array(
 							placeholder="<?php esc_attr_e( 'Full Name', 'somvio' ); ?>"
 							required
 						>
-						<p class="booking-form__field-error" data-booking-field-error="first_name" hidden role="alert"></p>
+						<p class="booking-form__field-error" id="<?php echo esc_attr( $somvio_bf_uid ); ?>-first-error" data-booking-field-error="first_name" hidden role="alert"></p>
 					</div>
 					<div class="booking-form__field">
 						<label class="booking-form__label is-required" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-last">
@@ -682,7 +682,7 @@ $somvio_bf_counters = array(
 							placeholder="<?php esc_attr_e( 'Last Name', 'somvio' ); ?>"
 							required
 						>
-						<p class="booking-form__field-error" data-booking-field-error="last_name" hidden role="alert"></p>
+						<p class="booking-form__field-error" id="<?php echo esc_attr( $somvio_bf_uid ); ?>-last-error" data-booking-field-error="last_name" hidden role="alert"></p>
 					</div>
 					<div class="booking-form__field">
 						<label class="booking-form__label is-required" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-phone">
@@ -700,7 +700,7 @@ $somvio_bf_counters = array(
 							placeholder="<?php esc_attr_e( '+44 7000 000000', 'somvio' ); ?>"
 							required
 						>
-						<p class="booking-form__field-error" data-booking-field-error="phone" hidden role="alert"></p>
+						<p class="booking-form__field-error" id="<?php echo esc_attr( $somvio_bf_uid ); ?>-phone-error" data-booking-field-error="phone" hidden role="alert"></p>
 					</div>
 					<div class="booking-form__field">
 						<label class="booking-form__label is-required" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-email">
@@ -718,7 +718,7 @@ $somvio_bf_counters = array(
 							placeholder="<?php esc_attr_e( 'name@example.com', 'somvio' ); ?>"
 							required
 						>
-						<p class="booking-form__field-error" data-booking-field-error="email" hidden role="alert"></p>
+						<p class="booking-form__field-error" id="<?php echo esc_attr( $somvio_bf_uid ); ?>-email-error" data-booking-field-error="email" hidden role="alert"></p>
 					</div>
 					<div class="booking-form__field booking-form__field--full">
 						<label class="booking-form__label is-required" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-address">
@@ -735,7 +735,7 @@ $somvio_bf_counters = array(
 							placeholder="<?php esc_attr_e( 'Postal Code / Address', 'somvio' ); ?>"
 							required
 						>
-						<p class="booking-form__field-error" data-booking-field-error="address" hidden role="alert"></p>
+						<p class="booking-form__field-error" id="<?php echo esc_attr( $somvio_bf_uid ); ?>-address-error" data-booking-field-error="address" hidden role="alert"></p>
 					</div>
 					<div class="booking-form__field booking-form__field--full">
 						<label class="booking-form__label" for="<?php echo esc_attr( $somvio_bf_uid ); ?>-comment">
@@ -769,7 +769,7 @@ $somvio_bf_counters = array(
 								</option>
 							<?php endforeach; ?>
 						</select>
-						<p class="booking-form__field-error" data-booking-field-error="access_method" hidden role="alert"></p>
+						<p class="booking-form__field-error" id="<?php echo esc_attr( $somvio_bf_uid ); ?>-access-error" data-booking-field-error="access_method" hidden role="alert"></p>
 					</div>
 				</div>
 
@@ -832,7 +832,7 @@ $somvio_bf_counters = array(
 						);
 						?>
 					</div>
-					<p class="booking-form__field-error" data-booking-field-error="payment_method" hidden role="alert"></p>
+					<p class="booking-form__field-error" id="<?php echo esc_attr( $somvio_bf_uid ); ?>-payment-error" data-booking-field-error="payment_method" hidden role="alert"></p>
 				</fieldset>
 
 				<div class="booking-form__terms-wrap" data-booking-terms-wrap>
@@ -866,7 +866,7 @@ $somvio_bf_counters = array(
 							?>
 						</span>
 					</label>
-					<p class="booking-form__field-error booking-form__terms-notice" data-booking-field-error="terms_accepted" hidden role="alert"></p>
+					<p class="booking-form__field-error booking-form__terms-notice" id="<?php echo esc_attr( $somvio_bf_uid ); ?>-terms-error" data-booking-field-error="terms_accepted" hidden role="alert"></p>
 				</div>
 
 				<div class="booking-form__summary" data-booking-summary>

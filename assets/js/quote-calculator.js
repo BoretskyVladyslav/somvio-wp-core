@@ -1449,6 +1449,8 @@
 			lastFocus = document.activeElement;
 			modal.hidden = false;
 			modal.setAttribute('aria-hidden', 'false');
+			var gap = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+			document.documentElement.style.setProperty('--somvio-scrollbar-compensation', gap + 'px');
 			document.documentElement.classList.add('has-quote-modal');
 			var focusable = getFocusable();
 			var focusTarget = focusable[0] || dialog;
@@ -1464,6 +1466,9 @@
 			modal.hidden = true;
 			modal.setAttribute('aria-hidden', 'true');
 			document.documentElement.classList.remove('has-quote-modal');
+			if (!document.documentElement.classList.contains('somvio-no-scroll') && !document.body.classList.contains('somvio-no-scroll')) {
+				document.documentElement.style.removeProperty('--somvio-scrollbar-compensation');
+			}
 			if (opts.skipReset !== true) {
 				var calc = modal.querySelector('[data-quote-calculator]');
 				if (calc && typeof calc.somvioQuoteReset === 'function') {

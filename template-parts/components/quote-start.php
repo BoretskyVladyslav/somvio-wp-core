@@ -82,7 +82,7 @@ $somvio_qs_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 				placeholder="<?php esc_attr_e( 'e.g. G20 8NN', 'somvio' ); ?>"
 				required
 			>
-			<p class="quote-start__error" data-quote-start-error hidden role="alert"></p>
+			<p class="quote-start__error" id="<?php echo esc_attr( $somvio_qs_uid ); ?>-error" data-quote-start-error hidden role="alert"></p>
 		</div>
 
 		<div class="quote-card__footer">

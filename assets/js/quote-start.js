@@ -41,24 +41,49 @@
 		};
 	}
 
-	function showError(root, message) {
+	function showError(root, message, invalidField) {
 		const el = root.querySelector('[data-quote-start-error]');
 		const input = root.querySelector('[data-quote-start-postcode]');
+		const serviceEl = root.querySelector('[data-quote-start-service]');
 		if (!el) {
 			return;
+		}
+		if (!el.id) {
+			el.id = (input && input.id ? input.id : 'quote-start') + '-error';
 		}
 		if (!message) {
 			el.hidden = true;
 			el.textContent = '';
 			if (input) {
 				input.removeAttribute('aria-invalid');
+				input.removeAttribute('aria-describedby');
+			}
+			if (serviceEl) {
+				serviceEl.removeAttribute('aria-invalid');
+				serviceEl.removeAttribute('aria-describedby');
 			}
 			return;
 		}
 		el.hidden = false;
 		el.textContent = message;
+		const target = invalidField === 'service' && serviceEl ? serviceEl : input;
 		if (input) {
-			input.setAttribute('aria-invalid', 'true');
+			if (target === input) {
+				input.setAttribute('aria-invalid', 'true');
+				input.setAttribute('aria-describedby', el.id);
+			} else {
+				input.removeAttribute('aria-invalid');
+				input.removeAttribute('aria-describedby');
+			}
+		}
+		if (serviceEl) {
+			if (target === serviceEl) {
+				serviceEl.setAttribute('aria-invalid', 'true');
+				serviceEl.setAttribute('aria-describedby', el.id);
+			} else {
+				serviceEl.removeAttribute('aria-invalid');
+				serviceEl.removeAttribute('aria-describedby');
+			}
 		}
 	}
 
@@ -102,16 +127,16 @@
 			const postcode = postcodeEl.value.trim();
 
 			if (!service || !isAllowedService(service)) {
-				return { ok: false, error: serviceMsg };
+				return { ok: false, error: serviceMsg, field: 'service' };
 			}
 
 			if (!postcode) {
-				return { ok: false, error: invalidMsg };
+				return { ok: false, error: invalidMsg, field: 'postcode' };
 			}
 
 			const result = await somvioValidatePostcode(postcode);
 			if (result.valid !== true) {
-				return { ok: false, error: result.message || uncovered, result, service, postcode };
+				return { ok: false, error: result.message || uncovered, result, service, postcode, field: 'postcode' };
 			}
 
 			return { ok: true, result, service, postcode };
@@ -131,12 +156,12 @@
 				if (gen !== blurGen || submitting) {
 					return;
 				}
-				showError(root, checked.ok === true ? '' : checked.error);
+				showError(root, checked.ok === true ? '' : checked.error, checked.field);
 			} catch (err) {
 				if (gen !== blurGen || submitting) {
 					return;
 				}
-				showError(root, genericMsg);
+				showError(root, genericMsg, 'postcode');
 			}
 		}
 
@@ -149,22 +174,24 @@
 			submitting = true;
 			if (submitBtn) {
 				submitBtn.disabled = true;
+				submitBtn.setAttribute('aria-busy', 'true');
 			}
 
 			try {
 				const checked = await validatePostcode();
 				if (checked.ok !== true || !checked.result || checked.result.valid !== true) {
-					showError(root, checked.error || uncovered);
+					showError(root, checked.error || uncovered, checked.field || 'postcode');
 					return;
 				}
 
 				goToBooking(checked.service, checked.result.postcode || checked.postcode);
 			} catch (err) {
-				showError(root, genericMsg);
+				showError(root, genericMsg, 'postcode');
 			} finally {
 				submitting = false;
 				if (submitBtn) {
 					submitBtn.disabled = false;
+					submitBtn.setAttribute('aria-busy', 'false');
 				}
 			}
 		}

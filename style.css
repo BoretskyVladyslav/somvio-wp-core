@@ -371,8 +371,13 @@ body:not(.somvio-has-hero) {
 	display: none;
 }
 
+html.somvio-no-scroll,
 body.somvio-no-scroll {
 	overflow: hidden;
+	overscroll-behavior: none;
+}
+
+body.somvio-no-scroll {
 	padding-right: var(--somvio-scrollbar-compensation, 0px);
 }
 
@@ -546,6 +551,8 @@ body.somvio-no-scroll .somvio-header {
 	padding: var(--somvio-icon-btn-pad);
 	border: 1px solid var(--somvio-color-accent-mid);
 	border-radius: var(--somvio-radius-cta);
+	appearance: none;
+	-webkit-appearance: none;
 	background: transparent;
 	color: var(--somvio-color-text);
 	text-decoration: none;
@@ -581,6 +588,8 @@ body.somvio-no-scroll .somvio-header {
 
 .somvio-header__backdrop {
 	display: none;
+	appearance: none;
+	-webkit-appearance: none;
 	position: fixed;
 	inset: 0;
 	z-index: 1;
@@ -859,6 +868,8 @@ body.somvio-no-scroll .somvio-header {
 		padding: 0;
 		border: 1px solid var(--somvio-color-accent-mid);
 		border-radius: 4px;
+		appearance: none;
+		-webkit-appearance: none;
 		background: transparent;
 		color: var(--somvio-color-text);
 		cursor: pointer;
@@ -1081,12 +1092,15 @@ body.somvio-no-scroll .somvio-header {
 	#masthead.somvio-header .somvio-header__toggle,
 	#masthead.somvio-header .somvio-header__phone-btn,
 	#masthead.somvio-header .somvio-header__backdrop,
+	#masthead.somvio-header .somvio-header__drawer-close,
 	.somvio-header .somvio-header__toggle,
 	.somvio-header .somvio-header__phone-btn,
 	.somvio-header .somvio-header__backdrop,
+	.somvio-header .somvio-header__drawer-close,
 	.somvio-header__toggle,
 	.somvio-header__phone-btn,
-	.somvio-header__backdrop {
+	.somvio-header__backdrop,
+	.somvio-header__drawer-close {
 		display: none !important;
 		visibility: hidden !important;
 		pointer-events: none !important;
@@ -10469,12 +10483,36 @@ body.somvio-has-hero.single-post .site-main > * {
 }
 
 .quote-modal__card {
+	width: 100%;
 	max-width: none;
+	min-width: 0;
+	min-height: 0;
 	margin: 0;
 }
 
-html.has-quote-modal {
+@media (max-width: 420px) {
+	.quote-modal {
+		padding: 16px;
+		padding-top: max(16px, env(safe-area-inset-top, 0px));
+		padding-right: max(16px, env(safe-area-inset-right, 0px));
+		padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+		padding-left: max(16px, env(safe-area-inset-left, 0px));
+	}
+}
+
+html.has-quote-modal,
+html.has-quote-modal body {
 	overflow: hidden;
+	overscroll-behavior: none;
+}
+
+html.has-quote-modal body {
+	padding-right: var(--somvio-scrollbar-compensation, 0px);
+}
+
+html.has-quote-modal .somvio-header {
+	width: auto;
+	right: var(--somvio-scrollbar-compensation, 0px);
 }
 
 /* -------------------------------------------------------------------------
@@ -11531,7 +11569,8 @@ body.booking-form-modal-open {
 	content: none;
 }
 
-.booking-form__cal-nav::after {
+.booking-form__cal-nav::after,
+.booking-form__cal-day::after {
 	content: '';
 	position: absolute;
 	inset: -9px;
@@ -12044,6 +12083,7 @@ body.booking-form-modal-open {
 }
 
 .booking-form__cal-day {
+	position: relative;
 	display: flex !important;
 	visibility: visible !important;
 	opacity: 1 !important;
@@ -12863,6 +12903,11 @@ body.booking-form-modal-open {
 	align-items: flex-start;
 	gap: 20px;
 	padding: 20px;
+	max-height: min(70vh, 420px);
+	max-height: min(70dvh, 420px);
+	overflow-x: hidden;
+	overflow-y: auto;
+	overscroll-behavior: contain;
 	border-radius: var(--somvio-radius, 4px);
 	background-color: var(--somvio-color-surface-dark, #091e2c);
 	box-shadow: 0 12px 40px rgba(0, 5, 14, 0.45);
