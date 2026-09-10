@@ -76,7 +76,9 @@ $row = static function ( $label, $value ) {
 									echo $row( __( 'Frequency', 'somvio' ), $labels['frequency'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								}
 								echo $row( $somvio_main_rooms_label, (string) (int) ( $payload['main_rooms'] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo $row( __( 'Bedrooms', 'somvio' ), (string) (int) ( $payload['bedrooms'] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								if ( ! function_exists( 'somvio_quote_service_uses_bedrooms' ) || somvio_quote_service_uses_bedrooms( $somvio_email_service ) ) {
+									echo $row( __( 'Bedrooms', 'somvio' ), (string) (int) ( $payload['bedrooms'] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								}
 								echo $row( $somvio_bathrooms_label, (string) (int) ( $payload['bathrooms'] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo $row( __( 'Toilets (without Baths/showers)', 'somvio' ), (string) (int) ( $payload['toilets'] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								echo $row( __( 'Kitchens', 'somvio' ), (string) (int) ( $payload['kitchens'] ?? 0 ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

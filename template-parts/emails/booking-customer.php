@@ -107,7 +107,7 @@ $row = static function ( $label, $value ) {
 								if ( $main_rooms > 0 ) {
 									echo $row( $main_rooms_label, (string) $main_rooms ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								}
-								if ( $bedrooms > 0 ) {
+								if ( $bedrooms > 0 && ( ! function_exists( 'somvio_quote_service_uses_bedrooms' ) || somvio_quote_service_uses_bedrooms( $service_key ) ) ) {
 									echo $row( __( 'Bedrooms', 'somvio' ), (string) $bedrooms ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								}
 								if ( $bathrooms > 0 ) {

@@ -509,6 +509,16 @@ function somvio_quote_price_size_count( $service, $bedrooms, $main_rooms = 0 ) {
 }
 
 /**
+ * Whether the service exposes a Bedrooms counter (After Builders uses Rooms only).
+ *
+ * @param string $service Service key.
+ * @return bool
+ */
+function somvio_quote_service_uses_bedrooms( $service ) {
+	return 'after-builders' !== sanitize_key( (string) $service );
+}
+
+/**
  * Airbnb linen-change surcharge (£14 per change by default).
  *
  * @param string $service        Service key.
@@ -919,7 +929,9 @@ function somvio_rest_submit_quote( WP_REST_Request $request ) {
 	if ( ! isset( $props[ $property ] ) ) {
 		return new WP_Error( 'invalid_property', __( 'Invalid property type.', 'somvio' ), array( 'status' => 400 ) );
 	}
-	if ( $bedrooms < 1 || $bedrooms > 5 ) {
+	if ( ! somvio_quote_service_uses_bedrooms( $service ) ) {
+		$bedrooms = 0;
+	} elseif ( $bedrooms < 1 || $bedrooms > 5 ) {
 		return new WP_Error( 'invalid_rooms', __( 'Invalid room counts.', 'somvio' ), array( 'status' => 400 ) );
 	}
 	if ( $bathrooms < 1 || $bathrooms > 4 ) {
@@ -1218,8 +1230,9 @@ function somvio_register_quote_rest_routes() {
 					'sanitize_callback' => 'sanitize_key',
 				),
 				'bedrooms'     => array(
-					'required'          => true,
+					'required'          => false,
 					'type'              => 'integer',
+					'default'           => 0,
 					'sanitize_callback' => 'absint',
 				),
 				'bathrooms'    => array(

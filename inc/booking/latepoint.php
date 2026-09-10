@@ -295,7 +295,9 @@ function somvio_latepoint_booking_notes( array $payload ) {
 		: 'Bathrooms';
 
 	$lines[] = sprintf( '%s: %d', $main_rooms_label, (int) ( $payload['main_rooms'] ?? 0 ) );
-	$lines[] = sprintf( 'Bedrooms: %d', (int) ( $payload['bedrooms'] ?? 0 ) );
+	if ( ! function_exists( 'somvio_quote_service_uses_bedrooms' ) || somvio_quote_service_uses_bedrooms( $service ) ) {
+		$lines[] = sprintf( 'Bedrooms: %d', (int) ( $payload['bedrooms'] ?? 0 ) );
+	}
 	$lines[] = sprintf( '%s: %d', $bathrooms_label, (int) ( $payload['bathrooms'] ?? 0 ) );
 	$lines[] = sprintf( 'Toilets (without Baths/showers): %d', (int) ( $payload['toilets'] ?? 0 ) );
 	$lines[] = sprintf( 'Kitchens: %d', (int) ( $payload['kitchens'] ?? 0 ) );

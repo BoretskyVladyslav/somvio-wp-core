@@ -1568,6 +1568,14 @@
 				var show = fields.indexOf(key) !== -1;
 				wrap.hidden = !show;
 				wrap.setAttribute('aria-hidden', show ? 'false' : 'true');
+				if (show) {
+					wrap.removeAttribute('inert');
+				} else {
+					wrap.setAttribute('inert', '');
+				}
+				wrap.querySelectorAll('input, button').forEach(function (el) {
+					el.disabled = !show;
+				});
 
 				var labelEl = wrap.querySelector('[data-booking-counter-label]');
 				var input = wrap.querySelector('[data-booking-field="' + key + '"]');
@@ -2028,7 +2036,7 @@
 			var payload = {
 				service: state.service,
 				property: state.property || 'house',
-				bedrooms: Math.max(1, Math.min(5, parseInt(state.bedrooms, 10) || 1)),
+				bedrooms: state.service === 'after-builders' ? 0 : Math.max(1, Math.min(5, parseInt(state.bedrooms, 10) || 1)),
 				bathrooms: Math.max(1, Math.min(4, parseInt(state.bathrooms, 10) || 1)),
 				main_rooms: parseInt(state.main_rooms, 10) || 0,
 				linen_changes: parseInt(state.linen_changes, 10) || 0,

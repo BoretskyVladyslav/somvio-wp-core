@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Allowed outward prefixes. `G` covers G1–G84; `PA` covers Paisley / Renfrewshire.
+ * Allowed outward prefixes. `G` covers G1–G84; `PA` covers PA1–PA19 only.
  *
  * @return string[]
  */
@@ -76,9 +76,24 @@ function somvio_postcode_g_district_number( $outward ) {
 }
 
 /**
+ * PA-district number from an outward code (PA1, PA19).
+ *
+ * @param string $outward Outward code.
+ * @return int 0 when not a PA district.
+ */
+function somvio_postcode_pa_district_number( $outward ) {
+	if ( ! preg_match( '/^PA([0-9]{1,2})[A-Z]?$/', (string) $outward, $match ) ) {
+		return 0;
+	}
+
+	return (int) $match[1];
+}
+
+/**
  * Whether outward matches an allowed zone (exact or prefix).
  *
- * Zone `G` is further limited to districts 1–84 (G85+ rejected).
+ * Zone `G` is limited to districts 1–84 (G85+ rejected).
+ * Zone `PA` is limited to districts 1–19 (PA20+ rejected).
  *
  * @param string $outward Outward code.
  * @param string $zone    Allowed prefix.
@@ -93,7 +108,7 @@ function somvio_postcode_zone_matches( $outward, $zone ) {
 	}
 
 	if ( $outward === $zone ) {
-		if ( 'G' === $zone ) {
+		if ( 'G' === $zone || 'PA' === $zone ) {
 			return false;
 		}
 
@@ -113,6 +128,12 @@ function somvio_postcode_zone_matches( $outward, $zone ) {
 		$district = somvio_postcode_g_district_number( $outward );
 
 		return $district >= 1 && $district <= 84;
+	}
+
+	if ( 'PA' === $zone ) {
+		$district = somvio_postcode_pa_district_number( $outward );
+
+		return $district >= 1 && $district <= 19;
 	}
 
 	return true;

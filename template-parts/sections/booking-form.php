@@ -300,10 +300,14 @@ $somvio_bf_counters = array(
 
 				<div class="booking-form__counters" data-booking-counters hidden>
 					<?php foreach ( $somvio_bf_counters as $somvio_bf_ckey => $somvio_bf_counter ) : ?>
+						<?php
+						$somvio_bf_counter_disabled = ( 'bedrooms' === $somvio_bf_ckey && 'after-builders' === $somvio_bf_start_service );
+						?>
 						<div
 							class="booking-form__counter"
 							data-booking-counter="<?php echo esc_attr( $somvio_bf_ckey ); ?>"
 							hidden
+							<?php echo $somvio_bf_counter_disabled ? 'inert' : ''; ?>
 						>
 							<label class="booking-form__label" for="<?php echo esc_attr( $somvio_bf_uid . '-' . $somvio_bf_ckey ); ?>" data-booking-counter-label>
 								<?php echo esc_html( $somvio_bf_counter['label'] ); ?>
@@ -314,6 +318,7 @@ $somvio_bf_counters = array(
 									class="booking-form__counter-btn booking-form__counter-btn--minus"
 									data-booking-counter-dec
 									aria-label="<?php echo esc_attr( sprintf( /* translators: %s: room type */ __( 'Decrease %s', 'somvio' ), $somvio_bf_counter['label'] ) ); ?>"
+									<?php disabled( $somvio_bf_counter_disabled ); ?>
 								>
 									<span aria-hidden="true"><?php echo somvio_get_icon( 'icon-minus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
 								</button>
@@ -328,12 +333,14 @@ $somvio_bf_counters = array(
 									max="<?php echo esc_attr( (string) $somvio_bf_counter['max'] ); ?>"
 									readonly
 									aria-live="polite"
+									<?php disabled( $somvio_bf_counter_disabled ); ?>
 								>
 								<button
 									type="button"
 									class="booking-form__counter-btn booking-form__counter-btn--plus"
 									data-booking-counter-inc
 									aria-label="<?php echo esc_attr( sprintf( /* translators: %s: room type */ __( 'Increase %s', 'somvio' ), $somvio_bf_counter['label'] ) ); ?>"
+									<?php disabled( $somvio_bf_counter_disabled ); ?>
 								>
 									<span aria-hidden="true"><?php echo somvio_get_icon( 'icon-plus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
 								</button>
