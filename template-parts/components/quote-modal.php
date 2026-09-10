@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		class="quote-modal__dialog"
 		role="dialog"
 		aria-modal="true"
-		aria-label="<?php esc_attr_e( 'Get Your Instant Quote', 'somvio' ); ?>"
+		aria-labelledby="quote-modal-title"
 		tabindex="-1"
 	>
 		<button
@@ -36,8 +36,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 			'template-parts/components/quote',
 			'calculator',
 			array(
-				'variant' => 'solid',
-				'class'   => 'quote-modal__card',
+				'variant'  => 'solid',
+				'class'    => 'quote-modal__card',
+				'title_id' => 'quote-modal-title',
 			)
 		);
 		?>

@@ -2882,6 +2882,16 @@ body.somvio-no-scroll .somvio-header {
 	gap: 20px;
 }
 
+.how-it-works__item-heading {
+	display: block;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	color: inherit;
+}
+
 /*
  * Kill GeneratePress form-button hover/focus fills (#55555e / #3f4047)
  * that otherwise paint a grey overlay over accordion triggers.
@@ -8564,6 +8574,16 @@ body.somvio-has-hero.somvio-search-page .site-main > * {
 
 .faq__item.is-open {
 	gap: 20px;
+}
+
+.faq__item-heading {
+	display: block;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font: inherit;
+	color: inherit;
 }
 
 /*

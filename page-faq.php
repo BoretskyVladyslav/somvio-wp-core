@@ -38,13 +38,6 @@ get_header();
 
 			get_template_part( 'template-parts/sections/faq', null, array( 'hide_title' => true ) );
 
-			if ( generate_has_default_loop() ) {
-				while ( have_posts() ) :
-					the_post();
-					generate_do_template_part( 'page' );
-				endwhile;
-			}
-
 			/**
 			 * generate_after_main_content hook.
 			 *

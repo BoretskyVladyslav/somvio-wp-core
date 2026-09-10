@@ -34,13 +34,6 @@ get_header();
 			 */
 			do_action( 'somvio_service_single_content' );
 
-			if ( generate_has_default_loop() ) {
-				while ( have_posts() ) :
-					the_post();
-					generate_do_template_part( 'page' );
-				endwhile;
-			}
-
 			/**
 			 * generate_after_main_content hook.
 			 *

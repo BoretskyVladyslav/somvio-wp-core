@@ -52,6 +52,10 @@ function somvio_seo_page_title() {
 		return __( 'Contact Somvio Cleaning', 'somvio' );
 	}
 
+	if ( function_exists( 'somvio_is_faq_page' ) && somvio_is_faq_page() ) {
+		return __( 'Frequently Asked Questions', 'somvio' );
+	}
+
 	if ( function_exists( 'somvio_is_service_single_page' ) && somvio_is_service_single_page() ) {
 		$title = get_the_title();
 		if ( ! is_string( $title ) || '' === $title ) {
@@ -92,6 +96,10 @@ function somvio_seo_page_description() {
 
 	if ( function_exists( 'somvio_is_contact_page' ) && somvio_is_contact_page() ) {
 		return __( 'Contact Somvio Cleaning in Glasgow. Call, WhatsApp, or send a message for quotes and bookings across Greater Glasgow.', 'somvio' );
+	}
+
+	if ( function_exists( 'somvio_is_faq_page' ) && somvio_is_faq_page() ) {
+		return __( 'Answers about Somvio cleaning in Glasgow: booking, insurance, cancellations, supplies, and secure online payment.', 'somvio' );
 	}
 
 	if ( function_exists( 'somvio_is_service_single_page' ) && somvio_is_service_single_page() ) {

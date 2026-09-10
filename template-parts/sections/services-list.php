@@ -51,7 +51,8 @@ $somvio_list_services = array(
 	),
 );
 ?>
-<section class="services-list" aria-label="<?php esc_attr_e( 'Our services', 'somvio' ); ?>">
+<section class="services-list" aria-labelledby="services-list-title">
+	<h2 id="services-list-title" class="sr-only"><?php esc_html_e( 'Our Services', 'somvio' ); ?></h2>
 	<div class="services-list__inner">
 		<?php foreach ( $somvio_list_services as $index => $service ) : ?>
 			<?php
@@ -107,11 +108,11 @@ $somvio_list_services = array(
 				</div>
 
 				<div class="services-list__body">
-					<h2 class="services-list__title">
+					<h3 class="services-list__title">
 						<a class="services-list__title-link" href="<?php echo $service_url; ?>">
 							<?php echo esc_html( $service['title'] ); ?>
 						</a>
-					</h2>
+					</h3>
 					<p class="services-list__price"><?php echo esc_html( $from_price ); ?></p>
 					<p class="services-list__text"><?php echo esc_html( $service['text'] ); ?></p>
 					<a class="btn btn--primary btn--sm btn--has-icon services-list__cta" href="<?php echo esc_url( $book_url ); ?>">

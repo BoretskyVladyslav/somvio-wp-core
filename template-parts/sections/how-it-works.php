@@ -110,24 +110,26 @@ if ( file_exists( $somvio_preview_path ) ) {
 						style="--reveal-delay: <?php echo esc_attr( (string) ( 0.1 + ( $index * 0.05 ) ) ); ?>s;"
 						data-accordion-item
 					>
-						<button
-							type="button"
-							id="<?php echo esc_attr( $button_id ); ?>"
-							class="how-it-works__trigger"
-							aria-expanded="<?php echo $is_open ? 'true' : 'false'; ?>"
-							aria-controls="<?php echo esc_attr( $panel_id ); ?>"
-							data-accordion-trigger
-						>
-							<h3 class="how-it-works__item-title"><?php echo esc_html( $step['title'] ); ?></h3>
-							<span class="how-it-works__icon" aria-hidden="true">
-								<span class="how-it-works__icon-plus">
-									<?php echo $somvio_accordion_icon( 'icon-plus', $uid . '-plus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<h3 class="how-it-works__item-heading">
+							<button
+								type="button"
+								id="<?php echo esc_attr( $button_id ); ?>"
+								class="how-it-works__trigger"
+								aria-expanded="<?php echo $is_open ? 'true' : 'false'; ?>"
+								aria-controls="<?php echo esc_attr( $panel_id ); ?>"
+								data-accordion-trigger
+							>
+								<span class="how-it-works__item-title"><?php echo esc_html( $step['title'] ); ?></span>
+								<span class="how-it-works__icon" aria-hidden="true">
+									<span class="how-it-works__icon-plus">
+										<?php echo $somvio_accordion_icon( 'icon-plus', $uid . '-plus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+									</span>
+									<span class="how-it-works__icon-minus">
+										<?php echo $somvio_accordion_icon( 'icon-minus', $uid . '-minus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+									</span>
 								</span>
-								<span class="how-it-works__icon-minus">
-									<?php echo $somvio_accordion_icon( 'icon-minus', $uid . '-minus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-								</span>
-							</span>
-						</button>
+							</button>
+						</h3>
 						<div
 							id="<?php echo esc_attr( $panel_id ); ?>"
 							class="how-it-works__panel"

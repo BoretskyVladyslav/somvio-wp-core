@@ -114,7 +114,7 @@ add_action( 'init', 'somvio_maybe_ensure_site_identity', 5 );
  * @return array<string, string>
  */
 function somvio_filter_document_title_parts( $parts ) {
-	if ( ! is_array( $parts ) ) {
+	if ( ! is_array( $parts ) || ( function_exists( 'somvio_seo_plugin_active' ) && somvio_seo_plugin_active() ) ) {
 		return $parts;
 	}
 
@@ -189,6 +189,10 @@ add_filter( 'option_blogdescription', 'somvio_filter_option_blogdescription' );
  * @return string
  */
 function somvio_document_title_separator( $sep ) {
+	if ( function_exists( 'somvio_seo_plugin_active' ) && somvio_seo_plugin_active() ) {
+		return $sep;
+	}
+
 	return '-';
 }
 add_filter( 'document_title_separator', 'somvio_document_title_separator' );

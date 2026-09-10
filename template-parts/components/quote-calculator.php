@@ -8,6 +8,7 @@
  * Args (via get_template_part 3rd param / $args):
  * - variant: 'glass'|'solid' (default glass)
  * - id: optional DOM id (e.g. somvio-instant-quote)
+ * - title_id: optional id for the calculator H2 (modal aria-labelledby)
  * - class: extra classes on root
  * - default_service: service key
  * - show_title_steps: bool — hide static title on success (default true)
@@ -34,7 +35,11 @@ $somvio_qc_rates     = somvio_get_quote_rates();
 $somvio_qc_slots     = isset( $somvio_qc_rates['time_slots'] ) ? $somvio_qc_rates['time_slots'] : array();
 $somvio_qc_addons    = isset( $somvio_qc_rates['addons'] ) && is_array( $somvio_qc_rates['addons'] ) ? $somvio_qc_rates['addons'] : array();
 $somvio_qc_symbol    = isset( $somvio_qc_rates['symbol'] ) ? (string) $somvio_qc_rates['symbol'] : '£';
-$somvio_qc_uid       = 'qc-' . wp_unique_id();
+$somvio_qc_uid      = 'qc-' . wp_unique_id();
+$somvio_qc_title_id = isset( $somvio_qc_args['title_id'] ) ? sanitize_html_class( (string) $somvio_qc_args['title_id'] ) : '';
+if ( '' === $somvio_qc_title_id ) {
+	$somvio_qc_title_id = $somvio_qc_uid . '-title';
+}
 $somvio_qc_icons_uri = get_stylesheet_directory_uri() . '/assets/icons/';
 
 $somvio_qc_counters = array(
@@ -116,7 +121,7 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 	data-quote-uid="<?php echo esc_attr( $somvio_qc_uid ); ?>"
 	aria-label="<?php esc_attr_e( 'Get Your Instant Quote', 'somvio' ); ?>"
 >
-	<h2 class="quote-card__title" data-quote-title>
+	<h2 id="<?php echo esc_attr( $somvio_qc_title_id ); ?>" class="quote-card__title" data-quote-title>
 		<?php esc_html_e( 'Get Your Instant Quote', 'somvio' ); ?>
 	</h2>
 

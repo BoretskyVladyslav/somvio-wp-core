@@ -151,24 +151,26 @@ $somvio_faq_labelledby = $somvio_faq_hide_title ? 'faq-hero-title' : 'faq-title'
 					style="--reveal-delay: <?php echo esc_attr( (string) ( $index * 0.05 ) ); ?>s;"
 					data-accordion-item
 				>
-					<button
-						type="button"
-						id="<?php echo esc_attr( $button_id ); ?>"
-						class="faq__trigger"
-						aria-expanded="<?php echo $is_open ? 'true' : 'false'; ?>"
-						aria-controls="<?php echo esc_attr( $panel_id ); ?>"
-						data-accordion-trigger
-					>
-						<<?php echo tag_escape( $somvio_faq_q_tag ); ?> class="faq__item-title"><?php echo esc_html( $item['title'] ); ?></<?php echo tag_escape( $somvio_faq_q_tag ); ?>>
-						<span class="faq__icon" aria-hidden="true">
-							<span class="faq__icon-plus">
-								<?php echo $somvio_faq_icon( 'icon-plus', $uid . '-plus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<<?php echo tag_escape( $somvio_faq_q_tag ); ?> class="faq__item-heading">
+						<button
+							type="button"
+							id="<?php echo esc_attr( $button_id ); ?>"
+							class="faq__trigger"
+							aria-expanded="<?php echo $is_open ? 'true' : 'false'; ?>"
+							aria-controls="<?php echo esc_attr( $panel_id ); ?>"
+							data-accordion-trigger
+						>
+							<span class="faq__item-title"><?php echo esc_html( $item['title'] ); ?></span>
+							<span class="faq__icon" aria-hidden="true">
+								<span class="faq__icon-plus">
+									<?php echo $somvio_faq_icon( 'icon-plus', $uid . '-plus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+								</span>
+								<span class="faq__icon-minus">
+									<?php echo $somvio_faq_icon( 'icon-minus', $uid . '-minus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+								</span>
 							</span>
-							<span class="faq__icon-minus">
-								<?php echo $somvio_faq_icon( 'icon-minus', $uid . '-minus' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-							</span>
-						</span>
-					</button>
+						</button>
+					</<?php echo tag_escape( $somvio_faq_q_tag ); ?>>
 					<div
 						id="<?php echo esc_attr( $panel_id ); ?>"
 						class="faq__panel"
