@@ -30,6 +30,7 @@ $somvio_whatsapp  = function_exists( 'somvio_get_whatsapp_url' ) ? somvio_get_wh
 					height="72"
 					loading="eager"
 					decoding="async"
+					fetchpriority="low"
 				>
 			</a>
 		</div>

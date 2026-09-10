@@ -31,6 +31,11 @@ $somvio_quote_url = function_exists( 'somvio_get_book_now_url' )
 	class="service-single-hero"
 	aria-label="<?php echo esc_attr( $somvio_title ); ?>"
 >
+	<?php
+	if ( function_exists( 'somvio_render_lcp_image' ) ) {
+		somvio_render_lcp_image();
+	}
+	?>
 	<div class="service-single-hero__bg" aria-hidden="true"></div>
 
 	<div class="service-single-hero__inner">

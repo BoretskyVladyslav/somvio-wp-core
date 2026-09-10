@@ -163,6 +163,7 @@ function somvio_flush_quote_rates_cache() {
 	delete_transient( 'somvio_quote_rates_v11' );
 	delete_transient( 'somvio_quote_rates_v12' );
 	delete_transient( somvio_quote_rates_cache_key() );
+	wp_cache_delete( somvio_quote_rates_cache_key(), 'somvio' );
 }
 
 /**
@@ -171,13 +172,30 @@ function somvio_flush_quote_rates_cache() {
  * @return array<string, mixed>
  */
 function somvio_get_quote_rates() {
+	static $memo = null;
+
+	if ( is_array( $memo ) && somvio_quote_rates_shape_is_valid( $memo ) ) {
+		return somvio_normalize_quote_rates( $memo );
+	}
+
 	$cache_key = somvio_quote_rates_cache_key();
-	$cached    = get_transient( $cache_key );
+	$cached    = wp_cache_get( $cache_key, 'somvio' );
+
+	if ( false === $cached ) {
+		$cached = get_transient( $cache_key );
+		if ( false !== $cached && is_array( $cached ) && somvio_quote_rates_shape_is_valid( $cached ) ) {
+			wp_cache_set( $cache_key, $cached, 'somvio', HOUR_IN_SECONDS );
+		}
+	}
+
 	if ( false !== $cached && is_array( $cached ) ) {
 		if ( ! somvio_quote_rates_shape_is_valid( $cached ) ) {
 			delete_transient( $cache_key );
+			wp_cache_delete( $cache_key, 'somvio' );
 		} else {
-			return somvio_normalize_quote_rates( $cached );
+			$memo = somvio_normalize_quote_rates( $cached );
+
+			return $memo;
 		}
 	}
 
@@ -274,6 +292,8 @@ function somvio_get_quote_rates() {
 	$rates = somvio_normalize_quote_rates( $rates );
 
 	set_transient( somvio_quote_rates_cache_key(), $rates, HOUR_IN_SECONDS );
+	wp_cache_set( somvio_quote_rates_cache_key(), $rates, 'somvio', HOUR_IN_SECONDS );
+	$memo = $rates;
 
 	return $rates;
 }

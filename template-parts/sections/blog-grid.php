@@ -189,7 +189,7 @@ $somvio_posts = array(
 							alt="<?php echo esc_attr( $somvio_featured_main['title'] ); ?>"
 							width="570"
 							height="320"
-							loading="eager"
+							loading="lazy"
 							decoding="async"
 						>
 					</a>

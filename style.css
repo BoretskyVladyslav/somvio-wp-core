@@ -37,6 +37,7 @@ Text Domain: somvio
 	--somvio-color-dropdown-bg: var(--somvio-color-surface-dark);
 	--somvio-color-dropdown-hover: #133952;
 
+	/* Montserrat: font-display: swap is requested via Google Fonts CSS2 (?display=swap). */
 	--somvio-font-sans: "Montserrat", "Segoe UI", system-ui, -apple-system, sans-serif;
 	--somvio-font-size-base: 1rem;
 	--somvio-font-size-sm: 0.875rem;
@@ -1386,10 +1387,23 @@ body.somvio-no-scroll .somvio-header {
 	padding-top: 0 !important;
 	color: var(--somvio-color-text);
 	background-color: var(--somvio-color-header-bg-alt);
-	background-image: url('assets/images/hero-bg.jpg');
-	background-repeat: no-repeat;
-	background-position: center top;
-	background-size: cover;
+}
+
+.somvio-lcp-img {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	object-position: center top;
+	pointer-events: none;
+}
+
+.somvio-lcp-img--center {
+	object-position: center center;
 }
 
 .somvio-header + .somvio-hero,
@@ -4344,10 +4358,6 @@ a.site-footer__contact-text:focus-visible {
 	padding-top: 0 !important;
 	color: var(--somvio-color-text);
 	background-color: var(--somvio-color-header-bg-alt);
-	background-image: url('assets/images/hero-bg.jpg');
-	background-repeat: no-repeat;
-	background-position: center top;
-	background-size: cover;
 }
 
 .somvio-header + .services-hero,
@@ -4480,10 +4490,6 @@ a.site-footer__contact-text:focus-visible {
 	min-height: 680px;
 	color: var(--somvio-color-text);
 	background-color: var(--somvio-color-header-bg-alt);
-	background-image: url('assets/images/service-single-hero-bg.jpg');
-	background-repeat: no-repeat;
-	background-position: center top;
-	background-size: cover;
 }
 
 .somvio-header + .service-single-hero,
@@ -4706,10 +4712,6 @@ a.site-footer__contact-text:focus-visible {
 	box-sizing: border-box;
 	color: var(--somvio-color-text);
 	background-color: var(--somvio-color-header-bg-alt);
-	background-image: url('assets/images/about-hero-bg.jpg');
-	background-repeat: no-repeat;
-	background-position: center top;
-	background-size: cover;
 }
 
 .site-main > .about-hero,
@@ -6754,10 +6756,6 @@ a.site-footer__contact-text:focus-visible {
 	pointer-events: none;
 	/* Figma 300:2369: header image opacity-40 over #00050e */
 	opacity: 0.4;
-	background-image: var(--faq-hero-bg);
-	background-repeat: no-repeat;
-	background-position: center top;
-	background-size: cover;
 }
 
 .faq-hero__bg {
@@ -6959,10 +6957,6 @@ body.somvio-has-hero.page-template-page-blog-php .site-main > * {
 	pointer-events: none;
 	/* Figma 300:2181: header image at 50% opacity over #00050e */
 	opacity: 0.5;
-	background-image: var(--blog-hero-bg);
-	background-repeat: no-repeat;
-	background-position: center top;
-	background-size: cover;
 }
 
 .blog-hero__bg {
@@ -7372,10 +7366,6 @@ body.somvio-has-hero.somvio-404-page .site-main > * {
 	pointer-events: none;
 	/* Figma 420:6896: header image opacity-40 over #00050e */
 	opacity: 0.4;
-	background-image: var(--error-404-hero-bg);
-	background-repeat: no-repeat;
-	background-position: center center;
-	background-size: cover;
 }
 
 .error-404-hero__bg {
@@ -9015,10 +9005,6 @@ body.somvio-has-hero.single-post .site-main > * {
 	pointer-events: none;
 	/* Figma 300:2415: header image opacity-40 over #00050e */
 	opacity: 0.4;
-	background-image: var(--blog-single-hero-bg);
-	background-repeat: no-repeat;
-	background-position: center top;
-	background-size: cover;
 }
 
 .blog-single-hero__bg {
@@ -13219,10 +13205,6 @@ body.booking-form-modal-open {
 	height: 100%;
 	pointer-events: none;
 	opacity: 0.4;
-	background-image: var(--contact-hero-bg);
-	background-repeat: no-repeat;
-	background-position: center top;
-	background-size: cover;
 }
 
 .contact-hero__bg {
@@ -13951,4 +13933,23 @@ a.contact-page__detail-value:focus-visible {
 	.contact-page__map-frame {
 		height: 380px;
 	}
+}
+
+/* -------------------------------------------------------------------------
+   Below-fold rendering: skip layout/paint until near viewport (LCP/INP).
+   ------------------------------------------------------------------------- */
+.site-footer,
+.service-gallery,
+.testimonials,
+.cta-banner,
+.before-after,
+.how-it-works,
+.services-grid,
+.services-list,
+.about-story,
+.about-numbers,
+.about-why,
+.faq {
+	content-visibility: auto;
+	contain-intrinsic-size: 1px 500px;
 }

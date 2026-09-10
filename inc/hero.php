@@ -60,3 +60,119 @@ function somvio_render_hero() {
 	get_template_part( 'template-parts/hero/hero' );
 }
 add_action( 'generate_after_header', 'somvio_render_hero', 5 );
+
+/**
+ * Current view LCP photo (theme path or remote URL).
+ *
+ * @return array{src: string, width: int, height: int}
+ */
+function somvio_get_current_lcp_image() {
+	$relative = '';
+
+	if ( function_exists( 'somvio_is_hero_page' ) && somvio_is_hero_page() ) {
+		$relative = 'assets/images/hero-bg.jpg';
+	} elseif ( function_exists( 'somvio_is_services_page' ) && somvio_is_services_page() ) {
+		$relative = 'assets/images/hero-bg.jpg';
+	} elseif ( function_exists( 'somvio_is_service_single_page' ) && somvio_is_service_single_page() ) {
+		$relative = 'assets/images/service-single-hero-bg.jpg';
+	} elseif ( function_exists( 'somvio_is_about_page' ) && somvio_is_about_page() ) {
+		$relative = 'assets/images/about-hero-bg.jpg';
+	} elseif ( function_exists( 'somvio_is_faq_page' ) && somvio_is_faq_page() ) {
+		$relative = 'assets/images/faq-hero-bg.jpg';
+	} elseif ( function_exists( 'somvio_is_contact_page' ) && somvio_is_contact_page() ) {
+		$relative = 'assets/images/faq-hero-bg.jpg';
+	} elseif ( function_exists( 'somvio_is_blog_page' ) && somvio_is_blog_page() ) {
+		$relative = 'assets/images/blog-hero-bg.jpg';
+	} elseif ( is_404() ) {
+		$relative = 'assets/images/blog/featured-2.png';
+	} elseif ( function_exists( 'somvio_is_blog_single' ) && somvio_is_blog_single() ) {
+		$thumb_id = get_post_thumbnail_id();
+		if ( $thumb_id ) {
+			$img = wp_get_attachment_image_src( (int) $thumb_id, 'full' );
+			if ( is_array( $img ) && ! empty( $img[0] ) ) {
+				return array(
+					'src'    => (string) $img[0],
+					'width'  => isset( $img[1] ) ? (int) $img[1] : 1920,
+					'height' => isset( $img[2] ) ? (int) $img[2] : 1080,
+				);
+			}
+		}
+		$relative = 'assets/images/blog-hero-bg.jpg';
+	}
+
+	if ( '' === $relative ) {
+		return array(
+			'src'    => '',
+			'width'  => 0,
+			'height' => 0,
+		);
+	}
+
+	$path = get_stylesheet_directory() . '/' . $relative;
+	if ( ! is_file( $path ) ) {
+		return array(
+			'src'    => '',
+			'width'  => 0,
+			'height' => 0,
+		);
+	}
+
+	$width  = 1920;
+	$height = 1080;
+	$size   = getimagesize( $path );
+	if ( is_array( $size ) ) {
+		$width  = (int) $size[0];
+		$height = (int) $size[1];
+	}
+
+	return array(
+		'src'    => get_stylesheet_directory_uri() . '/' . $relative . '?v=' . rawurlencode( (string) filemtime( $path ) ),
+		'width'  => max( 1, $width ),
+		'height' => max( 1, $height ),
+	);
+}
+
+/**
+ * Print decorative LCP <img> with fetchpriority=high.
+ *
+ * @param string $class Extra class names.
+ * @return void
+ */
+function somvio_render_lcp_image( $class = '' ) {
+	$image = somvio_get_current_lcp_image();
+	if ( '' === $image['src'] ) {
+		return;
+	}
+
+	$classes = trim( 'somvio-lcp-img ' . (string) $class );
+
+	printf(
+		'<img class="%1$s" src="%2$s" alt="" width="%3$d" height="%4$d" fetchpriority="high" loading="eager" decoding="async">',
+		esc_attr( $classes ),
+		esc_url( $image['src'] ),
+		(int) $image['width'],
+		(int) $image['height']
+	);
+}
+
+/**
+ * Preload the LCP hero photo as early as possible.
+ *
+ * @return void
+ */
+function somvio_preload_lcp_hero() {
+	if ( is_admin() ) {
+		return;
+	}
+
+	$image = somvio_get_current_lcp_image();
+	if ( '' === $image['src'] ) {
+		return;
+	}
+
+	printf(
+		'<link rel="preload" as="image" href="%s" fetchpriority="high">' . "\n",
+		esc_url( $image['src'] )
+	);
+}
+add_action( 'wp_head', 'somvio_preload_lcp_hero', 2 );

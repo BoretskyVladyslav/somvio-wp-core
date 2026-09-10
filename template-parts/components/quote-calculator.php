@@ -293,6 +293,7 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 									alt=""
 									width="28"
 									height="28"
+									loading="lazy"
 									decoding="async"
 								>
 							<?php endif; ?>
@@ -337,6 +338,7 @@ $somvio_qc_class_attr = implode( ' ', array_map( 'sanitize_html_class', $somvio_
 									alt=""
 									width="28"
 									height="28"
+									loading="lazy"
 									decoding="async"
 								>
 							<?php endif; ?>

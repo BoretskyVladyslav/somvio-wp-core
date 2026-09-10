@@ -16,6 +16,11 @@ $somvio_booking_url  = function_exists( 'somvio_get_book_now_url' )
 	: esc_url( home_url( '/booking/' ) );
 ?>
 <section class="about-hero" aria-label="<?php esc_attr_e( 'About Somvio', 'somvio' ); ?>">
+	<?php
+	if ( function_exists( 'somvio_render_lcp_image' ) ) {
+		somvio_render_lcp_image();
+	}
+	?>
 	<div class="about-hero__bg" aria-hidden="true"></div>
 
 	<div class="about-hero__inner">

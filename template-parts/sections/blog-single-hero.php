@@ -25,31 +25,18 @@ $somvio_blog_url = $somvio_blog_id
 	: esc_url( home_url( '/blog/' ) );
 $somvio_title = get_the_title( $somvio_post_id );
 $somvio_date  = get_the_date( 'F j, Y', $somvio_post_id );
-
-// Featured image first; hard-fallback to local hero asset.
-$somvio_bg_uri  = (string) get_the_post_thumbnail_url( $somvio_post_id, 'full' );
-$somvio_bg_path = get_stylesheet_directory() . '/assets/images/blog-hero-bg.jpg';
-
-if ( '' === $somvio_bg_uri && file_exists( $somvio_bg_path ) ) {
-	$somvio_bg_uri  = get_stylesheet_directory_uri() . '/assets/images/blog-hero-bg.jpg';
-	$somvio_bg_uri .= '?v=' . rawurlencode( (string) filemtime( $somvio_bg_path ) );
-}
-
-$somvio_section_attrs = '';
-
-if ( $somvio_bg_uri ) {
-	$somvio_section_attrs = ' style="--blog-single-hero-bg: url(\'' . esc_url( $somvio_bg_uri ) . '\');"';
-}
 ?>
 <section
 	class="blog-single-hero"
 	aria-label="<?php echo esc_attr( $somvio_title ); ?>"
-	<?php
-	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- style value uses esc_url().
-	echo $somvio_section_attrs;
-	?>
 >
-	<div class="blog-single-hero__media" aria-hidden="true"></div>
+	<div class="blog-single-hero__media" aria-hidden="true">
+		<?php
+		if ( function_exists( 'somvio_render_lcp_image' ) ) {
+			somvio_render_lcp_image();
+		}
+		?>
+	</div>
 	<div class="blog-single-hero__bg" aria-hidden="true"></div>
 
 	<div class="blog-single-hero__inner">

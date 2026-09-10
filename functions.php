@@ -154,11 +154,43 @@ function somvio_resource_hints( $urls, $relation_type ) {
 			'href'        => 'https://fonts.gstatic.com',
 			'crossorigin' => 'anonymous',
 		);
+
+		if ( function_exists( 'somvio_is_booking_page' ) && somvio_is_booking_page() ) {
+			$urls[] = array(
+				'href' => 'https://js.stripe.com',
+			);
+		}
 	}
 
 	return $urls;
 }
 add_filter( 'wp_resource_hints', 'somvio_resource_hints', 10, 2 );
+
+/**
+ * Force defer on Somvio frontend scripts (PageSpeed / caching plugins).
+ *
+ * Core already sets strategy=defer via somvio_enqueue_theme_script(); this
+ * filter re-applies the attribute if a plugin strips it.
+ *
+ * @param string $tag    Script HTML.
+ * @param string $handle Script handle.
+ * @param string $src    Script URL.
+ * @return string
+ */
+function somvio_defer_theme_scripts( $tag, $handle, $src ) {
+	unset( $src );
+
+	if ( ! is_string( $tag ) || ! is_string( $handle ) || 0 !== strpos( $handle, 'somvio-' ) ) {
+		return $tag;
+	}
+
+	if ( false !== strpos( $tag, ' defer' ) || false !== strpos( $tag, ' type="module"' ) || false !== strpos( $tag, " type='module'" ) ) {
+		return $tag;
+	}
+
+	return (string) preg_replace( '/<script\b/i', '<script defer', $tag, 1 );
+}
+add_filter( 'script_loader_tag', 'somvio_defer_theme_scripts', 10, 3 );
 
 /**
  * Force ?ver=filemtime on all child-theme CSS/JS URLs.

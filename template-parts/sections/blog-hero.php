@@ -10,22 +10,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $somvio_home_url = esc_url( home_url( '/' ) );
-
-$somvio_bg_path = get_stylesheet_directory() . '/assets/images/blog-hero-bg.jpg';
-$somvio_bg_uri  = get_stylesheet_directory_uri() . '/assets/images/blog-hero-bg.jpg';
-
-if ( file_exists( $somvio_bg_path ) ) {
-	$somvio_bg_uri .= '?v=' . rawurlencode( (string) filemtime( $somvio_bg_path ) );
-}
 ?>
 <section
 	class="blog-hero"
 	aria-label="<?php esc_attr_e( 'Blog', 'somvio' ); ?>"
-	<?php if ( file_exists( $somvio_bg_path ) ) : ?>
-		style="--blog-hero-bg: url('<?php echo esc_url( $somvio_bg_uri ); ?>');"
-	<?php endif; ?>
 >
-	<div class="blog-hero__media" aria-hidden="true"></div>
+	<div class="blog-hero__media" aria-hidden="true">
+		<?php
+		if ( function_exists( 'somvio_render_lcp_image' ) ) {
+			somvio_render_lcp_image();
+		}
+		?>
+	</div>
 	<div class="blog-hero__bg" aria-hidden="true"></div>
 
 	<div class="blog-hero__inner">

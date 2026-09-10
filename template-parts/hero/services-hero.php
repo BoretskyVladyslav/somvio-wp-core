@@ -12,6 +12,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 $somvio_home_url = esc_url( home_url( '/' ) );
 ?>
 <section class="services-hero" aria-label="<?php esc_attr_e( 'Services', 'somvio' ); ?>">
+	<?php
+	if ( function_exists( 'somvio_render_lcp_image' ) ) {
+		somvio_render_lcp_image();
+	}
+	?>
 	<div class="services-hero__bg" aria-hidden="true"></div>
 
 	<div class="services-hero__inner">

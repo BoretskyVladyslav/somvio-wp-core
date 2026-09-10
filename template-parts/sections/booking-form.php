@@ -250,6 +250,8 @@ $somvio_bf_counters = array(
 										alt=""
 										width="24"
 										height="24"
+										loading="lazy"
+										decoding="async"
 									>
 									<img
 										class="booking-form__service-check-img booking-form__service-check-img--on"
@@ -257,6 +259,8 @@ $somvio_bf_counters = array(
 										alt=""
 										width="24"
 										height="24"
+										loading="lazy"
+										decoding="async"
 									>
 								</span>
 								<span class="booking-form__service-label"><?php echo esc_html( $somvio_bf_label ); ?></span>
@@ -425,6 +429,7 @@ $somvio_bf_counters = array(
 											alt=""
 											width="60"
 											height="60"
+											loading="lazy"
 											decoding="async"
 										>
 									<?php endif; ?>
@@ -476,6 +481,7 @@ $somvio_bf_counters = array(
 											alt=""
 											width="60"
 											height="60"
+											loading="lazy"
 											decoding="async"
 										>
 									<?php endif; ?>
@@ -488,6 +494,8 @@ $somvio_bf_counters = array(
 											alt=""
 											width="24"
 											height="24"
+											loading="lazy"
+											decoding="async"
 										>
 										<img
 											class="booking-form__service-check-img booking-form__service-check-img--on"
@@ -495,6 +503,8 @@ $somvio_bf_counters = array(
 											alt=""
 											width="24"
 											height="24"
+											loading="lazy"
+											decoding="async"
 										>
 									</span>
 									<span class="booking-form__addon-label"><?php echo esc_html( $somvio_bf_alabel ); ?></span>

@@ -93,7 +93,7 @@ $somvio_unique_count = count( $somvio_gallery_images );
 										alt="<?php echo esc_attr( $slide['alt'] ); ?>"
 										width="1170"
 										height="658"
-										loading="<?php echo 0 === (int) $slide['loop'] && $index < 3 ? 'eager' : 'lazy'; ?>"
+										loading="lazy"
 										decoding="async"
 										draggable="false"
 									>

@@ -115,6 +115,11 @@ $somvio_render_hero_ratings = static function ( $icons_uri, $duplicate = false )
 };
 ?>
 <section class="somvio-hero" aria-label="<?php esc_attr_e( 'Introduction', 'somvio' ); ?>">
+	<?php
+	if ( function_exists( 'somvio_render_lcp_image' ) ) {
+		somvio_render_lcp_image();
+	}
+	?>
 	<div class="somvio-hero__bg" aria-hidden="true"></div>
 
 	<div class="somvio-hero__inner">
