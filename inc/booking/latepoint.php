@@ -381,6 +381,15 @@ function somvio_latepoint_create_booking( array $payload ) {
 	}
 
 	$total = isset( $payload['total'] ) ? (float) $payload['total'] : 0.0;
+	$total_cents = function_exists( 'somvio_money_to_cents' )
+		? somvio_money_to_cents( $total )
+		: (int) round( $total * 100 );
+	if ( ! is_finite( $total ) || $total_cents < 50 ) {
+		return array(
+			'success' => false,
+			'error'   => 'invalid_total',
+		);
+	}
 	if ( class_exists( 'OsMoneyHelper' ) && method_exists( 'OsMoneyHelper', 'pad_to_db_format' ) ) {
 		$total_db = OsMoneyHelper::pad_to_db_format( $total );
 	} else {
