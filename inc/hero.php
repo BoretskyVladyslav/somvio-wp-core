@@ -64,7 +64,7 @@ add_action( 'generate_after_header', 'somvio_render_hero', 5 );
 /**
  * Current view LCP photo (theme path or remote URL).
  *
- * @return array{src: string, width: int, height: int}
+ * @return array{src: string, webp?: string, width: int, height: int}
  */
 function somvio_get_current_lcp_image() {
 	$relative = '';
@@ -103,6 +103,7 @@ function somvio_get_current_lcp_image() {
 	if ( '' === $relative ) {
 		return array(
 			'src'    => '',
+			'webp'   => '',
 			'width'  => 0,
 			'height' => 0,
 		);
@@ -112,6 +113,7 @@ function somvio_get_current_lcp_image() {
 	if ( ! is_file( $path ) ) {
 		return array(
 			'src'    => '',
+			'webp'   => '',
 			'width'  => 0,
 			'height' => 0,
 		);
@@ -125,11 +127,36 @@ function somvio_get_current_lcp_image() {
 		$height = (int) $size[1];
 	}
 
+	$src  = get_stylesheet_directory_uri() . '/' . $relative . '?v=' . rawurlencode( (string) filemtime( $path ) );
+	$webp = somvio_theme_webp_uri( $relative );
+
 	return array(
-		'src'    => get_stylesheet_directory_uri() . '/' . $relative . '?v=' . rawurlencode( (string) filemtime( $path ) ),
+		'src'    => $src,
+		'webp'   => $webp,
 		'width'  => max( 1, $width ),
 		'height' => max( 1, $height ),
 	);
+}
+
+/**
+ * WebP sibling URI for a theme-relative raster image, if the file exists.
+ *
+ * @param string $relative Theme-relative path (e.g. assets/images/hero-bg.jpg).
+ * @return string
+ */
+function somvio_theme_webp_uri( $relative ) {
+	$relative = ltrim( (string) $relative, '/' );
+	$webp_rel = (string) preg_replace( '/\.(jpe?g|png)$/i', '.webp', $relative );
+	if ( $webp_rel === $relative ) {
+		return '';
+	}
+
+	$path = get_stylesheet_directory() . '/' . $webp_rel;
+	if ( ! is_file( $path ) ) {
+		return '';
+	}
+
+	return get_stylesheet_directory_uri() . '/' . $webp_rel . '?v=' . rawurlencode( (string) filemtime( $path ) );
 }
 
 /**
@@ -145,7 +172,15 @@ function somvio_render_lcp_image( $class = '' ) {
 	}
 
 	$classes = trim( 'somvio-lcp-img ' . (string) $class );
+	$webp    = isset( $image['webp'] ) ? (string) $image['webp'] : '';
 
+	echo '<picture class="somvio-lcp-picture">';
+	if ( '' !== $webp ) {
+		printf(
+			'<source srcset="%s" type="image/webp">',
+			esc_url( $webp )
+		);
+	}
 	printf(
 		'<img class="%1$s" src="%2$s" alt="" width="%3$d" height="%4$d" fetchpriority="high" loading="eager" decoding="async">',
 		esc_attr( $classes ),
@@ -153,6 +188,7 @@ function somvio_render_lcp_image( $class = '' ) {
 		(int) $image['width'],
 		(int) $image['height']
 	);
+	echo '</picture>';
 }
 
 /**
@@ -167,6 +203,14 @@ function somvio_preload_lcp_hero() {
 
 	$image = somvio_get_current_lcp_image();
 	if ( '' === $image['src'] ) {
+		return;
+	}
+
+	if ( isset( $image['webp'] ) && '' !== (string) $image['webp'] ) {
+		printf(
+			'<link rel="preload" as="image" href="%s" type="image/webp" fetchpriority="high">' . "\n",
+			esc_url( (string) $image['webp'] )
+		);
 		return;
 	}
 

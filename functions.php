@@ -264,6 +264,7 @@ require_once get_stylesheet_directory() . '/inc/calculator.php';
 require_once get_stylesheet_directory() . '/inc/postcode.php';
 require_once get_stylesheet_directory() . '/inc/booking/bootstrap.php';
 require_once get_stylesheet_directory() . '/inc/layout.php';
+require_once get_stylesheet_directory() . '/inc/performance.php';
 
 /**
  * Return inline SVG markup from assets/icons/ by icon name.

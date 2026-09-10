@@ -1402,6 +1402,10 @@ body.somvio-no-scroll .somvio-header {
 	pointer-events: none;
 }
 
+.somvio-lcp-picture {
+	display: contents;
+}
+
 .somvio-lcp-img--center {
 	object-position: center center;
 }
@@ -3693,6 +3697,10 @@ button.how-it-works__trigger:focus-visible .how-it-works__icon {
 	text-align: center;
 	background-color: var(--somvio-color-bg);
 	background-image: url('assets/images/cta-banner-bg.jpg');
+	background-image: image-set(
+		url('assets/images/cta-banner-bg.webp') type('image/webp'),
+		url('assets/images/cta-banner-bg.jpg') type('image/jpeg')
+	);
 	background-repeat: no-repeat;
 	background-position: center;
 	background-size: cover;
